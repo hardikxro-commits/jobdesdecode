@@ -470,6 +470,36 @@ function BgLayers({ blobOpacity, blobScale, gridOpacity, mousePos }) {
   )
 }
 
+function RevealSection({ children, delay = 0, className = "" }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 120, scale: 0.9, skewX: -5 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1, skewX: 0 }}
+      viewport={{ margin: "-60px", once: true }}
+      transition={{ duration: 0.8, delay, ease: [0.33, 1, 0.68, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+function RevealHeading({ children, className = "" }) {
+  return (
+    <div className={`overflow-hidden ${className}`}>
+      <motion.h3
+        initial={{ y: "100%", skewX: -8 }}
+        whileInView={{ y: 0, skewX: 0 }}
+        viewport={{ once: true, margin: "-30px" }}
+        transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
+        className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-3 flex items-center gap-2"
+      >
+        {children}
+      </motion.h3>
+    </div>
+  )
+}
+
 function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle }) {
   return (
     <motion.nav
@@ -671,11 +701,9 @@ function HeroSection({ onGetStarted, scrollY }) {
 }
 
 export default function App() {
-  const [showLoader, setShowLoader] = useState(true)
   const [showContent, setShowContent] = useState(false)
   const mainAppRef = useRef(null)
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 })
-  const heroRef = useRef(null)
   const [apiKey, setApiKey] = useState(DEFAULT_KEY)
   const [provider, setProvider] = useState("nvidia")
   const [model, setModel] = useState(PROVIDERS.nvidia.defaultModel)
@@ -1307,13 +1335,7 @@ Brief: ${jdBrief}`
 
                       {result && (
                         <div ref={resultsRef} className="space-y-4">
-                          <motion.div
-                            initial={{ opacity: 0, y: 80, scale: 0.85 }}
-                            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                            viewport={{ margin: "-50px" }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="flex gap-2 justify-end"
-                          >
+                          <RevealSection className="flex gap-2 justify-end">
                             <button
                               type="button"
                               onClick={copyAnalysis}
@@ -1328,14 +1350,8 @@ Brief: ${jdBrief}`
                             >
                               <Download size={12} /> Export JSON
                             </button>
-                          </motion.div>
-                          <motion.div
-                            initial={{ opacity: 0, y: 80, scale: 0.85 }}
-                            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                            viewport={{ margin: "-50px" }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900"
-                          >
+                          </RevealSection>
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
                             <h2 className="text-2xl max-sm:text-xl font-bold mb-2">{result.role_summary.title}</h2>
                             <div className="flex gap-2 mb-3">
                               <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
@@ -1346,15 +1362,9 @@ Brief: ${jdBrief}`
                               </span>
                             </div>
                             <p className="text-zinc-400">{result.role_summary.one_liner}</p>
-                          </motion.div>
-                          <motion.div
-                            initial={{ opacity: 0, y: 80, scale: 0.85 }}
-                            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                            viewport={{ margin: "-50px" }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900"
-                          >
-                            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-3">Real requirements</h3>
+                          </RevealSection>
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                            <RevealHeading>Real requirements</RevealHeading>
                             {result.real_requirements && result.real_requirements.length > 0 ? (
                               <div className="flex flex-wrap gap-2">
                                 {result.real_requirements.map((req, i) => {
@@ -1375,17 +1385,9 @@ Brief: ${jdBrief}`
                             ) : (
                               <p className="text-zinc-500 text-sm italic">None found</p>
                             )}
-                          </motion.div>
-                          <motion.div
-                            initial={{ opacity: 0, y: 80, scale: 0.85 }}
-                            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                            viewport={{ margin: "-50px" }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900"
-                          >
-                            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-3 flex items-center gap-2">
-                              <TriangleAlert size={16} className="text-red-400" /> Red Flags
-                            </h3>
+                          </RevealSection>
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                            <RevealHeading><TriangleAlert size={16} className="text-red-400" /> Red Flags</RevealHeading>
                             {result.red_flags && result.red_flags.length > 0 ? (
                               <div className="space-y-3">
                                 {result.red_flags.map((flag, i) => {
@@ -1409,17 +1411,9 @@ Brief: ${jdBrief}`
                             ) : (
                               <p className="text-zinc-500 text-sm italic">None found</p>
                             )}
-                          </motion.div>
-                          <motion.div
-                            initial={{ opacity: 0, y: 80, scale: 0.85 }}
-                            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                            viewport={{ margin: "-50px" }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900"
-                          >
-                            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-3 flex items-center gap-2">
-                              <CheckCircle size={16} className="text-emerald-400" /> Green Flags
-                            </h3>
+                          </RevealSection>
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                            <RevealHeading><CheckCircle size={16} className="text-emerald-400" /> Green Flags</RevealHeading>
                             {result.green_flags && result.green_flags.length > 0 ? (
                               <div className="space-y-3">
                                 {result.green_flags.map((flag, i) => (
@@ -1435,32 +1429,18 @@ Brief: ${jdBrief}`
                             ) : (
                               <p className="text-zinc-500 text-sm italic">None found</p>
                             )}
-                          </motion.div>
-                          <motion.div
-                            initial={{ opacity: 0, y: 80, scale: 0.85 }}
-                            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                            viewport={{ margin: "-50px" }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900"
-                          >
-                            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-4">Clarity Scores</h3>
+                          </RevealSection>
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                            <RevealHeading>Clarity Scores</RevealHeading>
                             <Bar label="Responsibilities" score={result.clarity_scores.responsibilities} />
                             <Bar label="Success metrics" score={result.clarity_scores.success_metrics} />
                             <Bar label="Team structure" score={result.clarity_scores.team_structure} />
                             <Bar label="Growth path" score={result.clarity_scores.growth_path} />
                             <Bar label="Compensation" score={result.clarity_scores.compensation} />
                             <Bar label="Work-life balance" score={result.clarity_scores.work_life_balance} />
-                          </motion.div>
-                          <motion.div
-                            initial={{ opacity: 0, y: 80, scale: 0.85 }}
-                            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                            viewport={{ margin: "-50px" }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900"
-                          >
-                            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-3 flex items-center gap-2">
-                              <MessageCircle size={16} className="text-zinc-400" /> Questions to ask
-                            </h3>
+                          </RevealSection>
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                            <RevealHeading><MessageCircle size={16} className="text-zinc-400" /> Questions to ask</RevealHeading>
                             {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
                               <ol className="space-y-2">
                                 {result.questions_to_ask.map((q, i) => (
@@ -1473,16 +1453,10 @@ Brief: ${jdBrief}`
                             ) : (
                               <p className="text-zinc-500 text-sm italic">None generated</p>
                             )}
-                          </motion.div>
+                          </RevealSection>
                           {result.resume_match && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 80, scale: 0.85 }}
-                              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                              viewport={{ margin: "-50px" }}
-                              transition={{ duration: 0.5, ease: "easeOut" }}
-                              className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900"
-                            >
-                              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-4">Resume Match</h3>
+                            <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                              <RevealHeading>Resume Match</RevealHeading>
                               <div className="text-center mb-6">
                                 <span className={`text-5xl font-bold ${
                                   result.resume_match.score >= 70 ? 'text-emerald-400' :
@@ -1529,16 +1503,10 @@ Brief: ${jdBrief}`
                                   )}
                                 </div>
                               </div>
-                            </motion.div>
+                            </RevealSection>
                           )}
-                          <motion.div
-                            initial={{ opacity: 0, y: 80, scale: 0.85 }}
-                            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                            viewport={{ margin: "-50px" }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900"
-                          >
-                            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-3">Verdict</h3>
+                          <RevealSection className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900">
+                            <RevealHeading>Verdict</RevealHeading>
                             <p className="text-lg leading-relaxed text-zinc-100 mb-4">{result.verdict.summary}</p>
                             <div className="mb-4">
                               {result.verdict.apply ? (
@@ -1558,7 +1526,7 @@ Brief: ${jdBrief}`
                             >
                               Reset
                             </button>
-                          </motion.div>
+                          </RevealSection>
                         </div>
                       )}
                     </div>
