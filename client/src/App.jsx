@@ -1214,161 +1214,161 @@ Brief: ${jdBrief}`
                             <Download size={12} /> Export JSON
                           </button>
                         </RevealSection>
-                        <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                          <h2 className="text-2xl max-sm:text-xl font-bold mb-2">{result.role_summary.title}</h2>
-                          <div className="flex gap-2 mb-3">
-                            <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
-                              {result.role_summary.level}
-                            </span>
-                            <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
-                              {result.role_summary.type === "IC" ? "Individual Contributor" : result.role_summary.type}
-                            </span>
-                          </div>
-                          <p className="text-zinc-400">{result.role_summary.one_liner}</p>
-                        </RevealSection>
-                        <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                          <RevealHeading>Real requirements</RevealHeading>
-                          {result.real_requirements && result.real_requirements.length > 0 ? (
-                            <div className="flex flex-wrap gap-2">
-                              {result.real_requirements.map((req, i) => {
-                                let pillClass = "bg-blue-900 text-blue-200"
-                                if (req.type === "nice_to_have") pillClass = "bg-zinc-700 text-zinc-300"
-                                if (req.type === "filler") pillClass = "bg-red-950 text-red-400 line-through"
-                                return (
-                                  <span
-                                    key={i}
-                                    title={req.note || ""}
-                                    className={`inline-block px-3 py-1.5 text-xs font-medium rounded-full cursor-default ${pillClass}`}
-                                  >
-                                    {req.skill}
-                                  </span>
-                                )
-                              })}
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                            <h2 className="text-2xl max-sm:text-xl font-bold mb-2">{result.role_summary.title}</h2>
+                            <div className="flex gap-2 mb-3">
+                              <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
+                                {result.role_summary.level}
+                              </span>
+                              <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
+                                {result.role_summary.type === "IC" ? "Individual Contributor" : result.role_summary.type}
+                              </span>
                             </div>
-                          ) : (
-                            <p className="text-zinc-500 text-sm italic">None found</p>
-                          )}
-                        </RevealSection>
-                        <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                          <RevealHeading><TriangleAlert size={16} className="text-red-400" /> Red Flags</RevealHeading>
-                          {result.red_flags && result.red_flags.length > 0 ? (
-                            <div className="space-y-3">
-                              {result.red_flags.map((flag, i) => {
-                                let severityClass = "bg-yellow-900 text-yellow-300"
-                                if (flag.severity === "moderate") severityClass = "bg-orange-900 text-orange-300"
-                                if (flag.severity === "serious") severityClass = "bg-red-900 text-red-300"
-                                return (
+                            <p className="text-zinc-400">{result.role_summary.one_liner}</p>
+                          </RevealSection>
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                            <RevealHeading>Real requirements</RevealHeading>
+                            {result.real_requirements && result.real_requirements.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {result.real_requirements.map((req, i) => {
+                                  let pillClass = "bg-blue-900 text-blue-200"
+                                  if (req.type === "nice_to_have") pillClass = "bg-zinc-700 text-zinc-300"
+                                  if (req.type === "filler") pillClass = "bg-red-950 text-red-400 line-through"
+                                  return (
+                                    <span
+                                      key={i}
+                                      title={req.note || ""}
+                                      className={`inline-block px-3 py-1.5 text-xs font-medium rounded-full cursor-default ${pillClass}`}
+                                    >
+                                      {req.skill}
+                                    </span>
+                                  )
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-zinc-500 text-sm italic">None found</p>
+                            )}
+                          </RevealSection>
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                            <RevealHeading><TriangleAlert size={16} className="text-red-400" /> Red Flags</RevealHeading>
+                            {result.red_flags && result.red_flags.length > 0 ? (
+                              <div className="space-y-3">
+                                {result.red_flags.map((flag, i) => {
+                                  let severityClass = "bg-yellow-900 text-yellow-300"
+                                  if (flag.severity === "moderate") severityClass = "bg-orange-900 text-orange-300"
+                                  if (flag.severity === "serious") severityClass = "bg-red-900 text-red-300"
+                                  return (
+                                    <div key={i} className="flex items-start gap-3 pb-3 border-b border-zinc-800 last:border-0 last:pb-0">
+                                      <TriangleAlert size={16} className="shrink-0 mt-1 text-red-400" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-zinc-500 italic text-sm mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
+                                        <p className="text-zinc-300 text-sm">{flag.meaning}</p>
+                                      </div>
+                                      <span className={`shrink-0 inline-block px-2 py-0.5 text-xs font-semibold rounded-full ${severityClass}`}>
+                                        {flag.severity}
+                                      </span>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-zinc-500 text-sm italic">None found</p>
+                            )}
+                          </RevealSection>
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                            <RevealHeading><CheckCircle size={16} className="text-emerald-400" /> Green Flags</RevealHeading>
+                            {result.green_flags && result.green_flags.length > 0 ? (
+                              <div className="space-y-3">
+                                {result.green_flags.map((flag, i) => (
                                   <div key={i} className="flex items-start gap-3 pb-3 border-b border-zinc-800 last:border-0 last:pb-0">
-                                    <TriangleAlert size={16} className="shrink-0 mt-1 text-red-400" />
+                                    <CheckCircle size={16} className="shrink-0 mt-1 text-emerald-400" />
                                     <div className="flex-1 min-w-0">
                                       <p className="text-zinc-500 italic text-sm mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
                                       <p className="text-zinc-300 text-sm">{flag.meaning}</p>
                                     </div>
-                                    <span className={`shrink-0 inline-block px-2 py-0.5 text-xs font-semibold rounded-full ${severityClass}`}>
-                                      {flag.severity}
-                                    </span>
                                   </div>
-                                )
-                              })}
-                            </div>
-                          ) : (
-                            <p className="text-zinc-500 text-sm italic">None found</p>
-                          )}
-                        </RevealSection>
-                        <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                          <RevealHeading><CheckCircle size={16} className="text-emerald-400" /> Green Flags</RevealHeading>
-                          {result.green_flags && result.green_flags.length > 0 ? (
-                            <div className="space-y-3">
-                              {result.green_flags.map((flag, i) => (
-                                <div key={i} className="flex items-start gap-3 pb-3 border-b border-zinc-800 last:border-0 last:pb-0">
-                                  <CheckCircle size={16} className="shrink-0 mt-1 text-emerald-400" />
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-zinc-500 italic text-sm mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
-                                    <p className="text-zinc-300 text-sm">{flag.meaning}</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-zinc-500 text-sm italic">None found</p>
-                          )}
-                        </RevealSection>
-                        <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                          <RevealHeading>Clarity Scores</RevealHeading>
-                          <Bar label="Responsibilities" score={result.clarity_scores.responsibilities} />
-                          <Bar label="Success metrics" score={result.clarity_scores.success_metrics} />
-                          <Bar label="Team structure" score={result.clarity_scores.team_structure} />
-                          <Bar label="Growth path" score={result.clarity_scores.growth_path} />
-                          <Bar label="Compensation" score={result.clarity_scores.compensation} />
-                          <Bar label="Work-life balance" score={result.clarity_scores.work_life_balance} />
-                        </RevealSection>
-                        <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                          <RevealHeading><MessageCircle size={16} className="text-zinc-400" /> Questions to ask</RevealHeading>
-                          {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
-                            <ol className="space-y-2">
-                              {result.questions_to_ask.map((q, i) => (
-                                <li key={i} className="flex gap-3 pb-2 border-b border-zinc-800 last:border-0 last:pb-0">
-                                  <span className="text-zinc-500 text-sm font-mono w-6 shrink-0">{i + 1}.</span>
-                                  <span className="text-zinc-300 text-sm">{q}</span>
-                                </li>
-                              ))}
-                            </ol>
-                          ) : (
-                            <p className="text-zinc-500 text-sm italic">None generated</p>
-                          )}
-                        </RevealSection>
-                        {result.resume_match && (
-                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                            <RevealHeading>Resume Match</RevealHeading>
-                            <div className="text-center mb-6">
-                              <span className={`text-5xl font-bold ${
-                                result.resume_match.score >= 70 ? 'text-emerald-400' :
-                                result.resume_match.score >= 40 ? 'text-yellow-400' :
-                                'text-red-400'
-                              }`}>
-                                {result.resume_match.score}%
-                              </span>
-                              <p className="text-zinc-500 text-sm mt-1">Match score</p>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div>
-                                <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1">
-                                  <Check size={14} /> Strengths
-                                </h4>
-                                {result.resume_match.strengths && result.resume_match.strengths.length > 0 ? (
-                                  <ul className="space-y-1">
-                                    {result.resume_match.strengths.map((s, i) => (
-                                      <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
-                                        <Check size={14} className="shrink-0 mt-0.5 text-emerald-400" />
-                                        {s}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                ) : (
-                                  <p className="text-zinc-500 text-xs italic">None identified</p>
-                                )}
+                                ))}
                               </div>
-                              <div>
-                                <h4 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-1">
-                                  <X size={14} /> Gaps
-                                </h4>
-                                {result.resume_match.gaps && result.resume_match.gaps.length > 0 ? (
-                                  <ul className="space-y-1">
-                                    {result.resume_match.gaps.map((g, i) => (
-                                      <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
-                                        <X size={14} className="shrink-0 mt-0.5 text-red-400" />
-                                        {g}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                ) : (
-                                  <p className="text-zinc-500 text-xs italic">None identified</p>
-                                )}
-                              </div>
-                            </div>
+                            ) : (
+                              <p className="text-zinc-500 text-sm italic">None found</p>
+                            )}
                           </RevealSection>
-                        )}
-                        <RevealSection className="content-visibility-auto rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900">
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                            <RevealHeading>Clarity Scores</RevealHeading>
+                            <Bar label="Responsibilities" score={result.clarity_scores.responsibilities} />
+                            <Bar label="Success metrics" score={result.clarity_scores.success_metrics} />
+                            <Bar label="Team structure" score={result.clarity_scores.team_structure} />
+                            <Bar label="Growth path" score={result.clarity_scores.growth_path} />
+                            <Bar label="Compensation" score={result.clarity_scores.compensation} />
+                            <Bar label="Work-life balance" score={result.clarity_scores.work_life_balance} />
+                          </RevealSection>
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                            <RevealHeading><MessageCircle size={16} className="text-zinc-400" /> Questions to ask</RevealHeading>
+                            {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
+                              <ol className="space-y-2">
+                                {result.questions_to_ask.map((q, i) => (
+                                  <li key={i} className="flex gap-3 pb-2 border-b border-zinc-800 last:border-0 last:pb-0">
+                                    <span className="text-zinc-500 text-sm font-mono w-6 shrink-0">{i + 1}.</span>
+                                    <span className="text-zinc-300 text-sm">{q}</span>
+                                  </li>
+                                ))}
+                              </ol>
+                            ) : (
+                              <p className="text-zinc-500 text-sm italic">None generated</p>
+                            )}
+                          </RevealSection>
+                          {result.resume_match && (
+                            <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                              <RevealHeading>Resume Match</RevealHeading>
+                              <div className="text-center mb-6">
+                                <span className={`text-5xl font-bold ${
+                                  result.resume_match.score >= 70 ? 'text-emerald-400' :
+                                  result.resume_match.score >= 40 ? 'text-yellow-400' :
+                                  'text-red-400'
+                                }`}>
+                                  {result.resume_match.score}%
+                                </span>
+                                <p className="text-zinc-500 text-sm mt-1">Match score</p>
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                  <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1">
+                                    <Check size={14} /> Strengths
+                                  </h4>
+                                  {result.resume_match.strengths && result.resume_match.strengths.length > 0 ? (
+                                    <ul className="space-y-1">
+                                      {result.resume_match.strengths.map((s, i) => (
+                                        <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
+                                          <Check size={14} className="shrink-0 mt-0.5 text-emerald-400" />
+                                          {s}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  ) : (
+                                    <p className="text-zinc-500 text-xs italic">None identified</p>
+                                  )}
+                                </div>
+                                <div>
+                                  <h4 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-1">
+                                    <X size={14} /> Gaps
+                                  </h4>
+                                  {result.resume_match.gaps && result.resume_match.gaps.length > 0 ? (
+                                    <ul className="space-y-1">
+                                      {result.resume_match.gaps.map((g, i) => (
+                                        <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
+                                          <X size={14} className="shrink-0 mt-0.5 text-red-400" />
+                                          {g}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  ) : (
+                                    <p className="text-zinc-500 text-xs italic">None identified</p>
+                                  )}
+                                </div>
+                              </div>
+                            </RevealSection>
+                          )}
+                          <RevealSection className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900 card-glow card-float gpu">
                           <RevealHeading>Verdict</RevealHeading>
                           <p className="text-lg leading-relaxed text-zinc-100 mb-4">{result.verdict.summary}</p>
                           <div className="mb-4">
