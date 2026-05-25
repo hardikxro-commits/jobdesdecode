@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Clock, ChevronDownIcon } from "lucide-react"
 
@@ -397,6 +397,79 @@ function Loader() {
   )
 }
 
+const bgParticles = Array.from({ length: 50 }, (_, i) => ({
+  id: i,
+  x: Math.random() * 100,
+  y: Math.random() * 100,
+  size: Math.random() * 4 + 1.5,
+  duration: Math.random() * 12 + 10,
+  delay: Math.random() * 10,
+  opacity: Math.random() * 0.5 + 0.15,
+  color: ["#fff", "#ff0064", "#6400ff", "#0096ff", "#ff00c8"][Math.floor(Math.random() * 5)],
+}))
+
+function BgLayers({ blobOpacity, blobScale, gridOpacity, mousePos }) {
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      <motion.div
+        className="absolute -inset-40"
+        style={{
+          opacity: blobOpacity ?? 1,
+          scale: blobScale ?? 1,
+          x: mousePos ? (mousePos.x - 0.5) * -30 : 0,
+          y: mousePos ? (mousePos.y - 0.5) * -30 : 0,
+          background: "radial-gradient(ellipse at 20% 40%, rgba(255,0,100,0.2), transparent 60%), radial-gradient(ellipse at 80% 30%, rgba(100,0,255,0.2), transparent 60%), radial-gradient(ellipse at 50% 70%, rgba(0,150,255,0.15), transparent 60%)",
+        }}
+      />
+      <motion.div
+        className="absolute inset-0"
+        animate={{ scale: [1, 1.15, 1], rotate: [0, 3, -3, 0] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          background: "radial-gradient(ellipse at 70% 20%, rgba(255,0,200,0.08), transparent 50%), radial-gradient(ellipse at 30% 80%, rgba(0,100,255,0.08), transparent 50%)",
+          filter: "blur(80px)",
+        }}
+      />
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          opacity: gridOpacity ?? 0.03,
+          backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
+      {bgParticles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: p.size,
+            height: p.size,
+            background: p.color,
+            opacity: p.opacity,
+            boxShadow: `0 0 ${p.size * 3}px ${p.color}, 0 0 ${p.size * 6}px ${p.color}`,
+          }}
+          animate={{
+            y: [0, -40, 0],
+            opacity: [p.opacity, p.opacity * 2.5, p.opacity],
+          }}
+          transition={{
+            duration: p.duration,
+            delay: p.delay,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%)",
+      }} />
+    </div>
+  )
+}
+
 function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle }) {
   return (
     <motion.nav
@@ -459,9 +532,6 @@ function HeroSection({ onGetStarted, scrollY }) {
     return () => window.removeEventListener("mousemove", handleMouse)
   }, [])
 
-  const parallaxX = (mousePos.x - 0.5) * 24
-  const parallaxY = (mousePos.y - 0.5) * 24
-
   const contentOpacity = useTransform(scrollY, [0, vh * 0.8], [1, 0])
   const contentY = useTransform(scrollY, [0, vh * 0.8], [0, -120])
   const contentScale = useTransform(scrollY, [0, vh * 0.8], [1, 0.95])
@@ -471,86 +541,12 @@ function HeroSection({ onGetStarted, scrollY }) {
   const chevronOpacity = useTransform(scrollY, [0, vh * 0.3], [1, 0])
   const glowOpacity = useTransform(scrollY, [vh * 0.3, vh * 0.9], [0, 1])
 
-  const particles = useMemo(() =>
-    Array.from({ length: 30 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 3 + 1,
-      duration: Math.random() * 10 + 8,
-      delay: Math.random() * 8,
-      opacity: Math.random() * 0.3 + 0.05,
-    })), [])
-
-  const headingChars = "DECODE YOUR".split("")
-
   return (
     <section
       className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden"
       style={{ background: "#000" }}
     >
-      {/* Background layers */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Main blobs */}
-        <motion.div
-          className="absolute -inset-40"
-          style={{
-            opacity: blobOpacity,
-            scale: blobScale,
-            x: (mousePos.x - 0.5) * -30,
-            y: (mousePos.y - 0.5) * -30,
-            background: "radial-gradient(ellipse at 20% 40%, rgba(255,0,100,0.2), transparent 60%), radial-gradient(ellipse at 80% 30%, rgba(100,0,255,0.2), transparent 60%), radial-gradient(ellipse at 50% 70%, rgba(0,150,255,0.15), transparent 60%)",
-          }}
-        />
-        {/* Secondary blob */}
-        <motion.div
-          className="absolute inset-0"
-          animate={{ scale: [1, 1.15, 1], rotate: [0, 3, -3, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          style={{
-            background: "radial-gradient(ellipse at 70% 20%, rgba(255,0,200,0.08), transparent 50%), radial-gradient(ellipse at 30% 80%, rgba(0,100,255,0.08), transparent 50%)",
-            filter: "blur(80px)",
-          }}
-        />
-        {/* Grid */}
-        <motion.div
-          className="absolute inset-0"
-          style={{
-            opacity: gridOpacity,
-            backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
-            backgroundSize: "60px 60px",
-          }}
-        />
-        {/* Floating particles */}
-        {particles.map((p) => (
-          <motion.div
-            key={p.id}
-            className="absolute rounded-full pointer-events-none"
-            style={{
-              left: `${p.x}%`,
-              top: `${p.y}%`,
-              width: p.size,
-              height: p.size,
-              background: "#fff",
-              opacity: p.opacity,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              opacity: [p.opacity, p.opacity * 2, p.opacity],
-            }}
-            transition={{
-              duration: p.duration,
-              delay: p.delay,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
-        {/* Vignette */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%)",
-        }} />
-      </div>
+      <BgLayers blobOpacity={blobOpacity} blobScale={blobScale} gridOpacity={gridOpacity} mousePos={mousePos} />
 
       {/* Content */}
       <motion.div
@@ -1048,15 +1044,8 @@ Brief: ${jdBrief}`
                 y: mainY,
               }}
             >
-              <div className="min-h-screen text-white flex flex-col relative"
-                style={{
-                  backgroundImage: "url(/bg.jpg)",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  backgroundAttachment: "fixed",
-                }}
-              >
-                <div className="absolute inset-0 bg-zinc-950/60 backdrop-blur-sm" />
+              <div className="min-h-screen text-white flex flex-col relative">
+                <BgLayers />
                 <AnimatePresence>
                   {showChat && (
                     <motion.div
