@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo, useCallback } from "react"
+import { useState, useEffect, useRef, useLayoutEffect, memo, useCallback } from "react"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download } from "lucide-react"
 
@@ -182,24 +182,63 @@ function useInView({ once = true, margin = "-60px" } = {}) {
   return [ref, inView]
 }
 
-function RevealSection({ children, delay = 0, className = "" }) {
-  const [ref, inView] = useInView({ margin: "-60px" })
+function useScrollFade(ref, { threshold = 0.45 } = {}) {
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    let raf = null
+
+    const update = () => {
+      const rect = el.getBoundingClientRect()
+      const vh = window.innerHeight
+      const elCenter = rect.top + rect.height / 2
+      const viewCenter = vh / 2
+      const maxDist = vh * threshold
+      const dist = Math.abs(elCenter - viewCenter)
+      const progress = 1 - Math.min(1, dist / maxDist)
+      const opacity = Math.max(0, Math.min(1, progress))
+
+      el.style.opacity = opacity
+      if (opacity < 1) {
+        el.style.transform = `translateY(${(1 - opacity) * 35}px)`
+      } else {
+        el.style.transform = ''
+      }
+      raf = null
+    }
+
+    const handler = () => {
+      if (!raf) raf = requestAnimationFrame(update)
+    }
+
+    window.addEventListener("scroll", handler, { passive: true })
+    update()
+    return () => {
+      window.removeEventListener("scroll", handler)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [ref, threshold])
+}
+
+function RevealSection({ children, className = "" }) {
+  const ref = useRef(null)
+  useScrollFade(ref)
   return (
-    <div
-      ref={ref}
-      className={`reveal-section ${inView ? "in-view" : ""} ${className}`}
-      style={{ "--reveal-delay": `${delay}s` }}
-    >
+    <div ref={ref} className={`gpu ${className}`} style={{ opacity: 0 }}>
       {children}
     </div>
   )
 }
 
 function RevealHeading({ children, className = "" }) {
-  const [ref, inView] = useInView({ margin: "-30px" })
+  const [inViewRef, inView] = useInView({ margin: "-30px" })
+  const fadeRef = useRef(null)
+  useScrollFade(fadeRef)
   return (
-    <div ref={ref} className={`reveal-heading ${inView ? "in-view" : ""} ${className}`}>
-      {children}
+    <div ref={fadeRef} className={`gpu ${className}`} style={{ opacity: 0 }}>
+      <div ref={inViewRef} className={`reveal-heading ${inView ? "in-view" : ""}`}>
+        {children}
+      </div>
     </div>
   )
 }
@@ -1250,7 +1289,7 @@ Brief: ${jdBrief}`
                             )}
                           </RevealSection>
                           <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
-                            <RevealHeading><TriangleAlert size={16} className="text-red-400" /> Red Flags</RevealHeading>
+                            <RevealHeading><TriangleAlert size={16} className="text-red-400 icon-pulse" /> Red Flags</RevealHeading>
                             {result.red_flags && result.red_flags.length > 0 ? (
                               <div className="space-y-3">
                                 {result.red_flags.map((flag, i) => {
@@ -1276,7 +1315,7 @@ Brief: ${jdBrief}`
                             )}
                           </RevealSection>
                           <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
-                            <RevealHeading><CheckCircle size={16} className="text-emerald-400" /> Green Flags</RevealHeading>
+                            <RevealHeading><CheckCircle size={16} className="text-emerald-400 icon-pulse" /> Green Flags</RevealHeading>
                             {result.green_flags && result.green_flags.length > 0 ? (
                               <div className="space-y-3">
                                 {result.green_flags.map((flag, i) => (
@@ -1303,7 +1342,7 @@ Brief: ${jdBrief}`
                             <Bar label="Work-life balance" score={result.clarity_scores.work_life_balance} />
                           </RevealSection>
                           <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
-                            <RevealHeading><MessageCircle size={16} className="text-zinc-400" /> Questions to ask</RevealHeading>
+                            <RevealHeading><MessageCircle size={16} className="text-zinc-400 icon-pulse" /> Questions to ask</RevealHeading>
                             {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
                               <ol className="space-y-2">
                                 {result.questions_to_ask.map((q, i) => (
@@ -1333,13 +1372,13 @@ Brief: ${jdBrief}`
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                   <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1">
-                                    <Check size={14} /> Strengths
+                                    <Check size={14} className="icon-float" /> Strengths
                                   </h4>
                                   {result.resume_match.strengths && result.resume_match.strengths.length > 0 ? (
                                     <ul className="space-y-1">
                                       {result.resume_match.strengths.map((s, i) => (
                                         <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
-                                          <Check size={14} className="shrink-0 mt-0.5 text-emerald-400" />
+                                          <Check size={14} className="shrink-0 mt-0.5 text-emerald-400 icon-float" />
                                           {s}
                                         </li>
                                       ))}
@@ -1350,7 +1389,7 @@ Brief: ${jdBrief}`
                                 </div>
                                 <div>
                                   <h4 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-1">
-                                    <X size={14} /> Gaps
+                                    <X size={14} className="icon-float" /> Gaps
                                   </h4>
                                   {result.resume_match.gaps && result.resume_match.gaps.length > 0 ? (
                                     <ul className="space-y-1">

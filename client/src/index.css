@@ -48,22 +48,10 @@
 .btn-scale-sm:hover { transform: scale(1.04); }
 .btn-scale-sm:active { transform: scale(0.97); }
 
-/* ── Scroll reveal (IntersectionObserver + CSS) ── */
-.reveal-section {
-  opacity: 0;
-  transform: translateY(60px) scale(0.95);
-  will-change: transform, opacity;
-}
-.reveal-section.in-view {
-  animation: reveal-entry 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) var(--reveal-delay, 0s) forwards;
-}
-@keyframes reveal-entry {
-  0% { opacity: 0; transform: translateY(60px) scale(0.95); }
-  50% { opacity: 1; transform: translateY(-5px) scale(1.01); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
+/* ── Scroll reveal (continuous scroll-driven fade via useScrollFade hook) ── */
+/* Initial opacity is set inline by the hook; will-change via .gpu class */
 
-/* ── Floating card animation (after reveal) ── */
+/* ── Floating card animation ── */
 @keyframes card-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
@@ -72,13 +60,30 @@
   animation: card-float 5s ease-in-out infinite;
 }
 
-/* ── Card glow pulse (after reveal) ── */
+/* ── Card glow pulse ── */
 @keyframes card-glow {
   0%, 100% { border-color: rgb(39 39 42); box-shadow: 0 0 0 rgba(255,0,100,0); }
   50% { border-color: rgba(255,0,100,0.15); box-shadow: 0 0 25px rgba(255,0,100,0.06); }
 }
 .card-glow {
   animation: card-glow 4s ease-in-out infinite;
+}
+
+/* ── Icon micro-animations ── */
+@keyframes icon-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+.icon-float {
+  animation: icon-float 3s ease-in-out infinite;
+}
+
+@keyframes icon-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+.icon-pulse {
+  animation: icon-pulse 2.5s ease-in-out infinite;
 }
 
 /* ── Reveal heading ── */
