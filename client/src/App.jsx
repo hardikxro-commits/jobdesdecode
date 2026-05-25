@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
-import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Clock, ChevronDownIcon } from "lucide-react"
+import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download } from "lucide-react"
 
 const PROVIDERS = {
   anthropic: {
@@ -397,14 +397,14 @@ function Loader() {
   )
 }
 
-const bgParticles = Array.from({ length: 50 }, (_, i) => ({
+const bgParticles = Array.from({ length: 20 }, (_, i) => ({
   id: i,
   x: Math.random() * 100,
   y: Math.random() * 100,
-  size: Math.random() * 4 + 1.5,
-  duration: Math.random() * 12 + 10,
-  delay: Math.random() * 10,
-  opacity: Math.random() * 0.5 + 0.15,
+  size: Math.random() * 3 + 1,
+  duration: Math.random() * 15 + 12,
+  delay: Math.random() * 12,
+  opacity: Math.random() * 0.25 + 0.08,
   color: ["#fff", "#ff0064", "#6400ff", "#0096ff", "#ff00c8"][Math.floor(Math.random() * 5)],
 }))
 
@@ -423,8 +423,8 @@ function BgLayers({ blobOpacity, blobScale, gridOpacity, mousePos }) {
       />
       <motion.div
         className="absolute inset-0"
-        animate={{ scale: [1, 1.15, 1], rotate: [0, 3, -3, 0] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        animate={{ scale: [1, 1.1, 1], rotate: [0, 2, -2, 0] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
         style={{
           background: "radial-gradient(ellipse at 70% 20%, rgba(255,0,200,0.08), transparent 50%), radial-gradient(ellipse at 30% 80%, rgba(0,100,255,0.08), transparent 50%)",
           filter: "blur(80px)",
@@ -449,11 +449,12 @@ function BgLayers({ blobOpacity, blobScale, gridOpacity, mousePos }) {
             height: p.size,
             background: p.color,
             opacity: p.opacity,
-            boxShadow: `0 0 ${p.size * 3}px ${p.color}, 0 0 ${p.size * 6}px ${p.color}`,
+            boxShadow: `0 0 ${p.size * 4}px ${p.color}`,
+            willChange: "transform, opacity",
           }}
           animate={{
-            y: [0, -40, 0],
-            opacity: [p.opacity, p.opacity * 2.5, p.opacity],
+            y: [0, -30, 0],
+            opacity: [p.opacity, p.opacity * 2, p.opacity],
           }}
           transition={{
             duration: p.duration,
@@ -504,11 +505,12 @@ function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle }) {
   return (
     <motion.nav
       className="fixed top-0 left-0 right-0 z-50"
+      style={{ willChange: "transform" }}
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.3 }}
     >
-      <div className="absolute inset-0 backdrop-blur-2xl bg-black/30" />
+      <div className="absolute inset-0 backdrop-blur-lg bg-black/30" />
       <div className="relative z-10 flex items-center justify-between px-6 py-4 max-sm:px-4 max-sm:py-3">
         <div className="flex items-center gap-2">
           <span
@@ -713,10 +715,8 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [showResume, setShowResume] = useState(false)
-  const [showModelInput, setShowModelInput] = useState(false)
   const [jdBrief, setJdBrief] = useState("")
   const [generating, setGenerating] = useState(false)
-  const [showApiSettings, setShowApiSettings] = useState(false)
   const [showJdGenerator, setShowJdGenerator] = useState(false)
   const [showChat, setShowChat] = useState(false)
   const [chatMessages, setChatMessages] = useState([])
@@ -1081,7 +1081,7 @@ Brief: ${jdBrief}`
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -320 }}
                       transition={{ type: "spring", damping: 28, stiffness: 300 }}
-                      className="absolute left-0 top-0 bottom-0 z-20 w-80 max-sm:w-full flex flex-col bg-black/20 backdrop-blur-2xl border-r border-white/[0.06] shadow-2xl"
+                      className="absolute left-0 top-0 bottom-0 z-20 w-80 max-sm:w-full flex flex-col bg-black/20 backdrop-blur-lg border-r border-white/[0.06] shadow-2xl"
                     >
                       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
                       <div className="relative z-10 flex flex-col h-full">
@@ -1135,7 +1135,7 @@ Brief: ${jdBrief}`
                               type="button"
                               onClick={sendChatMessage}
                               disabled={chatLoading || !chatInput.trim()}
-                              className="shrink-0 self-end px-3 py-2 bg-white/10 hover:bg-white/20 hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl transition-all border border-white/[0.06]"
+                              className="shrink-0 self-end px-3 py-2 bg-white/10 hover:bg-white/20 hover:scale-[1.04] disabled:opacity-30 disabled:cursor-not-allowed rounded-xl transition-all border border-white/[0.06]"
                             >
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
                                 <path d="M22 2L11 13" /><path d="M22 2L15 22L11 13L2 9L22 2Z" />
@@ -1157,18 +1157,10 @@ Brief: ${jdBrief}`
                       <button
                         type="button"
                         onClick={() => setShowJdGenerator(!showJdGenerator)}
-                        className="rounded-xl px-3 py-2 bg-black/20 backdrop-blur-2xl text-white/90 hover:text-white hover:bg-white/10 hover:scale-110 transition-all text-xs font-medium border border-white/[0.06] max-sm:text-[10px] max-sm:px-2 max-sm:py-1.5"
+                        className="rounded-xl px-3 py-2 bg-black/20 backdrop-blur-xl text-white/90 hover:text-white hover:bg-white/10 hover:scale-[1.04] transition-all text-xs font-medium border border-white/[0.06] max-sm:text-[10px] max-sm:px-2 max-sm:py-1.5"
                         style={{ textShadow: "0 0 8px rgba(255,255,255,0.4), 0 0 20px rgba(255,255,255,0.15)" }}
                       >
                         {showJdGenerator ? "Close Generator" : "Generate JD"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowApiSettings(!showApiSettings)}
-                        className="rounded-xl px-3 py-2 bg-black/20 backdrop-blur-2xl text-white/90 hover:text-white hover:scale-110 transition-all text-xs font-medium border border-white/[0.06] max-sm:text-[10px] max-sm:px-2 max-sm:py-1.5"
-                        style={{ textShadow: "0 0 8px rgba(255,255,255,0.4), 0 0 20px rgba(255,255,255,0.15)" }}
-                      >
-                        API
                       </button>
                     </div>
 
@@ -1179,7 +1171,7 @@ Brief: ${jdBrief}`
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: -8, scale: 0.97 }}
                           transition={{ duration: 0.2 }}
-                          className="rounded-xl bg-black/20 backdrop-blur-2xl w-72 max-sm:w-full max-sm:max-w-full shadow-2xl overflow-hidden border border-white/[0.06] relative"
+                          className="rounded-xl bg-black/20 backdrop-blur-lg w-72 max-sm:w-full max-sm:max-w-full shadow-2xl overflow-hidden border border-white/[0.06] relative"
                         >
                           <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
                           <div className="p-4 max-h-[55vh] overflow-y-auto relative z-10">
@@ -1208,70 +1200,7 @@ Brief: ${jdBrief}`
                       )}
                     </AnimatePresence>
 
-                    <AnimatePresence>
-                      {showApiSettings && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                          transition={{ duration: 0.2 }}
-                          className="rounded-xl bg-black/20 backdrop-blur-2xl w-72 max-sm:w-full max-sm:max-w-full shadow-2xl overflow-hidden border border-white/[0.06] relative"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
-                          <div className="p-4 relative z-10">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Provider</span>
-                              <div className="relative w-28">
-                                <select
-                                  value={provider}
-                                  onChange={(e) => {
-                                    const p = e.target.value
-                                    setProvider(p)
-                                    setModel(PROVIDERS[p].defaultModel)
-                                  }}
-                                  className="w-full appearance-none px-2 py-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-zinc-500 cursor-pointer pr-6"
-                                >
-                                  {Object.entries(PROVIDERS).map(([key, val]) => (
-                                    <option key={key} value={key}>{val.label}</option>
-                                  ))}
-                                </select>
-                                <ChevronDown size={12} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
-                              </div>
-                            </div>
-                            <input
-                              type="password"
-                              value={apiKey}
-                              onChange={(e) => setApiKey(e.target.value)}
-                              placeholder="API key"
-                              className="w-full px-2.5 py-1.5 rounded-md bg-zinc-800 border border-zinc-700 text-white text-xs placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-500 mb-1.5"
-                            />
-                            <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-                              <span className="truncate">Model: {model}</span>
-                              <button
-                                type="button"
-                                onClick={() => setShowModelInput(!showModelInput)}
-                                className="shrink-0 underline hover:text-zinc-300 transition-colors"
-                              >
-                                {showModelInput ? "done" : "change"}
-                              </button>
-                              {showModelInput && (
-                                <input
-                                  type="text"
-                                  value={model}
-                                  onChange={(e) => setModel(e.target.value)}
-                                  className="flex-1 min-w-0 px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-zinc-500"
-                                  autoFocus
-                                />
-                              )}
-                            </div>
-                          </div>
-                          <div className="relative h-[3px] w-full shrink-0">
-                            <div className="absolute inset-0 animate-rgb rounded-full" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
-                            <div className="absolute inset-0 blur-md opacity-60 animate-rgb" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+
 
                     <AnimatePresence>
                       {showHistory && (
@@ -1280,7 +1209,7 @@ Brief: ${jdBrief}`
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: -8, scale: 0.97 }}
                           transition={{ duration: 0.2 }}
-                          className="rounded-xl bg-black/20 backdrop-blur-2xl w-72 max-sm:w-full max-sm:max-w-full shadow-2xl overflow-hidden border border-white/[0.06] relative"
+                          className="rounded-xl bg-black/20 backdrop-blur-lg w-72 max-sm:w-full max-sm:max-w-full shadow-2xl overflow-hidden border border-white/[0.06] relative"
                         >
                           <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
                           <div className="p-4 max-h-[55vh] overflow-y-auto relative z-10">
@@ -1339,14 +1268,14 @@ Brief: ${jdBrief}`
                             <button
                               type="button"
                               onClick={copyAnalysis}
-                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-2xl border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 hover:scale-110 transition-all flex items-center gap-1.5"
+                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 hover:scale-[1.04] transition-all flex items-center gap-1.5"
                             >
                               <Copy size={12} /> {copied ? "Copied!" : "Copy"}
                             </button>
                             <button
                               type="button"
                               onClick={exportJSON}
-                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-2xl border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 hover:scale-110 transition-all flex items-center gap-1.5"
+                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 hover:scale-[1.04] transition-all flex items-center gap-1.5"
                             >
                               <Download size={12} /> Export JSON
                             </button>
@@ -1534,7 +1463,7 @@ Brief: ${jdBrief}`
 
                   <div className="sticky bottom-0 left-0 right-0 pointer-events-none">
                     <div className="max-w-2xl mx-auto px-4 max-sm:px-2 pb-6 max-sm:pb-3">
-                      <div className="rounded-2xl bg-black/20 backdrop-blur-2xl shadow-2xl pointer-events-auto overflow-hidden border border-white/[0.06] relative">
+                      <div className="rounded-2xl bg-black/20 backdrop-blur-lg shadow-2xl pointer-events-auto overflow-hidden border border-white/[0.06] relative">
                         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
                         <div className="px-5 max-sm:px-3 pt-4 pb-3 relative z-10">
                           <form onSubmit={handleSubmit}>
@@ -1556,7 +1485,7 @@ Brief: ${jdBrief}`
                                   <button
                                     type="button"
                                     onClick={() => setShowResume(true)}
-                                    className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-2xl border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 hover:scale-110 transition-all"
+                                    className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 hover:scale-[1.04] transition-all"
                                     style={{ textShadow: "0 0 6px rgba(255,255,255,0.25)" }}
                                   >
                                     + resume
@@ -1565,7 +1494,7 @@ Brief: ${jdBrief}`
                                   <button
                                     type="button"
                                     onClick={() => { setShowResume(false); setResumeText("") }}
-                                    className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-2xl border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 hover:scale-110 transition-all flex items-center gap-1"
+                                    className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 hover:scale-[1.04] transition-all flex items-center gap-1"
                                     style={{ textShadow: "0 0 6px rgba(255,255,255,0.25)" }}
                                   >
                                     <X size={12} /> resume
@@ -1574,7 +1503,7 @@ Brief: ${jdBrief}`
                                 <button
                                   type="button"
                                   onClick={loadSample}
-                                  className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-2xl border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 hover:scale-110 transition-all"
+                                  className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 hover:scale-[1.04] transition-all"
                                   style={{ textShadow: "0 0 6px rgba(255,255,255,0.25)" }}
                                 >
                                   sample
@@ -1583,7 +1512,7 @@ Brief: ${jdBrief}`
                               <button
                                 type="submit"
                                 disabled={loading}
-                                className="bg-white text-black hover:bg-zinc-200 hover:scale-110 font-semibold rounded-lg px-6 max-sm:px-4 py-2.5 text-sm max-sm:text-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 max-sm:w-full max-sm:justify-center"
+                                className="bg-white text-black hover:bg-zinc-200 hover:scale-[1.04] font-semibold rounded-lg px-6 max-sm:px-4 py-2.5 text-sm max-sm:text-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 max-sm:w-full max-sm:justify-center"
                               >
                                 {loading ? <><Loader2 size={16} className="animate-spin" /> Decoding</> : "Decode \u2192"}
                               </button>
