@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Clock, ChevronDownIcon } from "lucide-react"
 
 const PROVIDERS = {
@@ -378,32 +378,46 @@ function Navbar() {
   )
 }
 
-function HeroSection({ onGetStarted }) {
-  const mainRef = useRef(null)
+function HeroSection({ onGetStarted, scrollY }) {
+  const vh = typeof window !== "undefined" ? window.innerHeight : 720
+
+  const contentOpacity = useTransform(scrollY, [0, vh * 0.8], [1, 0])
+  const contentY = useTransform(scrollY, [0, vh * 0.8], [0, -120])
+  const contentScale = useTransform(scrollY, [0, vh * 0.8], [1, 0.95])
+  const blobScale = useTransform(scrollY, [0, vh * 0.5], [1, 2.5])
+  const blobOpacity = useTransform(scrollY, [0, vh * 0.8], [0.4, 0])
+  const gridOpacity = useTransform(scrollY, [0, vh * 0.3], [0.03, 0])
+  const chevronOpacity = useTransform(scrollY, [0, vh * 0.3], [1, 0])
+  const glowOpacity = useTransform(scrollY, [vh * 0.3, vh * 0.9], [0, 1])
 
   return (
     <section
-      ref={mainRef}
       className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden"
       style={{ background: "#000" }}
     >
       <div className="absolute inset-0 overflow-hidden">
-        <div
-          className="absolute -inset-40 opacity-40 animate-blob"
+        <motion.div
+          className="absolute -inset-40"
           style={{
-            background: "radial-gradient(ellipse at 20% 40%, rgba(255,0,100,0.2), transparent 60%), radial-gradient(ellipse at 80% 30%, rgba(100,0,255,0.2), transparent 60%), radial-gradient(ellipse at 50% 70%, rgba(0,150,255,0.15), transparent 60%)",
+            opacity: blobOpacity,
+            scale: blobScale,
+            background: "radial-gradient(ellipse at 20% 40%, rgba(255,0,100,0.25), transparent 60%), radial-gradient(ellipse at 80% 30%, rgba(100,0,255,0.25), transparent 60%), radial-gradient(ellipse at 50% 70%, rgba(0,150,255,0.2), transparent 60%)",
           }}
         />
-        <div
-          className="absolute inset-0 opacity-[0.03]"
+        <motion.div
+          className="absolute inset-0"
           style={{
+            opacity: gridOpacity,
             backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
             backgroundSize: "60px 60px",
           }}
         />
       </div>
 
-      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+      <motion.div
+        className="relative z-10 text-center px-6 max-w-4xl mx-auto"
+        style={{ opacity: contentOpacity, y: contentY, scale: contentScale }}
+      >
         <motion.p
           className="text-xs uppercase tracking-[0.3em] mb-6"
           style={{ color: "#666", fontFamily: '"IBM Plex Mono", monospace' }}
@@ -461,16 +475,27 @@ function HeroSection({ onGetStarted }) {
             transition={{ duration: 0.3 }}
           />
         </motion.button>
-      </div>
+      </motion.div>
 
       <motion.div
         className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        style={{ opacity: chevronOpacity }}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 2.0, repeat: Infinity, repeatType: "reverse" }}
       >
         <ChevronDown size={20} style={{ color: "#555" }} />
       </motion.div>
+
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 h-72 pointer-events-none z-20"
+        style={{
+          opacity: glowOpacity,
+          background: "linear-gradient(to top, rgba(255,0,100,0.3), rgba(100,0,255,0.2), rgba(0,150,255,0.08), transparent)",
+          filter: "blur(50px)",
+          transform: "translate3d(0, 0, 0)",
+        }}
+      />
     </section>
   )
 }
@@ -505,6 +530,11 @@ export default function App() {
     catch { return [] }
   })
   const [copied, setCopied] = useState(false)
+
+  const { scrollY } = useScroll()
+  const vh = typeof window !== "undefined" ? window.innerHeight : 720
+  const mainOpacity = useTransform(scrollY, [vh * 0.4, vh * 1.0], [0, 1])
+  const mainY = useTransform(scrollY, [vh * 0.4, vh * 1.0], [50, 0])
 
   const resultsRef = useRef(null)
   const jdTextareaRef = useRef(null)
@@ -833,9 +863,17 @@ Brief: ${jdBrief}`
             style={{ background: "#000" }}
           >
             <Navbar />
-            <HeroSection onGetStarted={getStarted} />
+            <HeroSection onGetStarted={getStarted} scrollY={scrollY} />
 
-            <div ref={mainAppRef} className="relative" style={{ background: "#000" }}>
+            <motion.div
+              ref={mainAppRef}
+              className="relative"
+              style={{
+                background: "#000",
+                opacity: mainOpacity,
+                y: mainY,
+              }}
+            >
               <div className="min-h-screen text-white flex flex-col relative"
                 style={{
                   backgroundImage: "url(/bg.jpg)",
@@ -1467,7 +1505,7 @@ Brief: ${jdBrief}`
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
