@@ -17,8 +17,17 @@ app.post("/api/proxy", async (req, res) => {
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
-    res.status(response.ok ? 200 : response.status).json(data);
+    const contentType = response.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      const data = await response.json();
+      res.status(response.ok ? 200 : response.status).json(data);
+    } else {
+      const text = await response.text();
+      res.status(response.ok ? 200 : response.status).json({
+        error: text || `API returned non-JSON response (status ${response.status})`,
+      });
+    }
   } catch (error: any) {
     res.status(500).json({ error: error.message || "Proxy failed" });
   }
