@@ -158,7 +158,36 @@ function Bar({ label, score }) {
 
 const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || "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"
 
+function Blob({ color, size, delay, duration, x, y }) {
+  return (
+    <motion.div
+      className="absolute rounded-full blur-3xl opacity-30 pointer-events-none"
+      style={{
+        width: size,
+        height: size,
+        background: color,
+        left: `${x}%`,
+        top: `${y}%`,
+        transform: "translate(-50%, -50%)",
+      }}
+      animate={{
+        x: [0, 30, -20, 10, 0],
+        y: [0, -20, 30, -10, 0],
+        scale: [1, 1.2, 0.9, 1.1, 1],
+      }}
+      transition={{
+        duration,
+        delay,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    />
+  )
+}
+
 export default function App() {
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 })
+  const heroRef = useRef(null)
   const [apiKey, setApiKey] = useState(DEFAULT_KEY)
   const [provider, setProvider] = useState("nvidia")
   const [model, setModel] = useState(PROVIDERS.nvidia.defaultModel)
@@ -759,11 +788,46 @@ Brief: ${jdBrief}`
           </AnimatePresence>
         </div>
 
-        <header className="pt-8 max-sm:pt-14 pb-4 px-4">
-        <div className="max-w-lg mx-auto rounded-2xl bg-black/20 backdrop-blur-2xl shadow-2xl px-6 max-sm:px-4 py-5 max-sm:py-3 border border-white/[0.06] relative overflow-hidden">
+      <header className="pt-8 max-sm:pt-14 pb-4 px-4 relative">
+        <div
+          ref={heroRef}
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect()
+            const x = ((e.clientX - rect.left) / rect.width) * 100
+            const y = ((e.clientY - rect.top) / rect.height) * 100
+            setMousePos({ x, y })
+          }}
+          onMouseLeave={() => setMousePos({ x: 50, y: 50 })}
+          className="max-w-lg mx-auto rounded-2xl bg-black/20 backdrop-blur-2xl shadow-2xl px-6 max-sm:px-4 py-8 max-sm:py-5 border border-white/[0.06] relative overflow-hidden"
+        >
           <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
-          <h1 className="text-center text-4xl max-sm:text-2xl font-bold tracking-tight mb-1 text-white relative z-10">Job Description Decoder</h1>
-          <p className="text-center text-zinc-400 text-base max-sm:text-sm">Paste any job description. Get the honest truth.</p>
+          <Blob color="linear-gradient(135deg, #ff0064, #6400ff)" size="200px" delay={0} duration={8} x={20} y={50} />
+          <Blob color="linear-gradient(135deg, #0096ff, #6400ff)" size="160px" delay={2} duration={10} x={80} y={30} />
+          <Blob color="linear-gradient(135deg, #ff0064, #0096ff)" size="180px" delay={4} duration={9} x={50} y={80} />
+          <div className="relative z-10">
+            <motion.h1
+              className="text-center text-4xl max-sm:text-2xl font-bold tracking-tight mb-2 text-white"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              Job Description Decoder
+            </motion.h1>
+            <motion.p
+              className="text-center text-zinc-400 text-base max-sm:text-sm"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+            >
+              Paste any job description. Get the honest truth.
+            </motion.p>
+          </div>
+          <div
+            className="absolute inset-0 pointer-events-none transition-all duration-150 ease-out"
+            style={{
+              background: `radial-gradient(600px circle at ${mousePos.x}% ${mousePos.y}%, rgba(255,255,255,0.08), transparent 60%)`,
+            }}
+          />
         </div>
       </header>
 
