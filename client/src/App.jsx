@@ -397,14 +397,14 @@ function Loader() {
   )
 }
 
-const bgParticles = Array.from({ length: 20 }, (_, i) => ({
+const bgParticles = Array.from({ length: 60 }, (_, i) => ({
   id: i,
   x: Math.random() * 100,
   y: Math.random() * 100,
-  size: Math.random() * 3 + 1,
-  duration: Math.random() * 15 + 12,
-  delay: Math.random() * 12,
-  opacity: Math.random() * 0.25 + 0.08,
+  size: Math.random() * 4 + 1,
+  duration: (Math.random() * 6 + 5).toFixed(1),
+  delay: (Math.random() * 8).toFixed(1),
+  opacity: (Math.random() * 0.35 + 0.1).toFixed(2),
   color: ["#fff", "#ff0064", "#6400ff", "#0096ff", "#ff00c8"][Math.floor(Math.random() * 5)],
 }))
 
@@ -418,16 +418,16 @@ function BgLayers({ blobOpacity, blobScale, gridOpacity, mousePos }) {
           scale: blobScale ?? 1,
           x: mousePos ? (mousePos.x - 0.5) * -30 : 0,
           y: mousePos ? (mousePos.y - 0.5) * -30 : 0,
+          transform: "translateZ(0)",
           background: "radial-gradient(ellipse at 20% 40%, rgba(255,0,100,0.2), transparent 60%), radial-gradient(ellipse at 80% 30%, rgba(100,0,255,0.2), transparent 60%), radial-gradient(ellipse at 50% 70%, rgba(0,150,255,0.15), transparent 60%)",
         }}
       />
-      <motion.div
-        className="absolute inset-0"
-        animate={{ scale: [1, 1.1, 1], rotate: [0, 2, -2, 0] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      <div
+        className="absolute inset-0 animate-blob-breathe"
         style={{
-          background: "radial-gradient(ellipse at 70% 20%, rgba(255,0,200,0.08), transparent 50%), radial-gradient(ellipse at 30% 80%, rgba(0,100,255,0.08), transparent 50%)",
+          background: "radial-gradient(ellipse at 70% 20%, rgba(255,0,200,0.1), transparent 50%), radial-gradient(ellipse at 30% 80%, rgba(0,100,255,0.1), transparent 50%)",
           filter: "blur(80px)",
+          transform: "translateZ(0)",
         }}
       />
       <motion.div
@@ -438,8 +438,39 @@ function BgLayers({ blobOpacity, blobScale, gridOpacity, mousePos }) {
           backgroundSize: "60px 60px",
         }}
       />
+      {/* Orbiting accent ring */}
+      <div
+        className="absolute rounded-full pointer-events-none"
+        style={{
+          width: "40vmin",
+          height: "40vmin",
+          top: "50%",
+          left: "50%",
+          marginTop: "-20vmin",
+          marginLeft: "-20vmin",
+          border: "1px solid rgba(255,0,100,0.08)",
+          animation: "ring-pulse 4s ease-in-out infinite",
+          transform: "translateZ(0)",
+        }}
+      >
+        <div
+          className="absolute rounded-full"
+          style={{
+            width: 8,
+            height: 8,
+            top: -4,
+            left: "50%",
+            marginLeft: -4,
+            background: "#ff0064",
+            boxShadow: "0 0 12px #ff0064, 0 0 30px #ff0064",
+            animation: "orbit 8s linear infinite",
+            transform: "translateZ(0)",
+          }}
+        />
+      </div>
+      {/* Particles using GPU-composited CSS animations */}
       {bgParticles.map((p) => (
-        <motion.div
+        <div
           key={p.id}
           className="absolute rounded-full pointer-events-none"
           style={{
@@ -448,19 +479,11 @@ function BgLayers({ blobOpacity, blobScale, gridOpacity, mousePos }) {
             width: p.size,
             height: p.size,
             background: p.color,
+            boxShadow: `0 0 ${p.size * 5}px ${p.color}, 0 0 ${p.size * 12}px ${p.color}`,
             opacity: p.opacity,
-            boxShadow: `0 0 ${p.size * 4}px ${p.color}`,
-            willChange: "transform, opacity",
-          }}
-          animate={{
-            y: [0, -30, 0],
-            opacity: [p.opacity, p.opacity * 2, p.opacity],
-          }}
-          transition={{
-            duration: p.duration,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: "easeInOut",
+            "--p-opacity": p.opacity,
+            animation: `particle-float ${p.duration}s ease-in-out ${p.delay}s infinite, particle-glow ${(parseFloat(p.duration) * 0.7).toFixed(1)}s ease-in-out ${p.delay}s infinite`,
+            transform: "translateZ(0)",
           }}
         />
       ))}
