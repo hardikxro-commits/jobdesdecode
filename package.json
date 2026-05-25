@@ -2,6 +2,11 @@
   "name": "jd-decoder",
   "private": true,
   "scripts": {
-    "build": "cd client && npm ci && npm run build -- --base=/"
+    "build": "cd client && npm ci && npm run build -- --base=/",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^4.94.0"
   }
 }
