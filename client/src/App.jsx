@@ -197,15 +197,9 @@ function Loader() {
     const tick = () => {
       const elapsed = performance.now() - start
       const n = Math.min(elapsed / duration, 1)
-      let eased
-      if (n < 0.5) {
-        eased = Math.pow(2, 20 * n - 10) / 2
-      } else {
-        eased = (2 - Math.pow(2, -20 * n + 10)) / 2
-      }
       let pct
       if (n < 0.1) {
-        pct = (n / 0.1) * 6.67
+        pct = (100 * n / 1.5)
       } else if (n < 0.4) {
         pct = 6.67 + ((n - 0.1) / 0.3) * 35.33
       } else if (n < 0.85) {
@@ -213,7 +207,7 @@ function Loader() {
       } else {
         pct = 47 + ((n - 0.85) / 0.15) * 53
       }
-      setProgress(Math.min(Math.round(pct), 100))
+      setProgress(Math.min(Math.round(pct), 99))
       if (n < 1) {
         frame = requestAnimationFrame(tick)
       } else {
@@ -244,103 +238,225 @@ function Loader() {
     { char: "R", anim: "fromBottomOutLeft", delay: 5.4 },
   ]
 
+  const tickerChars = ["L", "O", "A", "D", "I", "N", "G"]
+
   if (!show) return null
 
   return (
-    <motion.div
-      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center"
-      style={{ background: "#000" }}
-      animate={{ opacity: progress === 100 ? 0 : 1 }}
-      transition={{ duration: 0.5, ease: "easeIn" }}
-    >
-      <div className="absolute inset-0 overflow-hidden">
-        <div
-          className="absolute -inset-40 opacity-30 animate-blob"
+    <>
+      {/* LOADING ticker clipper */}
+      <motion.div
+        className="loader-clipper"
+        style={{ width: "100vw", height: "100dvh", position: "fixed", zIndex: 99999, top: 0, left: 0 }}
+        initial={{ opacity: 1 }}
+        animate={{ opacity: progress === 100 ? 0 : 1 }}
+        transition={{ duration: 0.65, ease: "easeOut" }}
+      >
+        <motion.div
+          className="absolute inset-0"
           style={{
-            background: "radial-gradient(ellipse at 30% 50%, #ff0064, transparent 60%), radial-gradient(ellipse at 70% 30%, #6400ff, transparent 60%), radial-gradient(ellipse at 50% 70%, #0096ff, transparent 60%)",
+            background: "radial-gradient(ellipse at 30% 50%, rgba(255,0,100,0.08), transparent 60%), radial-gradient(ellipse at 70% 30%, rgba(100,0,255,0.08), transparent 60%)",
           }}
         />
-      </div>
+        <div className="vid_loader__wrapper">
+          <div className="vid_loader">
+            {tickerChars.map((ch, i) => (
+              <div key={i} className="video-loader-char">
+                <span style={{ opacity: 0, position: "absolute" }}>{ch}</span>
+                <div
+                  className="v-ticker-1"
+                  style={{
+                    animationDuration: `${10 + i * 4}s`,
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
+                  {Array.from({ length: 7 }).map((_, j) => (
+                    <span key={j} style={{ display: "block", lineHeight: 1 }}>
+                      {ch}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
 
-      <div className="relative z-10 flex flex-col items-center">
-        <div className="flex items-center justify-center mb-12">
-          {letters.map((l, i) => (
-            <span
-              key={i}
-              className={`loader-char ${l.anim} text-[clamp(64px,15vw,140px)] tracking-tight`}
-              style={{
-                animationDelay: `${l.delay}s`,
-                color: "#fff",
-                textShadow: "0 0 40px rgba(255,255,255,0.15)",
-                fontFamily: '"Segoe UI", system-ui, sans-serif',
-                fontWeight: 900,
-                marginLeft: l.char === "-" ? "0.15em" : "0",
-                marginRight: l.char === "-" ? "0.15em" : "0.03em",
-              }}
-            >
-              {l.char}
-            </span>
-          ))}
+      {/* Cube loader */}
+      <div
+        className="loader__wrapper"
+        style={{
+          height: "100dvh",
+          width: "100vw",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          zIndex: 1000,
+          mixBlendMode: "difference",
+        }}
+      >
+        <div
+          className="cube-wrapper"
+          style={{
+            alignItems: "center",
+            display: "flex",
+            height: "100%",
+            justifyContent: "center",
+            width: "100%",
+          }}
+        >
+          <div
+            className="loader-cube"
+            style={{
+              fontFamily: '"Sofia Sans Extra Condensed", "Saira Extra Condensed", Impact, sans-serif',
+              fontSize: "clamp(48px, 12vw, 100px)",
+              height: "clamp(48px, 12vw, 100px)",
+              width: "clamp(48px, 12vw, 100px)",
+              position: "relative",
+            }}
+          >
+            {letters.map((l, i) => (
+              <div
+                key={i}
+                className={`${l.anim} loader-char`}
+                style={{
+                  animationDelay: `${l.delay}s`,
+                  animationDuration: "1.2s",
+                  animationTimingFunction: "cubic-bezier(0.83, 0, 0.17, 1)",
+                }}
+              >
+                <span style={{ color: "#fff" }}>{l.char}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="flex items-center gap-1 mb-16" style={{ fontFamily: '"IBM Plex Mono", monospace' }}>
+        {/* Percentage */}
+        <motion.div
+          className="loader-perc__wrapper"
+          style={{
+            fontFamily: '"IBM Plex Mono", monospace',
+            fontSize: 12,
+            fontWeight: 900,
+            position: "absolute",
+            bottom: 80,
+            left: "50%",
+            transform: "translateX(-50%)",
+            display: "flex",
+            gap: 2,
+            overflow: "hidden",
+          }}
+          initial={{ transform: "translateX(-50%) translateY(100%)" }}
+          animate={{ transform: "translateX(-50%) translateY(0%)" }}
+          transition={{ duration: 2, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+        >
           <motion.span
-            className="text-[clamp(32px,8vw,72px)] font-light tracking-wider"
-            style={{ color: "#fff" }}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.5 }}
+            style={{ display: "inline-block", color: "#fff" }}
+            key={progress}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.15 }}
           >
             {progress}
           </motion.span>
-          <motion.span
-            className="text-[clamp(24px,5vw,48px)] font-light"
-            style={{ color: "#666" }}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.5 }}
-          >
-            %
-          </motion.span>
-        </div>
+          <span style={{ color: "#fff" }}>%</span>
+        </motion.div>
 
-        <div className="text-center">
-          <motion.p
-            className="text-[clamp(10px,1.2vw,14px)] uppercase tracking-[0.3em] mb-1"
-            style={{ color: "#555", fontFamily: '"IBM Plex Mono", monospace' }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 2.5 }}
+        {/* Poster text */}
+        <div
+          className="loader-poster__wrapper"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100dvh",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "20px",
+            fontFamily: '"IBM Plex Mono", monospace',
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#fff",
+            pointerEvents: "none",
+          }}
+        >
+          {/* Top */}
+          <div
+            className="poster-text"
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              width: "100%",
+              overflow: "hidden",
+              justifyContent: "space-between",
+            }}
           >
-            PASTE ANY JOB DESCRIPTION
-          </motion.p>
-          <motion.div
-            className="h-[2px] w-0 mx-auto mb-1"
-            style={{ background: "#c11012" }}
-            animate={{ width: progress === 100 ? "60px" : "0px" }}
-            transition={{ duration: 0.4 }}
-          />
-          <motion.p
-            className="text-[clamp(10px,1.2vw,14px)] uppercase tracking-[0.3em]"
-            style={{ color: "#555", fontFamily: '"IBM Plex Mono", monospace' }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 3.0 }}
+            <motion.span
+              style={{ display: "inline-block" }}
+              initial={{ transform: "translateY(100%)" }}
+              animate={{ transform: "translateY(0%)" }}
+              transition={{ duration: 2, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            >
+              AI-POWERED
+            </motion.span>
+            <motion.span
+              style={{ display: "inline-block" }}
+              initial={{ transform: "translateY(100%)" }}
+              animate={{ transform: "translateY(0%)" }}
+              transition={{ duration: 2, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              JOB ANALYSIS
+            </motion.span>
+            <motion.span
+              style={{ display: "inline-block" }}
+              initial={{ transform: "translateY(100%)" }}
+              animate={{ transform: "translateY(0%)" }}
+              transition={{ duration: 2, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            >
+              2026
+            </motion.span>
+          </div>
+
+          {/* Bottom */}
+          <div
+            className="poster-text"
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              width: "100%",
+              overflow: "hidden",
+              justifyContent: "space-between",
+            }}
           >
-            GET THE HONEST TRUTH
-          </motion.p>
-          <motion.p
-            className="text-[10px] uppercase tracking-[0.2em] mt-6"
-            style={{ color: "#333", fontFamily: '"IBM Plex Mono", monospace' }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 3.5 }}
-          >
-            JD DECODER © 2026
-          </motion.p>
+            <motion.span
+              style={{ display: "inline-block" }}
+              initial={{ transform: "translateY(100%)" }}
+              animate={{ transform: "translateY(0%)" }}
+              transition={{ duration: 2, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
+            >
+              PASTE ANY{" "}
+              <span style={{ color: "#ff0064" }}>JOB DESCRIPTION</span>
+            </motion.span>
+            <motion.span
+              style={{ display: "inline-block" }}
+              initial={{ transform: "translateY(100%)" }}
+              animate={{ transform: "translateY(0%)" }}
+              transition={{ duration: 2, delay: 0.75, ease: [0.16, 1, 0.3, 1] }}
+            >
+              @JD-DECODER
+            </motion.span>
+          </div>
         </div>
       </div>
-    </motion.div>
+    </>
   )
 }
 
