@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, memo, useCallback } from "react"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download } from "lucide-react"
 
@@ -64,7 +64,6 @@ const PROVIDERS = {
       model,
       max_tokens: 1500,
       messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
     }),
     extract: (data) => data.choices[0].message.content,
   },
@@ -131,7 +130,7 @@ Why Join Us:
 
 We are an equal opportunity employer and value diversity at our company. We encourage applications from all backgrounds.`
 
-function Bar({ label, score }) {
+const Bar = memo(function Bar({ label, score }) {
   let barColor = "bg-red-500"
   if (score >= 70) barColor = "bg-emerald-500"
   else if (score >= 40) barColor = "bg-yellow-500"
@@ -154,34 +153,54 @@ function Bar({ label, score }) {
       </div>
     </div>
   )
-}
+})
 
 const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || "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"
 
-function Blob({ color, size, delay, duration, x, y }) {
+function useInView({ once = true, margin = "-60px" } = {}) {
+  const ref = useRef(null)
+  const [inView, setInView] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true)
+          if (once) observer.unobserve(el)
+        } else if (!once) {
+          setInView(false)
+        }
+      },
+      { rootMargin: margin, threshold: 0 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  return [ref, inView]
+}
+
+function RevealSection({ children, delay = 0, className = "" }) {
+  const [ref, inView] = useInView({ margin: "-60px" })
   return (
-    <motion.div
-      className="absolute rounded-full blur-3xl opacity-30 pointer-events-none"
-      style={{
-        width: size,
-        height: size,
-        background: color,
-        left: `${x}%`,
-        top: `${y}%`,
-        transform: "translate(-50%, -50%)",
-      }}
-      animate={{
-        x: [0, 30, -20, 10, 0],
-        y: [0, -20, 30, -10, 0],
-        scale: [1, 1.2, 0.9, 1.1, 1],
-      }}
-      transition={{
-        duration,
-        delay,
-        repeat: Infinity,
-        ease: "easeInOut",
-      }}
-    />
+    <div
+      ref={ref}
+      className={`reveal-section ${inView ? "in-view" : ""} ${className}`}
+      style={{ "--reveal-delay": `${delay}s` }}
+    >
+      {children}
+    </div>
+  )
+}
+
+function RevealHeading({ children, className = "" }) {
+  const [ref, inView] = useInView({ margin: "-30px" })
+  return (
+    <div ref={ref} className={`reveal-heading ${inView ? "in-view" : ""} ${className}`}>
+      {children}
+    </div>
   )
 }
 
@@ -249,29 +268,24 @@ function Loader() {
       animate={{ opacity: progress === 100 ? 0 : 1 }}
       transition={{ duration: 0.8, ease: [0.87, 0, 0.13, 1] }}
     >
-      {/* Animated background blobs */}
       <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute -inset-40"
-          animate={{ scale: [1, 1.2, 1], rotate: [0, 5, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        <div
+          className="absolute -inset-40 animate-loader-blob gpu"
           style={{
             background: "radial-gradient(ellipse at 25% 35%, rgba(255,0,100,0.12), transparent 60%), radial-gradient(ellipse at 75% 65%, rgba(100,0,255,0.12), transparent 60%), radial-gradient(ellipse at 50% 50%, rgba(0,150,255,0.08), transparent 60%)",
             filter: "blur(60px)",
           }}
         />
-        <motion.div
+        <div
           className="absolute inset-0 opacity-[0.04]"
-          animate={{ backgroundPosition: ["0px 0px", "60px 60px"] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           style={{
             backgroundImage: "linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)",
             backgroundSize: "60px 60px",
+            animation: "grid-scroll 20s linear infinite",
           }}
         />
       </div>
 
-      {/* Top poster text */}
       <div
         className="absolute top-6 left-0 right-0 flex justify-between px-6 z-10 overflow-hidden"
         style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, fontWeight: 500, color: "#666" }}
@@ -299,7 +313,6 @@ function Loader() {
         </motion.span>
       </div>
 
-      {/* LOADING text */}
       <motion.div
         className="z-10 mb-8"
         initial={{ opacity: 0, y: 10 }}
@@ -318,7 +331,6 @@ function Loader() {
         </span>
       </motion.div>
 
-      {/* Cube letters */}
       <div className="relative z-10 flex items-center justify-center" style={{ fontFamily: '"Sofia Sans Extra Condensed", "Saira Extra Condensed", Impact, sans-serif', fontSize: "clamp(56px, 14vw, 130px)", lineHeight: 1, gap: "0.04em" }}>
         {letters.map((l, i) => (
           <span
@@ -338,7 +350,6 @@ function Loader() {
         ))}
       </div>
 
-      {/* Percentage */}
       <motion.div
         className="relative z-10 mt-12 flex items-start gap-1 overflow-hidden"
         style={{ fontFamily: '"IBM Plex Mono", monospace' }}
@@ -364,7 +375,6 @@ function Loader() {
         </span>
       </motion.div>
 
-      {/* Bottom poster text */}
       <div
         className="absolute bottom-6 left-0 right-0 flex justify-between px-6 z-10 overflow-hidden"
         style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, fontWeight: 500, color: "#666" }}
@@ -385,7 +395,6 @@ function Loader() {
         </motion.span>
       </div>
 
-      {/* Bottom progress bar */}
       <motion.div
         className="absolute bottom-0 left-0 right-0 h-[2px] z-10"
         style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff)", transformOrigin: "left" }}
@@ -408,26 +417,52 @@ const bgParticles = Array.from({ length: 60 }, (_, i) => ({
   color: ["#fff", "#ff0064", "#6400ff", "#0096ff", "#ff00c8"][Math.floor(Math.random() * 5)],
 }))
 
-function BgLayers({ blobOpacity, blobScale, gridOpacity, mousePos }) {
+const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity }) {
+  const parallaxRef = useRef(null)
+
+  useEffect(() => {
+    const el = parallaxRef.current
+    if (!el) return
+    let raf = null
+    const handler = (e) => {
+      if (!raf) {
+        raf = requestAnimationFrame(() => {
+          raf = null
+          el.style.transform = `translate3d(${(e.clientX / window.innerWidth - 0.5) * -20}px, ${(e.clientY / window.innerHeight - 0.5) * -20}px, 0)`
+        })
+      }
+    }
+    window.addEventListener("mousemove", handler, { passive: true })
+    return () => {
+      window.removeEventListener("mousemove", handler)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [])
+
   return (
-    <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <motion.div
-        className="absolute -inset-40"
+        className="absolute -inset-40 gpu"
         style={{
           opacity: blobOpacity ?? 1,
           scale: blobScale ?? 1,
-          x: mousePos ? (mousePos.x - 0.5) * -30 : 0,
-          y: mousePos ? (mousePos.y - 0.5) * -30 : 0,
-          transform: "translateZ(0)",
           background: "radial-gradient(ellipse at 20% 40%, rgba(255,0,100,0.2), transparent 60%), radial-gradient(ellipse at 80% 30%, rgba(100,0,255,0.2), transparent 60%), radial-gradient(ellipse at 50% 70%, rgba(0,150,255,0.15), transparent 60%)",
         }}
       />
       <div
-        className="absolute inset-0 animate-blob-breathe"
+        ref={parallaxRef}
+        className="absolute -inset-40 gpu"
+        style={{
+          background: "radial-gradient(ellipse at 50% 50%, rgba(255,0,100,0.06), transparent 60%), radial-gradient(ellipse at 50% 50%, rgba(100,0,255,0.06), transparent 60%)",
+          filter: "blur(60px)",
+          opacity: 0.5,
+        }}
+      />
+      <div
+        className="absolute inset-0 animate-blob-breathe gpu"
         style={{
           background: "radial-gradient(ellipse at 70% 20%, rgba(255,0,200,0.1), transparent 50%), radial-gradient(ellipse at 30% 80%, rgba(0,100,255,0.1), transparent 50%)",
           filter: "blur(80px)",
-          transform: "translateZ(0)",
         }}
       />
       <motion.div
@@ -438,9 +473,8 @@ function BgLayers({ blobOpacity, blobScale, gridOpacity, mousePos }) {
           backgroundSize: "60px 60px",
         }}
       />
-      {/* Orbiting accent ring */}
       <div
-        className="absolute rounded-full pointer-events-none"
+        className="absolute rounded-full"
         style={{
           width: "40vmin",
           height: "40vmin",
@@ -468,11 +502,10 @@ function BgLayers({ blobOpacity, blobScale, gridOpacity, mousePos }) {
           }}
         />
       </div>
-      {/* Particles using GPU-composited CSS animations */}
       {bgParticles.map((p) => (
         <div
           key={p.id}
-          className="absolute rounded-full pointer-events-none"
+          className="absolute rounded-full gpu"
           style={{
             left: `${p.x}%`,
             top: `${p.y}%`,
@@ -483,48 +516,17 @@ function BgLayers({ blobOpacity, blobScale, gridOpacity, mousePos }) {
             opacity: p.opacity,
             "--p-opacity": p.opacity,
             animation: `particle-float ${p.duration}s ease-in-out ${p.delay}s infinite, particle-glow ${(parseFloat(p.duration) * 0.7).toFixed(1)}s ease-in-out ${p.delay}s infinite`,
-            transform: "translateZ(0)",
           }}
         />
       ))}
-      <div className="absolute inset-0 pointer-events-none" style={{
+      <div className="absolute inset-0" style={{
         background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%)",
       }} />
     </div>
   )
-}
+})
 
-function RevealSection({ children, delay = 0, className = "" }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 120, scale: 0.9, skewX: -5 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1, skewX: 0 }}
-      viewport={{ margin: "-60px", once: true }}
-      transition={{ duration: 0.8, delay, ease: [0.33, 1, 0.68, 1] }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  )
-}
-
-function RevealHeading({ children, className = "" }) {
-  return (
-    <div className={`overflow-hidden ${className}`}>
-      <motion.h3
-        initial={{ y: "100%", skewX: -8 }}
-        whileInView={{ y: 0, skewX: 0 }}
-        viewport={{ once: true, margin: "-30px" }}
-        transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
-        className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-3 flex items-center gap-2"
-      >
-        {children}
-      </motion.h3>
-    </div>
-  )
-}
-
-function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle }) {
+const Navbar = memo(function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle }) {
   return (
     <motion.nav
       className="fixed top-0 left-0 right-0 z-50"
@@ -573,20 +575,10 @@ function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle }) {
       </div>
     </motion.nav>
   )
-}
+})
 
 function HeroSection({ onGetStarted, scrollY }) {
   const vh = typeof window !== "undefined" ? window.innerHeight : 720
-  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
-
-  useEffect(() => {
-    const handleMouse = (e) => {
-      setMousePos({ x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight })
-    }
-    window.addEventListener("mousemove", handleMouse)
-    return () => window.removeEventListener("mousemove", handleMouse)
-  }, [])
-
   const contentOpacity = useTransform(scrollY, [0, vh * 0.8], [1, 0])
   const contentY = useTransform(scrollY, [0, vh * 0.8], [0, -120])
   const contentScale = useTransform(scrollY, [0, vh * 0.8], [1, 0.95])
@@ -601,14 +593,12 @@ function HeroSection({ onGetStarted, scrollY }) {
       className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden"
       style={{ background: "#000" }}
     >
-      <BgLayers blobOpacity={blobOpacity} blobScale={blobScale} gridOpacity={gridOpacity} mousePos={mousePos} />
+      <BgLayers blobOpacity={blobOpacity} blobScale={blobScale} gridOpacity={gridOpacity} />
 
-      {/* Content */}
       <motion.div
         className="relative z-10 text-center px-6 max-w-4xl mx-auto"
         style={{ opacity: contentOpacity, y: contentY, scale: contentScale }}
       >
-        {/* Subheading */}
         <motion.p
           className="text-xs uppercase tracking-[0.3em] mb-6"
           style={{ color: "#666", fontFamily: '"IBM Plex Mono", monospace' }}
@@ -616,16 +606,9 @@ function HeroSection({ onGetStarted, scrollY }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
         >
-          <motion.span
-            animate={{ opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          >
-            AI-POWERED
-          </motion.span>{" "}
-          JOB ANALYSIS
+          <span className="animate-text-pulse">AI-POWERED</span> JOB ANALYSIS
         </motion.p>
 
-        {/* Heading */}
         <motion.h1
           className="text-[clamp(36px,8vw,96px)] font-black tracking-tight leading-[0.9] mb-6"
           style={{ color: "#fff", fontFamily: '"Segoe UI", system-ui, sans-serif', fontWeight: 900 }}
@@ -635,22 +618,19 @@ function HeroSection({ onGetStarted, scrollY }) {
         >
           DECODE YOUR
           <br />
-          <motion.span
-            animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+          <span
+            className="animate-gradient-slide"
             style={{
               background: "linear-gradient(135deg, #ff0064, #6400ff, #0096ff, #ff0064)",
-              backgroundSize: "300% 100%",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               display: "inline-block",
             }}
           >
             NEXT MOVE
-          </motion.span>
+          </span>
         </motion.h1>
 
-        {/* Description */}
         <motion.p
           className="text-base max-sm:text-sm leading-relaxed max-w-md mx-auto mb-12"
           style={{ color: "#666" }}
@@ -661,15 +641,9 @@ function HeroSection({ onGetStarted, scrollY }) {
           Paste any job description. Our AI cuts through the corporate fluff and tells you what the job is really about.
         </motion.p>
 
-        {/* CTA with glow ring */}
         <div className="relative inline-flex items-center justify-center">
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.4, 0.1, 0.4],
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          <div
+            className="absolute inset-0 rounded-full animate-cta-glow"
             style={{
               background: "radial-gradient(circle at center, rgba(255,0,100,0.3), rgba(100,0,255,0.15), transparent 70%)",
               filter: "blur(30px)",
@@ -697,21 +671,18 @@ function HeroSection({ onGetStarted, scrollY }) {
         </div>
       </motion.div>
 
-      {/* Scroll indicator */}
       <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2"
         style={{ opacity: chevronOpacity }}
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 2.0, repeat: Infinity, repeatType: "reverse" }}
       >
-        <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "#444", fontFamily: '"IBM Plex Mono", monospace' }}>
-          Scroll
-        </span>
-        <ChevronDown size={20} style={{ color: "#555" }} />
+        <div className="flex flex-col items-center gap-2 animate-chevron">
+          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "#444", fontFamily: '"IBM Plex Mono", monospace' }}>
+            Scroll
+          </span>
+          <ChevronDown size={20} style={{ color: "#555" }} />
+        </div>
       </motion.div>
 
-      {/* Transition glow */}
       <motion.div
         className="absolute bottom-0 left-0 right-0 h-72 pointer-events-none z-20"
         style={{
@@ -728,7 +699,6 @@ function HeroSection({ onGetStarted, scrollY }) {
 export default function App() {
   const [showContent, setShowContent] = useState(false)
   const mainAppRef = useRef(null)
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 })
   const [apiKey, setApiKey] = useState(DEFAULT_KEY)
   const [provider, setProvider] = useState("nvidia")
   const [model, setModel] = useState(PROVIDERS.nvidia.defaultModel)
@@ -1067,9 +1037,9 @@ Brief: ${jdBrief}`
     URL.revokeObjectURL(url)
   }
 
-  const getStarted = () => {
+  const getStarted = useCallback(() => {
     mainAppRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+  }, [])
 
   return (
     <>
@@ -1136,7 +1106,7 @@ Brief: ${jdBrief}`
                           {chatLoading && (
                             <div className="flex justify-start">
                               <div className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-                                <Loader2 size={14} className="animate-spin text-zinc-400" />
+                                <Loader2 size={14} className="animate-spin" />
                               </div>
                             </div>
                           )}
@@ -1223,8 +1193,6 @@ Brief: ${jdBrief}`
                       )}
                     </AnimatePresence>
 
-
-
                     <AnimatePresence>
                       {showHistory && (
                         <motion.div
@@ -1303,7 +1271,7 @@ Brief: ${jdBrief}`
                               <Download size={12} /> Export JSON
                             </button>
                           </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
                             <h2 className="text-2xl max-sm:text-xl font-bold mb-2">{result.role_summary.title}</h2>
                             <div className="flex gap-2 mb-3">
                               <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
@@ -1315,7 +1283,7 @@ Brief: ${jdBrief}`
                             </div>
                             <p className="text-zinc-400">{result.role_summary.one_liner}</p>
                           </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
                             <RevealHeading>Real requirements</RevealHeading>
                             {result.real_requirements && result.real_requirements.length > 0 ? (
                               <div className="flex flex-wrap gap-2">
@@ -1338,7 +1306,7 @@ Brief: ${jdBrief}`
                               <p className="text-zinc-500 text-sm italic">None found</p>
                             )}
                           </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
                             <RevealHeading><TriangleAlert size={16} className="text-red-400" /> Red Flags</RevealHeading>
                             {result.red_flags && result.red_flags.length > 0 ? (
                               <div className="space-y-3">
@@ -1364,7 +1332,7 @@ Brief: ${jdBrief}`
                               <p className="text-zinc-500 text-sm italic">None found</p>
                             )}
                           </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
                             <RevealHeading><CheckCircle size={16} className="text-emerald-400" /> Green Flags</RevealHeading>
                             {result.green_flags && result.green_flags.length > 0 ? (
                               <div className="space-y-3">
@@ -1382,7 +1350,7 @@ Brief: ${jdBrief}`
                               <p className="text-zinc-500 text-sm italic">None found</p>
                             )}
                           </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
                             <RevealHeading>Clarity Scores</RevealHeading>
                             <Bar label="Responsibilities" score={result.clarity_scores.responsibilities} />
                             <Bar label="Success metrics" score={result.clarity_scores.success_metrics} />
@@ -1391,7 +1359,7 @@ Brief: ${jdBrief}`
                             <Bar label="Compensation" score={result.clarity_scores.compensation} />
                             <Bar label="Work-life balance" score={result.clarity_scores.work_life_balance} />
                           </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
                             <RevealHeading><MessageCircle size={16} className="text-zinc-400" /> Questions to ask</RevealHeading>
                             {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
                               <ol className="space-y-2">
@@ -1407,7 +1375,7 @@ Brief: ${jdBrief}`
                             )}
                           </RevealSection>
                           {result.resume_match && (
-                            <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                            <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
                               <RevealHeading>Resume Match</RevealHeading>
                               <div className="text-center mb-6">
                                 <span className={`text-5xl font-bold ${
@@ -1457,7 +1425,7 @@ Brief: ${jdBrief}`
                               </div>
                             </RevealSection>
                           )}
-                          <RevealSection className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900">
+                          <RevealSection className="content-visibility-auto rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900">
                             <RevealHeading>Verdict</RevealHeading>
                             <p className="text-lg leading-relaxed text-zinc-100 mb-4">{result.verdict.summary}</p>
                             <div className="mb-4">
