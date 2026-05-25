@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Clock, ChevronDownIcon } from "lucide-react"
 
@@ -191,27 +191,29 @@ function Loader() {
 
   useEffect(() => {
     const start = performance.now()
-    const duration = 3700
+    const duration = 5000
     let frame
 
     const tick = () => {
       const elapsed = performance.now() - start
       const n = Math.min(elapsed / duration, 1)
       let pct
-      if (n < 0.1) {
-        pct = (100 * n / 1.5)
-      } else if (n < 0.4) {
-        pct = 6.67 + ((n - 0.1) / 0.3) * 35.33
-      } else if (n < 0.85) {
-        pct = 42 + ((n - 0.4) / 0.45) * 5
+      if (n < 0.08) {
+        pct = (n / 0.08) * 4
+      } else if (n < 0.3) {
+        pct = 4 + ((n - 0.08) / 0.22) * 26
+      } else if (n < 0.7) {
+        pct = 30 + ((n - 0.3) / 0.4) * 30
+      } else if (n < 0.92) {
+        pct = 60 + ((n - 0.7) / 0.22) * 35
       } else {
-        pct = 47 + ((n - 0.85) / 0.15) * 53
+        pct = 95 + ((n - 0.92) / 0.08) * 5
       }
       setProgress(Math.min(Math.round(pct), 99))
       if (n < 1) {
         frame = requestAnimationFrame(tick)
       } else {
-        setTimeout(() => setProgress(100), 500)
+        setTimeout(() => setProgress(100), 400)
       }
     }
 
@@ -221,246 +223,181 @@ function Loader() {
 
   useEffect(() => {
     if (progress === 100) {
-      setTimeout(() => setShow(false), 600)
+      setTimeout(() => setShow(false), 800)
     }
   }, [progress])
 
   const letters = [
-    { char: "J", anim: "firstChar", delay: 0 },
-    { char: "D", anim: "fromBottomOutRight", delay: 0.6 },
-    { char: "-", anim: "fromLeftOutTop", delay: 1.2 },
-    { char: "D", anim: "fromBottomOutLeft", delay: 1.8 },
-    { char: "E", anim: "fromRightOutTop", delay: 2.4 },
-    { char: "C", anim: "fromBottomOutLeft", delay: 3.0 },
-    { char: "O", anim: "fromRightOutTop", delay: 3.6 },
-    { char: "D", anim: "fromBottomOutRight", delay: 4.2 },
-    { char: "E", anim: "fromLeftOutTop", delay: 4.8 },
-    { char: "R", anim: "fromBottomOutLeft", delay: 5.4 },
+    { char: "J", anim: "firstChar", delay: 0.4 },
+    { char: "D", anim: "fromBottomOutRight", delay: 0.65 },
+    { char: "-", anim: "fromLeftOutTop", delay: 0.9 },
+    { char: "D", anim: "fromBottomOutLeft", delay: 1.15 },
+    { char: "E", anim: "fromRightOutTop", delay: 1.4 },
+    { char: "C", anim: "fromBottomOutLeft", delay: 1.65 },
+    { char: "O", anim: "fromRightOutTop", delay: 1.9 },
+    { char: "D", anim: "fromBottomOutRight", delay: 2.15 },
+    { char: "E", anim: "fromLeftOutTop", delay: 2.4 },
+    { char: "R", anim: "fromBottomOutLeft", delay: 2.65 },
   ]
-
-  const tickerChars = ["L", "O", "A", "D", "I", "N", "G"]
 
   if (!show) return null
 
   return (
-    <>
-      {/* LOADING ticker clipper */}
-      <motion.div
-        className="loader-clipper"
-        style={{ width: "100vw", height: "100dvh", position: "fixed", zIndex: 99999, top: 0, left: 0 }}
-        initial={{ opacity: 1 }}
-        animate={{ opacity: progress === 100 ? 0 : 1 }}
-        transition={{ duration: 0.65, ease: "easeOut" }}
-      >
+    <motion.div
+      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center overflow-hidden"
+      style={{ background: "#000" }}
+      animate={{ opacity: progress === 100 ? 0 : 1 }}
+      transition={{ duration: 0.8, ease: [0.87, 0, 0.13, 1] }}
+    >
+      {/* Animated background blobs */}
+      <div className="absolute inset-0 overflow-hidden">
         <motion.div
-          className="absolute inset-0"
+          className="absolute -inset-40"
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 5, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           style={{
-            background: "radial-gradient(ellipse at 30% 50%, rgba(255,0,100,0.08), transparent 60%), radial-gradient(ellipse at 70% 30%, rgba(100,0,255,0.08), transparent 60%)",
+            background: "radial-gradient(ellipse at 25% 35%, rgba(255,0,100,0.12), transparent 60%), radial-gradient(ellipse at 75% 65%, rgba(100,0,255,0.12), transparent 60%), radial-gradient(ellipse at 50% 50%, rgba(0,150,255,0.08), transparent 60%)",
+            filter: "blur(60px)",
           }}
         />
-        <div className="vid_loader__wrapper">
-          <div className="vid_loader">
-            {tickerChars.map((ch, i) => (
-              <div key={i} className="video-loader-char">
-                <span style={{ opacity: 0, position: "absolute" }}>{ch}</span>
-                <div
-                  className="v-ticker-1"
-                  style={{
-                    animationDuration: `${10 + i * 4}s`,
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  {Array.from({ length: 7 }).map((_, j) => (
-                    <span key={j} style={{ display: "block", lineHeight: 1 }}>
-                      {ch}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <motion.div
+          className="absolute inset-0 opacity-[0.04]"
+          animate={{ backgroundPosition: ["0px 0px", "60px 60px"] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          style={{
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+      </div>
+
+      {/* Top poster text */}
+      <div
+        className="absolute top-6 left-0 right-0 flex justify-between px-6 z-10 overflow-hidden"
+        style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, fontWeight: 500, color: "#666" }}
+      >
+        <motion.span
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        >
+          AI-POWERED
+        </motion.span>
+        <motion.span
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        >
+          JOB ANALYSIS
+        </motion.span>
+        <motion.span
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        >
+          2026
+        </motion.span>
+      </div>
+
+      {/* LOADING text */}
+      <motion.div
+        className="z-10 mb-8"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <span
+          className="tracking-[0.4em] text-xs uppercase"
+          style={{
+            fontFamily: '"Saira Extra Condensed", Impact, sans-serif',
+            fontSize: "clamp(14px, 2vw, 20px)",
+            color: "#555",
+          }}
+        >
+          LOADING
+        </span>
       </motion.div>
 
-      {/* Cube loader */}
-      <div
-        className="loader__wrapper"
-        style={{
-          height: "100dvh",
-          width: "100vw",
-          position: "fixed",
-          top: 0,
-          left: 0,
-          zIndex: 1000,
-          mixBlendMode: "difference",
-        }}
-      >
-        <div
-          className="cube-wrapper"
-          style={{
-            alignItems: "center",
-            display: "flex",
-            height: "100%",
-            justifyContent: "center",
-            width: "100%",
-          }}
-        >
-          <div
-            className="loader-cube"
+      {/* Cube letters */}
+      <div className="relative z-10 flex items-center justify-center" style={{ fontFamily: '"Sofia Sans Extra Condensed", "Saira Extra Condensed", Impact, sans-serif', fontSize: "clamp(56px, 14vw, 130px)", lineHeight: 1, gap: "0.04em" }}>
+        {letters.map((l, i) => (
+          <span
+            key={i}
+            className={`${l.anim} loader-char`}
             style={{
-              fontFamily: '"Sofia Sans Extra Condensed", "Saira Extra Condensed", Impact, sans-serif',
-              fontSize: "clamp(48px, 12vw, 100px)",
-              height: "clamp(48px, 12vw, 100px)",
-              width: "clamp(48px, 12vw, 100px)",
-              position: "relative",
+              animationDelay: `${l.delay}s`,
+              animationDuration: "0.9s",
+              animationTimingFunction: "cubic-bezier(0.83, 0, 0.17, 1)",
+              color: i === 2 ? "transparent" : "#fff",
+              textShadow: "0 0 80px rgba(255,255,255,0.08)",
+              width: i === 2 ? "0.3em" : "auto",
             }}
           >
-            {letters.map((l, i) => (
-              <div
-                key={i}
-                className={`${l.anim} loader-char`}
-                style={{
-                  animationDelay: `${l.delay}s`,
-                  animationDuration: "1.2s",
-                  animationTimingFunction: "cubic-bezier(0.83, 0, 0.17, 1)",
-                }}
-              >
-                <span style={{ color: "#fff" }}>{l.char}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Percentage */}
-        <motion.div
-          className="loader-perc__wrapper"
-          style={{
-            fontFamily: '"IBM Plex Mono", monospace',
-            fontSize: 12,
-            fontWeight: 900,
-            position: "absolute",
-            bottom: 80,
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            gap: 2,
-            overflow: "hidden",
-          }}
-          initial={{ transform: "translateX(-50%) translateY(100%)" }}
-          animate={{ transform: "translateX(-50%) translateY(0%)" }}
-          transition={{ duration: 2, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <motion.span
-            style={{ display: "inline-block", color: "#fff" }}
-            key={progress}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.15 }}
-          >
-            {progress}
-          </motion.span>
-          <span style={{ color: "#fff" }}>%</span>
-        </motion.div>
-
-        {/* Poster text */}
-        <div
-          className="loader-poster__wrapper"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100dvh",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "20px",
-            fontFamily: '"IBM Plex Mono", monospace',
-            fontSize: 12,
-            fontWeight: 500,
-            color: "#fff",
-            pointerEvents: "none",
-          }}
-        >
-          {/* Top */}
-          <div
-            className="poster-text"
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              width: "100%",
-              overflow: "hidden",
-              justifyContent: "space-between",
-            }}
-          >
-            <motion.span
-              style={{ display: "inline-block" }}
-              initial={{ transform: "translateY(100%)" }}
-              animate={{ transform: "translateY(0%)" }}
-              transition={{ duration: 2, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            >
-              AI-POWERED
-            </motion.span>
-            <motion.span
-              style={{ display: "inline-block" }}
-              initial={{ transform: "translateY(100%)" }}
-              animate={{ transform: "translateY(0%)" }}
-              transition={{ duration: 2, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            >
-              JOB ANALYSIS
-            </motion.span>
-            <motion.span
-              style={{ display: "inline-block" }}
-              initial={{ transform: "translateY(100%)" }}
-              animate={{ transform: "translateY(0%)" }}
-              transition={{ duration: 2, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            >
-              2026
-            </motion.span>
-          </div>
-
-          {/* Bottom */}
-          <div
-            className="poster-text"
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              width: "100%",
-              overflow: "hidden",
-              justifyContent: "space-between",
-            }}
-          >
-            <motion.span
-              style={{ display: "inline-block" }}
-              initial={{ transform: "translateY(100%)" }}
-              animate={{ transform: "translateY(0%)" }}
-              transition={{ duration: 2, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
-            >
-              PASTE ANY{" "}
-              <span style={{ color: "#ff0064" }}>JOB DESCRIPTION</span>
-            </motion.span>
-            <motion.span
-              style={{ display: "inline-block" }}
-              initial={{ transform: "translateY(100%)" }}
-              animate={{ transform: "translateY(0%)" }}
-              transition={{ duration: 2, delay: 0.75, ease: [0.16, 1, 0.3, 1] }}
-            >
-              @JD-DECODER
-            </motion.span>
-          </div>
-        </div>
+            {l.char}
+          </span>
+        ))}
       </div>
-    </>
+
+      {/* Percentage */}
+      <motion.div
+        className="relative z-10 mt-12 flex items-start gap-1 overflow-hidden"
+        style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+        initial={{ y: 30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <motion.span
+          className="text-[clamp(28px,6vw,56px)] font-light tracking-wider"
+          style={{ color: "#fff" }}
+          key={progress}
+          initial={{ y: 15, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.12 }}
+        >
+          {progress}
+        </motion.span>
+        <span
+          className="text-[clamp(18px,4vw,36px)] font-light"
+          style={{ color: "#555", marginTop: "0.1em" }}
+        >
+          %
+        </span>
+      </motion.div>
+
+      {/* Bottom poster text */}
+      <div
+        className="absolute bottom-6 left-0 right-0 flex justify-between px-6 z-10 overflow-hidden"
+        style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, fontWeight: 500, color: "#666" }}
+      >
+        <motion.span
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
+          PASTE ANY <span style={{ color: "#ff0064" }}>JOB DESCRIPTION</span>
+        </motion.span>
+        <motion.span
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          @JD-DECODER
+        </motion.span>
+      </div>
+
+      {/* Bottom progress bar */}
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 h-[2px] z-10"
+        style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff)", transformOrigin: "left" }}
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: progress / 100 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      />
+    </motion.div>
   )
 }
 
-function Navbar() {
+function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle }) {
   return (
     <motion.nav
       className="fixed top-0 left-0 right-0 z-50"
@@ -481,13 +418,29 @@ function Navbar() {
             Decoder
           </span>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-xs tracking-wider uppercase cursor-pointer hover:text-white transition-colors" style={{ color: "#888", fontFamily: '"IBM Plex Mono", monospace' }}>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onChatToggle}
+            className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white"
+            style={{
+              color: showChat ? "#fff" : "#888",
+              background: showChat ? "rgba(255,255,255,0.08)" : "transparent",
+              fontFamily: '"IBM Plex Mono", monospace',
+            }}
+          >
             CHAT
-          </span>
-          <span className="text-xs tracking-wider uppercase cursor-pointer hover:text-white transition-colors" style={{ color: "#888", fontFamily: '"IBM Plex Mono", monospace' }}>
+          </button>
+          <button
+            onClick={onHistoryToggle}
+            className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white"
+            style={{
+              color: showHistory ? "#fff" : "#888",
+              background: showHistory ? "rgba(255,255,255,0.08)" : "transparent",
+              fontFamily: '"IBM Plex Mono", monospace',
+            }}
+          >
             HISTORY
-          </span>
+          </button>
         </div>
       </div>
     </motion.nav>
@@ -496,6 +449,18 @@ function Navbar() {
 
 function HeroSection({ onGetStarted, scrollY }) {
   const vh = typeof window !== "undefined" ? window.innerHeight : 720
+  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
+
+  useEffect(() => {
+    const handleMouse = (e) => {
+      setMousePos({ x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight })
+    }
+    window.addEventListener("mousemove", handleMouse)
+    return () => window.removeEventListener("mousemove", handleMouse)
+  }, [])
+
+  const parallaxX = (mousePos.x - 0.5) * 24
+  const parallaxY = (mousePos.y - 0.5) * 24
 
   const contentOpacity = useTransform(scrollY, [0, vh * 0.8], [1, 0])
   const contentY = useTransform(scrollY, [0, vh * 0.8], [0, -120])
@@ -506,34 +471,93 @@ function HeroSection({ onGetStarted, scrollY }) {
   const chevronOpacity = useTransform(scrollY, [0, vh * 0.3], [1, 0])
   const glowOpacity = useTransform(scrollY, [vh * 0.3, vh * 0.9], [0, 1])
 
+  const particles = useMemo(() =>
+    Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 3 + 1,
+      duration: Math.random() * 10 + 8,
+      delay: Math.random() * 8,
+      opacity: Math.random() * 0.3 + 0.05,
+    })), [])
+
+  const headingChars = "DECODE YOUR".split("")
+
   return (
     <section
       className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden"
       style={{ background: "#000" }}
     >
+      {/* Background layers */}
       <div className="absolute inset-0 overflow-hidden">
+        {/* Main blobs */}
         <motion.div
           className="absolute -inset-40"
           style={{
             opacity: blobOpacity,
             scale: blobScale,
-            background: "radial-gradient(ellipse at 20% 40%, rgba(255,0,100,0.25), transparent 60%), radial-gradient(ellipse at 80% 30%, rgba(100,0,255,0.25), transparent 60%), radial-gradient(ellipse at 50% 70%, rgba(0,150,255,0.2), transparent 60%)",
+            x: (mousePos.x - 0.5) * -30,
+            y: (mousePos.y - 0.5) * -30,
+            background: "radial-gradient(ellipse at 20% 40%, rgba(255,0,100,0.2), transparent 60%), radial-gradient(ellipse at 80% 30%, rgba(100,0,255,0.2), transparent 60%), radial-gradient(ellipse at 50% 70%, rgba(0,150,255,0.15), transparent 60%)",
           }}
         />
+        {/* Secondary blob */}
+        <motion.div
+          className="absolute inset-0"
+          animate={{ scale: [1, 1.15, 1], rotate: [0, 3, -3, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            background: "radial-gradient(ellipse at 70% 20%, rgba(255,0,200,0.08), transparent 50%), radial-gradient(ellipse at 30% 80%, rgba(0,100,255,0.08), transparent 50%)",
+            filter: "blur(80px)",
+          }}
+        />
+        {/* Grid */}
         <motion.div
           className="absolute inset-0"
           style={{
             opacity: gridOpacity,
-            backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
             backgroundSize: "60px 60px",
           }}
         />
+        {/* Floating particles */}
+        {particles.map((p) => (
+          <motion.div
+            key={p.id}
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              width: p.size,
+              height: p.size,
+              background: "#fff",
+              opacity: p.opacity,
+            }}
+            animate={{
+              y: [0, -30, 0],
+              opacity: [p.opacity, p.opacity * 2, p.opacity],
+            }}
+            transition={{
+              duration: p.duration,
+              delay: p.delay,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+        {/* Vignette */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%)",
+        }} />
       </div>
 
+      {/* Content */}
       <motion.div
         className="relative z-10 text-center px-6 max-w-4xl mx-auto"
         style={{ opacity: contentOpacity, y: contentY, scale: contentScale }}
       >
+        {/* Subheading */}
         <motion.p
           className="text-xs uppercase tracking-[0.3em] mb-6"
           style={{ color: "#666", fontFamily: '"IBM Plex Mono", monospace' }}
@@ -541,9 +565,16 @@ function HeroSection({ onGetStarted, scrollY }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
         >
-          AI-POWERED JOB ANALYSIS
+          <motion.span
+            animate={{ opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            AI-POWERED
+          </motion.span>{" "}
+          JOB ANALYSIS
         </motion.p>
 
+        {/* Heading */}
         <motion.h1
           className="text-[clamp(36px,8vw,96px)] font-black tracking-tight leading-[0.9] mb-6"
           style={{ color: "#fff", fontFamily: '"Segoe UI", system-ui, sans-serif', fontWeight: 900 }}
@@ -553,17 +584,24 @@ function HeroSection({ onGetStarted, scrollY }) {
         >
           DECODE YOUR
           <br />
-          <span style={{
-            background: "linear-gradient(135deg, #ff0064, #6400ff, #0096ff)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}>
+          <motion.span
+            animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+            style={{
+              background: "linear-gradient(135deg, #ff0064, #6400ff, #0096ff, #ff0064)",
+              backgroundSize: "300% 100%",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              display: "inline-block",
+            }}
+          >
             NEXT MOVE
-          </span>
+          </motion.span>
         </motion.h1>
 
+        {/* Description */}
         <motion.p
-          className="text-base max-sm:text-sm leading-relaxed max-w-md mx-auto mb-10"
+          className="text-base max-sm:text-sm leading-relaxed max-w-md mx-auto mb-12"
           style={{ color: "#666" }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -572,37 +610,57 @@ function HeroSection({ onGetStarted, scrollY }) {
           Paste any job description. Our AI cuts through the corporate fluff and tells you what the job is really about.
         </motion.p>
 
-        <motion.button
-          onClick={onGetStarted}
-          className="px-8 py-3 rounded-full text-sm font-semibold tracking-wider uppercase relative overflow-hidden group cursor-pointer"
-          style={{ background: "#fff", color: "#000" }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 1.3 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          <span className="relative z-10">Get Started</span>
+        {/* CTA with glow ring */}
+        <div className="relative inline-flex items-center justify-center">
           <motion.div
-            className="absolute inset-0"
-            style={{ background: "linear-gradient(135deg, #ff0064, #6400ff, #0096ff)" }}
-            initial={{ opacity: 0 }}
-            whileHover={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
+            className="absolute inset-0 rounded-full"
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.4, 0.1, 0.4],
+            }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            style={{
+              background: "radial-gradient(circle at center, rgba(255,0,100,0.3), rgba(100,0,255,0.15), transparent 70%)",
+              filter: "blur(30px)",
+            }}
           />
-        </motion.button>
+          <motion.button
+            onClick={onGetStarted}
+            className="px-8 py-3 rounded-full text-sm font-semibold tracking-wider uppercase relative overflow-hidden group cursor-pointer"
+            style={{ background: "#fff", color: "#000" }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.3 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <span className="relative z-10">Get Started</span>
+            <motion.div
+              className="absolute inset-0"
+              style={{ background: "linear-gradient(135deg, #ff0064, #6400ff, #0096ff)" }}
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            />
+          </motion.button>
+        </div>
       </motion.div>
 
+      {/* Scroll indicator */}
       <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         style={{ opacity: chevronOpacity }}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 2.0, repeat: Infinity, repeatType: "reverse" }}
       >
+        <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "#444", fontFamily: '"IBM Plex Mono", monospace' }}>
+          Scroll
+        </span>
         <ChevronDown size={20} style={{ color: "#555" }} />
       </motion.div>
 
+      {/* Transition glow */}
       <motion.div
         className="absolute bottom-0 left-0 right-0 h-72 pointer-events-none z-20"
         style={{
@@ -978,7 +1036,7 @@ Brief: ${jdBrief}`
             className="min-h-screen text-white"
             style={{ background: "#000" }}
           >
-            <Navbar />
+            <Navbar showChat={showChat} onChatToggle={() => setShowChat(!showChat)} showHistory={showHistory} onHistoryToggle={() => setShowHistory(!showHistory)} />
             <HeroSection onGetStarted={getStarted} scrollY={scrollY} />
 
             <motion.div
@@ -1094,22 +1152,6 @@ Brief: ${jdBrief}`
                         style={{ textShadow: "0 0 8px rgba(255,255,255,0.4), 0 0 20px rgba(255,255,255,0.15)" }}
                       >
                         API
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowChat(!showChat)}
-                        className="rounded-xl px-3 py-2 bg-black/20 backdrop-blur-2xl text-white/90 hover:text-white hover:bg-white/10 hover:scale-110 transition-all text-xs font-medium border border-white/[0.06] max-sm:text-[10px] max-sm:px-2 max-sm:py-1.5"
-                        style={{ textShadow: "0 0 8px rgba(255,255,255,0.4), 0 0 20px rgba(255,255,255,0.15)" }}
-                      >
-                        {showChat ? "Close" : "Chat"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowHistory(!showHistory)}
-                        className="rounded-xl px-3 py-2 bg-black/20 backdrop-blur-2xl text-white/90 hover:text-white hover:bg-white/10 hover:scale-110 transition-all text-xs font-medium border border-white/[0.06] max-sm:text-[10px] max-sm:px-2 max-sm:py-1.5"
-                        style={{ textShadow: "0 0 8px rgba(255,255,255,0.4), 0 0 20px rgba(255,255,255,0.15)" }}
-                      >
-                        <Clock size={12} className="inline mr-1 max-sm:hidden" />{showHistory ? "History" : "History"}
                       </button>
                     </div>
 
