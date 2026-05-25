@@ -51,6 +51,44 @@
 /* ── Scroll reveal (continuous scroll-driven fade via useScrollFade hook) ── */
 /* Initial opacity is set inline by the hook; will-change via .gpu class */
 
+/* ── God card: animated gradient border + shimmer ── */
+.god-card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.god-card::before {
+  content: '';
+  position: absolute;
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(#ff0064, #6400ff, #0096ff, #ff00c8, #ff0064);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: border-spin 4s linear infinite;
+  will-change: transform;
+}
+@keyframes border-spin {
+  to { transform: rotate(360deg); }
+}
+.god-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.04) 55%, transparent 65%);
+  background-size: 200% 100%;
+  animation: shimmer-sweep 5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes shimmer-sweep {
+  0%, 100% { background-position: 200% 0; }
+  50% { background-position: -200% 0; }
+}
+
 /* ── Floating card animation ── */
 @keyframes card-float {
   0%, 100% { transform: translateY(0); }
@@ -67,6 +105,40 @@
 }
 .card-glow {
   animation: card-glow 4s ease-in-out infinite;
+}
+
+/* ── Button ripple effect ── */
+.ripple-btn {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  width: 20px;
+  height: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
+  transform: scale(0);
+  animation: ripple-effect 0.6s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes ripple-effect {
+  to { transform: scale(8); opacity: 0; }
+}
+
+/* ── Mouse glow ── */
+.mouse-glow {
+  position: fixed;
+  top: 0; left: 0;
+  width: 300px;
+  height: 300px;
+  pointer-events: none;
+  z-index: 9997;
+  background: radial-gradient(circle, rgba(255,0,100,0.06), transparent 70%);
+  transform: translate(-150px, -150px);
 }
 
 /* ── Icon micro-animations ── */

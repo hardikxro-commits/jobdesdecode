@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useLayoutEffect, memo, useCallback } from "react"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
-import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download } from "lucide-react"
+import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Sparkles } from "lucide-react"
 
 const PROVIDERS = {
   anthropic: {
@@ -156,6 +156,40 @@ const Bar = memo(function Bar({ label, score }) {
 })
 
 const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || "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"
+
+const addRipple = (e) => {
+  const btn = e.currentTarget
+  const rect = btn.getBoundingClientRect()
+  const span = document.createElement("span")
+  span.className = "ripple"
+  span.style.left = `${e.clientX - rect.left}px`
+  span.style.top = `${e.clientY - rect.top}px`
+  btn.appendChild(span)
+  span.addEventListener("animationend", () => span.remove())
+}
+
+function MouseGlow() {
+  const ref = useRef(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    let raf = null
+    const handler = (e) => {
+      if (!raf) {
+        raf = requestAnimationFrame(() => {
+          raf = null
+          el.style.transform = `translate(${e.clientX - 150}px, ${e.clientY - 150}px)`
+        })
+      }
+    }
+    window.addEventListener("mousemove", handler, { passive: true })
+    return () => {
+      window.removeEventListener("mousemove", handler)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [])
+  return <div ref={ref} className="mouse-glow gpu" />
+}
 
 function useInView({ once = true, margin = "-60px" } = {}) {
   const ref = useRef(null)
@@ -550,6 +584,7 @@ function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle }) {
           >
             JD-DEC
           </span>
+          <Sparkles size={12} className="text-zinc-600 icon-pulse" style={{ marginLeft: 2 }} />
           <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: "#555", fontFamily: '"IBM Plex Mono", monospace' }}>
             Decoder
           </span>
@@ -648,8 +683,9 @@ function HeroSection({ onGetStarted, scrollY }) {
           />
           <button
             onClick={onGetStarted}
-            className="px-8 py-3 rounded-full text-sm font-semibold tracking-wider uppercase relative overflow-hidden group cursor-pointer btn-scale"
+            className="ripple-btn px-8 py-3 rounded-full text-sm font-semibold tracking-wider uppercase relative overflow-hidden group cursor-pointer btn-scale"
             style={{ background: "#fff", color: "#000" }}
+            onMouseDown={addRipple}
           >
             <span className="relative z-10">Get Started</span>
             <div
@@ -1032,6 +1068,7 @@ Brief: ${jdBrief}`
   return (
     <>
       <div className="scanline-overlay" />
+      <MouseGlow />
       <Loader />
       {showContent && (
         <div className="min-h-screen text-white animate-app-entrance" style={{ background: "#000" }}>
@@ -1158,12 +1195,13 @@ Brief: ${jdBrief}`
                             rows={3}
                             className="w-full px-2.5 py-1.5 rounded-md bg-zinc-800 border border-zinc-700 text-white text-xs placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-500 resize-none mb-2"
                           />
-                          <button
-                            type="button"
-                            onClick={generateJD}
-                            disabled={generating || !jdBrief.trim()}
-                            className="w-full py-1.5 rounded-md bg-white text-black text-xs font-semibold hover:bg-zinc-200 btn-scale-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
-                          >
+                            <button
+                              type="button"
+                              onClick={generateJD}
+                              disabled={generating || !jdBrief.trim()}
+                              className="ripple-btn w-full py-1.5 rounded-md bg-white text-black text-xs font-semibold hover:bg-zinc-200 btn-scale-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                              onMouseDown={addRipple}
+                            >
                             {generating ? <><Loader2 size={12} className="animate-spin" /> Generating...</> : "Generate Full Job Description"}
                           </button>
                         </div>
@@ -1253,7 +1291,7 @@ Brief: ${jdBrief}`
                             <Download size={12} /> Export JSON
                           </button>
                         </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
                             <h2 className="text-2xl max-sm:text-xl font-bold mb-2">{result.role_summary.title}</h2>
                             <div className="flex gap-2 mb-3">
                               <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
@@ -1265,7 +1303,7 @@ Brief: ${jdBrief}`
                             </div>
                             <p className="text-zinc-400">{result.role_summary.one_liner}</p>
                           </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
                             <RevealHeading>Real requirements</RevealHeading>
                             {result.real_requirements && result.real_requirements.length > 0 ? (
                               <div className="flex flex-wrap gap-2">
@@ -1288,7 +1326,7 @@ Brief: ${jdBrief}`
                               <p className="text-zinc-500 text-sm italic">None found</p>
                             )}
                           </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
                             <RevealHeading><TriangleAlert size={16} className="text-red-400 icon-pulse" /> Red Flags</RevealHeading>
                             {result.red_flags && result.red_flags.length > 0 ? (
                               <div className="space-y-3">
@@ -1314,7 +1352,7 @@ Brief: ${jdBrief}`
                               <p className="text-zinc-500 text-sm italic">None found</p>
                             )}
                           </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
                             <RevealHeading><CheckCircle size={16} className="text-emerald-400 icon-pulse" /> Green Flags</RevealHeading>
                             {result.green_flags && result.green_flags.length > 0 ? (
                               <div className="space-y-3">
@@ -1332,7 +1370,7 @@ Brief: ${jdBrief}`
                               <p className="text-zinc-500 text-sm italic">None found</p>
                             )}
                           </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
                             <RevealHeading>Clarity Scores</RevealHeading>
                             <Bar label="Responsibilities" score={result.clarity_scores.responsibilities} />
                             <Bar label="Success metrics" score={result.clarity_scores.success_metrics} />
@@ -1341,7 +1379,7 @@ Brief: ${jdBrief}`
                             <Bar label="Compensation" score={result.clarity_scores.compensation} />
                             <Bar label="Work-life balance" score={result.clarity_scores.work_life_balance} />
                           </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
                             <RevealHeading><MessageCircle size={16} className="text-zinc-400 icon-pulse" /> Questions to ask</RevealHeading>
                             {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
                               <ol className="space-y-2">
@@ -1357,7 +1395,7 @@ Brief: ${jdBrief}`
                             )}
                           </RevealSection>
                           {result.resume_match && (
-                            <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 card-glow card-float gpu">
+                            <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
                               <RevealHeading>Resume Match</RevealHeading>
                               <div className="text-center mb-6">
                                 <span className={`text-5xl font-bold ${
@@ -1407,7 +1445,7 @@ Brief: ${jdBrief}`
                               </div>
                             </RevealSection>
                           )}
-                          <RevealSection className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900 card-glow card-float gpu">
+                          <RevealSection className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900 god-card card-float gpu">
                           <RevealHeading>Verdict</RevealHeading>
                           <p className="text-lg leading-relaxed text-zinc-100 mb-4">{result.verdict.summary}</p>
                           <div className="mb-4">
@@ -1424,7 +1462,8 @@ Brief: ${jdBrief}`
                           <p className="text-zinc-500 text-sm">{result.verdict.apply_reason}</p>
                           <button
                             onClick={reset}
-                            className="mt-6 w-full bg-white text-black hover:bg-zinc-200 btn-scale font-semibold rounded-lg px-6 py-3 max-sm:py-2.5 transition-all"
+                            className="ripple-btn mt-6 w-full bg-white text-black hover:bg-zinc-200 btn-scale font-semibold rounded-lg px-6 py-3 max-sm:py-2.5 transition-all"
+                            onMouseDown={addRipple}
                           >
                             Reset
                           </button>
@@ -1485,7 +1524,8 @@ Brief: ${jdBrief}`
                             <button
                               type="submit"
                               disabled={loading}
-                              className="bg-white text-black hover:bg-zinc-200 btn-scale font-semibold rounded-lg px-6 max-sm:px-4 py-2.5 text-sm max-sm:text-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 max-sm:w-full max-sm:justify-center"
+                              className="ripple-btn bg-white text-black hover:bg-zinc-200 btn-scale font-semibold rounded-lg px-6 max-sm:px-4 py-2.5 text-sm max-sm:text-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 max-sm:w-full max-sm:justify-center"
+                              onMouseDown={addRipple}
                             >
                               {loading ? <><Loader2 size={16} className="animate-spin" /> Decoding</> : "Decode \u2192"}
                             </button>
