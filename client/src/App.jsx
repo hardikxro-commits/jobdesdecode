@@ -205,8 +205,10 @@ function RevealHeading({ children, className = "" }) {
 }
 
 function Loader() {
-  const [progress, setProgress] = useState(0)
   const [show, setShow] = useState(true)
+  const [exiting, setExiting] = useState(false)
+  const progressRef = useRef(null)
+  const barRef = useRef(null)
 
   useEffect(() => {
     const start = performance.now()
@@ -228,23 +230,26 @@ function Loader() {
       } else {
         pct = 95 + ((n - 0.92) / 0.08) * 5
       }
-      setProgress(Math.min(Math.round(pct), 99))
+      const rounded = Math.min(Math.round(pct), 99)
+
+      if (progressRef.current) progressRef.current.textContent = rounded
+      if (barRef.current) barRef.current.style.transform = `scaleX(${rounded / 100})`
+
       if (n < 1) {
         frame = requestAnimationFrame(tick)
       } else {
-        setTimeout(() => setProgress(100), 400)
+        setTimeout(() => {
+          if (progressRef.current) progressRef.current.textContent = "100"
+          if (barRef.current) barRef.current.style.transform = "scaleX(1)"
+          setExiting(true)
+          setTimeout(() => setShow(false), 800)
+        }, 400)
       }
     }
 
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
   }, [])
-
-  useEffect(() => {
-    if (progress === 100) {
-      setTimeout(() => setShow(false), 800)
-    }
-  }, [progress])
 
   const letters = [
     { char: "J", anim: "firstChar", delay: 0.4 },
@@ -262,11 +267,9 @@ function Loader() {
   if (!show) return null
 
   return (
-    <motion.div
-      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: "#000" }}
-      animate={{ opacity: progress === 100 ? 0 : 1 }}
-      transition={{ duration: 0.8, ease: [0.87, 0, 0.13, 1] }}
+    <div
+      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center overflow-hidden transition-opacity duration-1000"
+      style={{ background: "#000", opacity: exiting ? 0 : 1 }}
     >
       <div className="absolute inset-0 overflow-hidden">
         <div
@@ -290,34 +293,14 @@ function Loader() {
         className="absolute top-6 left-0 right-0 flex justify-between px-6 z-10 overflow-hidden"
         style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, fontWeight: 500, color: "#666" }}
       >
-        <motion.span
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        >
-          AI-POWERED
-        </motion.span>
-        <motion.span
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        >
-          JOB ANALYSIS
-        </motion.span>
-        <motion.span
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        >
-          2026
-        </motion.span>
+        <span className="entrance-fade-down" style={{ animationDelay: "0.2s" }}>AI-POWERED</span>
+        <span className="entrance-fade-down" style={{ animationDelay: "0.3s" }}>JOB ANALYSIS</span>
+        <span className="entrance-fade-down" style={{ animationDelay: "0.4s" }}>2026</span>
       </div>
 
-      <motion.div
-        className="z-10 mb-8"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+      <div
+        className="z-10 mb-8 entrance-fade-up"
+        style={{ animationDelay: "0.15s" }}
       >
         <span
           className="tracking-[0.4em] text-xs uppercase"
@@ -329,7 +312,7 @@ function Loader() {
         >
           LOADING
         </span>
-      </motion.div>
+      </div>
 
       <div className="relative z-10 flex items-center justify-center" style={{ fontFamily: '"Sofia Sans Extra Condensed", "Saira Extra Condensed", Impact, sans-serif', fontSize: "clamp(56px, 14vw, 130px)", lineHeight: 1, gap: "0.04em" }}>
         {letters.map((l, i) => (
@@ -350,63 +333,52 @@ function Loader() {
         ))}
       </div>
 
-      <motion.div
-        className="relative z-10 mt-12 flex items-start gap-1 overflow-hidden"
-        style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      <div
+        className="relative z-10 mt-12 flex items-start gap-1 overflow-hidden entrance-fade-up"
+        style={{ fontFamily: '"IBM Plex Mono", monospace', animationDelay: "0.3s" }}
       >
-        <motion.span
+        <span
+          ref={progressRef}
           className="text-[clamp(28px,6vw,56px)] font-light tracking-wider"
           style={{ color: "#fff" }}
-          key={progress}
-          initial={{ y: 15, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.12 }}
         >
-          {progress}
-        </motion.span>
+          0
+        </span>
         <span
           className="text-[clamp(18px,4vw,36px)] font-light"
           style={{ color: "#555", marginTop: "0.1em" }}
         >
           %
         </span>
-      </motion.div>
+      </div>
 
       <div
         className="absolute bottom-6 left-0 right-0 flex justify-between px-6 z-10 overflow-hidden"
         style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, fontWeight: 500, color: "#666" }}
       >
-        <motion.span
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        >
+        <span className="entrance-fade-up" style={{ animationDelay: "0.5s" }}>
           PASTE ANY <span style={{ color: "#ff0064" }}>JOB DESCRIPTION</span>
-        </motion.span>
-        <motion.span
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        >
+        </span>
+        <span className="entrance-fade-up" style={{ animationDelay: "0.6s" }}>
           @JD-DECODER
-        </motion.span>
+        </span>
       </div>
 
-      <motion.div
+      <div
+        ref={barRef}
         className="absolute bottom-0 left-0 right-0 h-[2px] z-10"
-        style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff)", transformOrigin: "left" }}
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: progress / 100 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
+        style={{
+          background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff)",
+          transformOrigin: "left",
+          transform: "scaleX(0)",
+          transition: "transform 0.3s ease-out",
+        }}
       />
-    </motion.div>
+    </div>
   )
 }
 
-const bgParticles = Array.from({ length: 60 }, (_, i) => ({
+const bgParticles = Array.from({ length: 80 }, (_, i) => ({
   id: i,
   x: Math.random() * 100,
   y: Math.random() * 100,
@@ -465,14 +437,11 @@ const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity })
           filter: "blur(80px)",
         }}
       />
-      <motion.div
-        className="absolute inset-0"
-        style={{
-          opacity: gridOpacity ?? 0.03,
-          backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
-        }}
-      />
+      <div className="absolute inset-0 gpu" style={{
+        opacity: gridOpacity ?? 0.03,
+        backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
+        backgroundSize: "60px 60px",
+      }} />
       <div
         className="absolute rounded-full"
         style={{
@@ -502,6 +471,7 @@ const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity })
           }}
         />
       </div>
+      <div className="virtual-particles" />
       {bgParticles.map((p) => (
         <div
           key={p.id}
@@ -526,14 +496,11 @@ const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity })
   )
 })
 
-const Navbar = memo(function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle }) {
+function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle }) {
   return (
-    <motion.nav
-      className="fixed top-0 left-0 right-0 z-50"
-      style={{ willChange: "transform" }}
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.3 }}
+    <nav
+      className="fixed top-0 left-0 right-0 z-50 entrance-fade-down"
+      style={{ animationDelay: "0.3s", willChange: "transform" }}
     >
       <div className="absolute inset-0 backdrop-blur-lg bg-black/30" />
       <div className="relative z-10 flex items-center justify-between px-6 py-4 max-sm:px-4 max-sm:py-3">
@@ -551,7 +518,7 @@ const Navbar = memo(function Navbar({ showChat, onChatToggle, showHistory, onHis
         <div className="flex items-center gap-3">
           <button
             onClick={onChatToggle}
-            className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white"
+            className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
             style={{
               color: showChat ? "#fff" : "#888",
               background: showChat ? "rgba(255,255,255,0.08)" : "transparent",
@@ -562,7 +529,7 @@ const Navbar = memo(function Navbar({ showChat, onChatToggle, showHistory, onHis
           </button>
           <button
             onClick={onHistoryToggle}
-            className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white"
+            className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
             style={{
               color: showHistory ? "#fff" : "#888",
               background: showHistory ? "rgba(255,255,255,0.08)" : "transparent",
@@ -573,9 +540,9 @@ const Navbar = memo(function Navbar({ showChat, onChatToggle, showHistory, onHis
           </button>
         </div>
       </div>
-    </motion.nav>
+    </nav>
   )
-})
+}
 
 function HeroSection({ onGetStarted, scrollY }) {
   const vh = typeof window !== "undefined" ? window.innerHeight : 720
@@ -599,25 +566,19 @@ function HeroSection({ onGetStarted, scrollY }) {
         className="relative z-10 text-center px-6 max-w-4xl mx-auto"
         style={{ opacity: contentOpacity, y: contentY, scale: contentScale }}
       >
-        <motion.p
-          className="text-xs uppercase tracking-[0.3em] mb-6"
-          style={{ color: "#666", fontFamily: '"IBM Plex Mono", monospace' }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
+        <p
+          className="text-xs uppercase tracking-[0.3em] mb-6 entrance-fade-up"
+          style={{ color: "#666", fontFamily: '"IBM Plex Mono", monospace', animationDelay: "0.5s" }}
         >
           <span className="animate-text-pulse">AI-POWERED</span> JOB ANALYSIS
-        </motion.p>
+        </p>
 
-        <motion.h1
-          className="text-[clamp(36px,8vw,96px)] font-black tracking-tight leading-[0.9] mb-6"
+        <h1
+          className="text-[clamp(36px,8vw,96px)] font-black tracking-tight leading-[0.9] mb-6 entrance-scale-up glitch-text"
+          data-text="DECODE YOUR NEXT MOVE"
           style={{ color: "#fff", fontFamily: '"Segoe UI", system-ui, sans-serif', fontWeight: 900 }}
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.7, ease: [0.83, 0, 0.17, 1] }}
         >
-          DECODE YOUR
-          <br />
+          DECODE YOUR<br />
           <span
             className="animate-gradient-slide"
             style={{
@@ -629,19 +590,16 @@ function HeroSection({ onGetStarted, scrollY }) {
           >
             NEXT MOVE
           </span>
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          className="text-base max-sm:text-sm leading-relaxed max-w-md mx-auto mb-12"
-          style={{ color: "#666" }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 1.0 }}
+        <p
+          className="text-base max-sm:text-sm leading-relaxed max-w-md mx-auto mb-12 entrance-fade-up"
+          style={{ color: "#666", animationDelay: "1.0s" }}
         >
           Paste any job description. Our AI cuts through the corporate fluff and tells you what the job is really about.
-        </motion.p>
+        </p>
 
-        <div className="relative inline-flex items-center justify-center">
+        <div className="relative inline-flex items-center justify-center entrance-hero-btn">
           <div
             className="absolute inset-0 rounded-full animate-cta-glow"
             style={{
@@ -649,27 +607,19 @@ function HeroSection({ onGetStarted, scrollY }) {
               filter: "blur(30px)",
             }}
           />
-          <motion.button
+          <button
             onClick={onGetStarted}
-            className="px-8 py-3 rounded-full text-sm font-semibold tracking-wider uppercase relative overflow-hidden group cursor-pointer"
+            className="px-8 py-3 rounded-full text-sm font-semibold tracking-wider uppercase relative overflow-hidden group cursor-pointer btn-scale"
             style={{ background: "#fff", color: "#000" }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.3 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
           >
             <span className="relative z-10">Get Started</span>
-            <motion.div
-              className="absolute inset-0"
+            <div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               style={{ background: "linear-gradient(135deg, #ff0064, #6400ff, #0096ff)" }}
-              initial={{ opacity: 0 }}
-              whileHover={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
             />
-          </motion.button>
+          </button>
         </div>
-      </motion.div>
+        </motion.div>
 
       <motion.div
         className="absolute bottom-8 left-1/2 -translate-x-1/2"
@@ -684,12 +634,11 @@ function HeroSection({ onGetStarted, scrollY }) {
       </motion.div>
 
       <motion.div
-        className="absolute bottom-0 left-0 right-0 h-72 pointer-events-none z-20"
+        className="absolute bottom-0 left-0 right-0 h-72 pointer-events-none z-20 gpu"
         style={{
           opacity: glowOpacity,
           background: "linear-gradient(to top, rgba(255,0,100,0.3), rgba(100,0,255,0.2), rgba(0,150,255,0.08), transparent)",
           filter: "blur(50px)",
-          transform: "translate3d(0, 0, 0)",
         }}
       />
     </section>
@@ -1043,507 +992,500 @@ Brief: ${jdBrief}`
 
   return (
     <>
+      <div className="scanline-overlay" />
       <Loader />
-      <AnimatePresence>
-        {showContent && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
-            className="min-h-screen text-white"
-            style={{ background: "#000" }}
-          >
-            <Navbar showChat={showChat} onChatToggle={() => setShowChat(!showChat)} showHistory={showHistory} onHistoryToggle={() => setShowHistory(!showHistory)} />
-            <HeroSection onGetStarted={getStarted} scrollY={scrollY} />
+      {showContent && (
+        <div className="min-h-screen text-white animate-app-entrance" style={{ background: "#000" }}>
+          <Navbar showChat={showChat} onChatToggle={() => setShowChat(!showChat)} showHistory={showHistory} onHistoryToggle={() => setShowHistory(!showHistory)} />
+          <HeroSection onGetStarted={getStarted} scrollY={scrollY} />
 
-            <motion.div
-              ref={mainAppRef}
-              className="relative"
-              style={{
-                background: "#000",
-                opacity: mainOpacity,
-                y: mainY,
-              }}
-            >
-              <div className="min-h-screen text-white flex flex-col relative">
-                <BgLayers />
-                <AnimatePresence>
-                  {showChat && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -320 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -320 }}
-                      transition={{ type: "spring", damping: 28, stiffness: 300 }}
-                      className="absolute left-0 top-0 bottom-0 z-20 w-80 max-sm:w-full flex flex-col bg-black/20 backdrop-blur-lg border-r border-white/[0.06] shadow-2xl"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
-                      <div className="relative z-10 flex flex-col h-full">
-                        <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
-                          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Chat</span>
+          <motion.div
+            ref={mainAppRef}
+            className="relative"
+            style={{
+              background: "#000",
+              opacity: mainOpacity,
+              y: mainY,
+            }}
+          >
+            <div className="min-h-screen text-white flex flex-col relative">
+              <BgLayers />
+              <AnimatePresence>
+                {showChat && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -320 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -320 }}
+                    transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                    className="absolute left-0 top-0 bottom-0 z-20 w-80 max-sm:w-full flex flex-col bg-black/20 backdrop-blur-lg border-r border-white/[0.06] shadow-2xl"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
+                    <div className="relative z-10 flex flex-col h-full">
+                      <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Chat</span>
+                        <button
+                          type="button"
+                          onClick={() => setShowChat(false)}
+                          className="text-zinc-500 hover:text-white transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+                        {chatMessages.length === 0 && (
+                          <p className="text-zinc-600 text-xs text-center pt-8">Ask me anything about the job description...</p>
+                        )}
+                        {chatMessages.map((msg, i) => (
+                          <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                            <div className={`max-w-[85%] px-3 py-2 rounded-xl text-sm ${
+                              msg.role === "user"
+                                ? "bg-white/10 text-white"
+                                : "bg-white/[0.04] text-zinc-300 border border-white/[0.06]"
+                            }`}>
+                              <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                            </div>
+                          </div>
+                        ))}
+                        {chatLoading && (
+                          <div className="flex justify-start">
+                            <div className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                              <Loader2 size={14} className="animate-spin" />
+                            </div>
+                          </div>
+                        )}
+                        <div ref={chatEndRef} />
+                      </div>
+                      <div className="p-3 border-t border-white/[0.06]">
+                        <div className="flex gap-2">
+                          <textarea
+                            ref={chatInputRef}
+                            value={chatInput}
+                            onChange={(e) => setChatInput(e.target.value)}
+                            onKeyDown={handleChatKeyDown}
+                            placeholder="Ask a question..."
+                            rows={1}
+                            className="flex-1 px-3 py-2 bg-black/20 border border-white/[0.06] rounded-xl text-white text-xs placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/20 resize-none"
+                            style={{ maxHeight: "120px" }}
+                          />
                           <button
                             type="button"
-                            onClick={() => setShowChat(false)}
-                            className="text-zinc-500 hover:text-white transition-colors"
+                            onClick={sendChatMessage}
+                            disabled={chatLoading || !chatInput.trim()}
+                            className="shrink-0 self-end px-3 py-2 bg-white/10 hover:bg-white/20 btn-scale-sm disabled:opacity-30 disabled:cursor-not-allowed rounded-xl transition-all border border-white/[0.06]"
                           >
-                            <X size={16} />
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                              <path d="M22 2L11 13" /><path d="M22 2L15 22L11 13L2 9L22 2Z" />
+                            </svg>
                           </button>
                         </div>
-                        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-                          {chatMessages.length === 0 && (
-                            <p className="text-zinc-600 text-xs text-center pt-8">Ask me anything about the job description...</p>
-                          )}
-                          {chatMessages.map((msg, i) => (
-                            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                              <div className={`max-w-[85%] px-3 py-2 rounded-xl text-sm ${
-                                msg.role === "user"
-                                  ? "bg-white/10 text-white"
-                                  : "bg-white/[0.04] text-zinc-300 border border-white/[0.06]"
-                              }`}>
-                                <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                              </div>
-                            </div>
-                          ))}
-                          {chatLoading && (
-                            <div className="flex justify-start">
-                              <div className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-                                <Loader2 size={14} className="animate-spin" />
-                              </div>
-                            </div>
-                          )}
-                          <div ref={chatEndRef} />
-                        </div>
-                        <div className="p-3 border-t border-white/[0.06]">
-                          <div className="flex gap-2">
-                            <textarea
-                              ref={chatInputRef}
-                              value={chatInput}
-                              onChange={(e) => setChatInput(e.target.value)}
-                              onKeyDown={handleChatKeyDown}
-                              placeholder="Ask a question..."
-                              rows={1}
-                              className="flex-1 px-3 py-2 bg-black/20 border border-white/[0.06] rounded-xl text-white text-xs placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/20 resize-none"
-                              style={{ maxHeight: "120px" }}
-                            />
-                            <button
-                              type="button"
-                              onClick={sendChatMessage}
-                              disabled={chatLoading || !chatInput.trim()}
-                              className="shrink-0 self-end px-3 py-2 bg-white/10 hover:bg-white/20 hover:scale-[1.04] disabled:opacity-30 disabled:cursor-not-allowed rounded-xl transition-all border border-white/[0.06]"
-                            >
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-                                <path d="M22 2L11 13" /><path d="M22 2L15 22L11 13L2 9L22 2Z" />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
                       </div>
-                      <div className="relative h-[3px] w-full shrink-0">
-                        <div className="absolute inset-0 animate-rgb rounded-full" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
-                        <div className="absolute inset-0 blur-md opacity-60 animate-rgb" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                <div className="relative z-10 flex flex-col min-h-screen">
-                  <div className="max-sm:left-2 max-sm:right-2 max-sm:top-2 absolute top-4 right-4 z-10 flex flex-col items-end gap-2" style={{ top: "4rem" }}>
-                    <div className="flex gap-1.5 max-sm:flex-wrap max-sm:justify-end">
-                      <button
-                        type="button"
-                        onClick={() => setShowJdGenerator(!showJdGenerator)}
-                        className="rounded-xl px-3 py-2 bg-black/20 backdrop-blur-xl text-white/90 hover:text-white hover:bg-white/10 hover:scale-[1.04] transition-all text-xs font-medium border border-white/[0.06] max-sm:text-[10px] max-sm:px-2 max-sm:py-1.5"
-                        style={{ textShadow: "0 0 8px rgba(255,255,255,0.4), 0 0 20px rgba(255,255,255,0.15)" }}
-                      >
-                        {showJdGenerator ? "Close Generator" : "Generate JD"}
-                      </button>
                     </div>
-
-                    <AnimatePresence>
-                      {showJdGenerator && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                          transition={{ duration: 0.2 }}
-                          className="rounded-xl bg-black/20 backdrop-blur-lg w-72 max-sm:w-full max-sm:max-w-full shadow-2xl overflow-hidden border border-white/[0.06] relative"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
-                          <div className="p-4 max-h-[55vh] overflow-y-auto relative z-10">
-                            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2 block">Generate Job Description</span>
-                            <textarea
-                              value={jdBrief}
-                              onChange={(e) => setJdBrief(e.target.value)}
-                              placeholder="e.g. Senior React dev for fintech startup, 5+ yrs exp, TypeScript, remote..."
-                              rows={3}
-                              className="w-full px-2.5 py-1.5 rounded-md bg-zinc-800 border border-zinc-700 text-white text-xs placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-500 resize-none mb-2"
-                            />
-                            <button
-                              type="button"
-                              onClick={generateJD}
-                              disabled={generating || !jdBrief.trim()}
-                              className="w-full py-1.5 rounded-md bg-white text-black text-xs font-semibold hover:bg-zinc-200 hover:scale-[1.04] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
-                            >
-                              {generating ? <><Loader2 size={12} className="animate-spin" /> Generating...</> : "Generate Full Job Description"}
-                            </button>
-                          </div>
-                          <div className="relative h-[3px] w-full shrink-0">
-                            <div className="absolute inset-0 animate-rgb rounded-full" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
-                            <div className="absolute inset-0 blur-md opacity-60 animate-rgb" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    <AnimatePresence>
-                      {showHistory && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                          transition={{ duration: 0.2 }}
-                          className="rounded-xl bg-black/20 backdrop-blur-lg w-72 max-sm:w-full max-sm:max-w-full shadow-2xl overflow-hidden border border-white/[0.06] relative"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
-                          <div className="p-4 max-h-[55vh] overflow-y-auto relative z-10">
-                            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2 block">Analysis History</span>
-                            {history.length === 0 ? (
-                              <p className="text-zinc-600 text-xs text-center py-4">No saved analyses yet</p>
-                            ) : (
-                              <div className="space-y-1.5">
-                                {history.map(entry => (
-                                  <div key={entry.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/20 transition-colors group cursor-pointer"
-                                    onClick={() => loadFromHistory(entry)}
-                                  >
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-xs text-white/80 truncate">{entry.result?.role_summary?.title || "Unknown"}</p>
-                                      <p className="text-[10px] text-zinc-500">{entry.date}</p>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => { e.stopPropagation(); deleteHistoryItem(entry.id) }}
-                                      className="shrink-0 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all"
-                                    >
-                                      <X size={12} className="text-zinc-500" />
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                          <div className="relative h-[3px] w-full shrink-0">
-                            <div className="absolute inset-0 animate-rgb rounded-full" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
-                            <div className="absolute inset-0 blur-md opacity-60 animate-rgb" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <div className="relative h-[3px] w-full shrink-0">
+                      <div className="absolute inset-0 animate-rgb rounded-full" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
+                      <div className="absolute inset-0 blur-md opacity-60 animate-rgb" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <div className="relative z-10 flex flex-col min-h-screen">
+                <div className="max-sm:left-2 max-sm:right-2 max-sm:top-2 absolute top-4 right-4 z-10 flex flex-col items-end gap-2" style={{ top: "4rem" }}>
+                  <div className="flex gap-1.5 max-sm:flex-wrap max-sm:justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setShowJdGenerator(!showJdGenerator)}
+                      className="rounded-xl px-3 py-2 bg-black/20 backdrop-blur-xl text-white/90 hover:text-white hover:bg-white/10 btn-scale-sm transition-all text-xs font-medium border border-white/[0.06] max-sm:text-[10px] max-sm:px-2 max-sm:py-1.5"
+                      style={{ textShadow: "0 0 8px rgba(255,255,255,0.4), 0 0 20px rgba(255,255,255,0.15)" }}
+                    >
+                      {showJdGenerator ? "Close Generator" : "Generate JD"}
+                    </button>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto px-4 max-sm:px-2 pb-4 mt-16">
-                    <div className="max-w-2xl mx-auto">
-                      {error && (
-                        <div className="rounded-xl p-4 max-sm:p-3 mb-4 border border-red-900 bg-red-950 text-red-300 text-sm max-sm:text-xs flex items-start gap-2">
-                          <TriangleAlert size={18} className="shrink-0 mt-0.5" />
-                          {error}
+                  <AnimatePresence>
+                    {showJdGenerator && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                        transition={{ duration: 0.2 }}
+                        className="rounded-xl bg-black/20 backdrop-blur-lg w-72 max-sm:w-full max-sm:max-w-full shadow-2xl overflow-hidden border border-white/[0.06] relative"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
+                        <div className="p-4 max-h-[55vh] overflow-y-auto relative z-10">
+                          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2 block">Generate Job Description</span>
+                          <textarea
+                            value={jdBrief}
+                            onChange={(e) => setJdBrief(e.target.value)}
+                            placeholder="e.g. Senior React dev for fintech startup, 5+ yrs exp, TypeScript, remote..."
+                            rows={3}
+                            className="w-full px-2.5 py-1.5 rounded-md bg-zinc-800 border border-zinc-700 text-white text-xs placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-500 resize-none mb-2"
+                          />
+                          <button
+                            type="button"
+                            onClick={generateJD}
+                            disabled={generating || !jdBrief.trim()}
+                            className="w-full py-1.5 rounded-md bg-white text-black text-xs font-semibold hover:bg-zinc-200 btn-scale-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                          >
+                            {generating ? <><Loader2 size={12} className="animate-spin" /> Generating...</> : "Generate Full Job Description"}
+                          </button>
                         </div>
-                      )}
-
-                      {!result && !error && (
-                        <div className="flex flex-col items-center justify-center py-16 text-zinc-400">
-                          <p className="text-sm">Your decoded results will appear here</p>
+                        <div className="relative h-[3px] w-full shrink-0">
+                          <div className="absolute inset-0 animate-rgb rounded-full" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
+                          <div className="absolute inset-0 blur-md opacity-60 animate-rgb" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
                         </div>
-                      )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                      {result && (
-                        <div ref={resultsRef} className="space-y-4">
-                          <RevealSection className="flex gap-2 justify-end">
-                            <button
-                              type="button"
-                              onClick={copyAnalysis}
-                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 hover:scale-[1.04] transition-all flex items-center gap-1.5"
-                            >
-                              <Copy size={12} /> {copied ? "Copied!" : "Copy"}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={exportJSON}
-                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 hover:scale-[1.04] transition-all flex items-center gap-1.5"
-                            >
-                              <Download size={12} /> Export JSON
-                            </button>
-                          </RevealSection>
-                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                            <h2 className="text-2xl max-sm:text-xl font-bold mb-2">{result.role_summary.title}</h2>
-                            <div className="flex gap-2 mb-3">
-                              <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
-                                {result.role_summary.level}
-                              </span>
-                              <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
-                                {result.role_summary.type === "IC" ? "Individual Contributor" : result.role_summary.type}
-                              </span>
+                  <AnimatePresence>
+                    {showHistory && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                        transition={{ duration: 0.2 }}
+                        className="rounded-xl bg-black/20 backdrop-blur-lg w-72 max-sm:w-full max-sm:max-w-full shadow-2xl overflow-hidden border border-white/[0.06] relative"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
+                        <div className="p-4 max-h-[55vh] overflow-y-auto relative z-10">
+                          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2 block">Analysis History</span>
+                          {history.length === 0 ? (
+                            <p className="text-zinc-600 text-xs text-center py-4">No saved analyses yet</p>
+                          ) : (
+                            <div className="space-y-1.5">
+                              {history.map(entry => (
+                                <div key={entry.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/20 transition-colors group cursor-pointer"
+                                  onClick={() => loadFromHistory(entry)}
+                                >
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs text-white/80 truncate">{entry.result?.role_summary?.title || "Unknown"}</p>
+                                    <p className="text-[10px] text-zinc-500">{entry.date}</p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); deleteHistoryItem(entry.id) }}
+                                    className="shrink-0 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all"
+                                  >
+                                    <X size={12} className="text-zinc-500" />
+                                  </button>
+                                </div>
+                              ))}
                             </div>
-                            <p className="text-zinc-400">{result.role_summary.one_liner}</p>
-                          </RevealSection>
-                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                            <RevealHeading>Real requirements</RevealHeading>
-                            {result.real_requirements && result.real_requirements.length > 0 ? (
-                              <div className="flex flex-wrap gap-2">
-                                {result.real_requirements.map((req, i) => {
-                                  let pillClass = "bg-blue-900 text-blue-200"
-                                  if (req.type === "nice_to_have") pillClass = "bg-zinc-700 text-zinc-300"
-                                  if (req.type === "filler") pillClass = "bg-red-950 text-red-400 line-through"
-                                  return (
-                                    <span
-                                      key={i}
-                                      title={req.note || ""}
-                                      className={`inline-block px-3 py-1.5 text-xs font-medium rounded-full cursor-default ${pillClass}`}
-                                    >
-                                      {req.skill}
-                                    </span>
-                                  )
-                                })}
-                              </div>
-                            ) : (
-                              <p className="text-zinc-500 text-sm italic">None found</p>
-                            )}
-                          </RevealSection>
-                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                            <RevealHeading><TriangleAlert size={16} className="text-red-400" /> Red Flags</RevealHeading>
-                            {result.red_flags && result.red_flags.length > 0 ? (
-                              <div className="space-y-3">
-                                {result.red_flags.map((flag, i) => {
-                                  let severityClass = "bg-yellow-900 text-yellow-300"
-                                  if (flag.severity === "moderate") severityClass = "bg-orange-900 text-orange-300"
-                                  if (flag.severity === "serious") severityClass = "bg-red-900 text-red-300"
-                                  return (
-                                    <div key={i} className="flex items-start gap-3 pb-3 border-b border-zinc-800 last:border-0 last:pb-0">
-                                      <TriangleAlert size={16} className="shrink-0 mt-1 text-red-400" />
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-zinc-500 italic text-sm mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
-                                        <p className="text-zinc-300 text-sm">{flag.meaning}</p>
-                                      </div>
-                                      <span className={`shrink-0 inline-block px-2 py-0.5 text-xs font-semibold rounded-full ${severityClass}`}>
-                                        {flag.severity}
-                                      </span>
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            ) : (
-                              <p className="text-zinc-500 text-sm italic">None found</p>
-                            )}
-                          </RevealSection>
-                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                            <RevealHeading><CheckCircle size={16} className="text-emerald-400" /> Green Flags</RevealHeading>
-                            {result.green_flags && result.green_flags.length > 0 ? (
-                              <div className="space-y-3">
-                                {result.green_flags.map((flag, i) => (
+                          )}
+                        </div>
+                        <div className="relative h-[3px] w-full shrink-0">
+                          <div className="absolute inset-0 animate-rgb rounded-full" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
+                          <div className="absolute inset-0 blur-md opacity-60 animate-rgb" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-4 max-sm:px-2 pb-4 mt-16">
+                  <div className="max-w-2xl mx-auto">
+                    {error && (
+                      <div className="rounded-xl p-4 max-sm:p-3 mb-4 border border-red-900 bg-red-950 text-red-300 text-sm max-sm:text-xs flex items-start gap-2">
+                        <TriangleAlert size={18} className="shrink-0 mt-0.5" />
+                        {error}
+                      </div>
+                    )}
+
+                    {!result && !error && (
+                      <div className="flex flex-col items-center justify-center py-16 text-zinc-400">
+                        <p className="text-sm">Your decoded results will appear here</p>
+                      </div>
+                    )}
+
+                    {result && (
+                      <div ref={resultsRef} className="space-y-4">
+                        <RevealSection className="flex gap-2 justify-end">
+                          <button
+                            type="button"
+                            onClick={copyAnalysis}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                          >
+                            <Copy size={12} /> {copied ? "Copied!" : "Copy"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={exportJSON}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                          >
+                            <Download size={12} /> Export JSON
+                          </button>
+                        </RevealSection>
+                        <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                          <h2 className="text-2xl max-sm:text-xl font-bold mb-2">{result.role_summary.title}</h2>
+                          <div className="flex gap-2 mb-3">
+                            <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
+                              {result.role_summary.level}
+                            </span>
+                            <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
+                              {result.role_summary.type === "IC" ? "Individual Contributor" : result.role_summary.type}
+                            </span>
+                          </div>
+                          <p className="text-zinc-400">{result.role_summary.one_liner}</p>
+                        </RevealSection>
+                        <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                          <RevealHeading>Real requirements</RevealHeading>
+                          {result.real_requirements && result.real_requirements.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {result.real_requirements.map((req, i) => {
+                                let pillClass = "bg-blue-900 text-blue-200"
+                                if (req.type === "nice_to_have") pillClass = "bg-zinc-700 text-zinc-300"
+                                if (req.type === "filler") pillClass = "bg-red-950 text-red-400 line-through"
+                                return (
+                                  <span
+                                    key={i}
+                                    title={req.note || ""}
+                                    className={`inline-block px-3 py-1.5 text-xs font-medium rounded-full cursor-default ${pillClass}`}
+                                  >
+                                    {req.skill}
+                                  </span>
+                                )
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-zinc-500 text-sm italic">None found</p>
+                          )}
+                        </RevealSection>
+                        <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                          <RevealHeading><TriangleAlert size={16} className="text-red-400" /> Red Flags</RevealHeading>
+                          {result.red_flags && result.red_flags.length > 0 ? (
+                            <div className="space-y-3">
+                              {result.red_flags.map((flag, i) => {
+                                let severityClass = "bg-yellow-900 text-yellow-300"
+                                if (flag.severity === "moderate") severityClass = "bg-orange-900 text-orange-300"
+                                if (flag.severity === "serious") severityClass = "bg-red-900 text-red-300"
+                                return (
                                   <div key={i} className="flex items-start gap-3 pb-3 border-b border-zinc-800 last:border-0 last:pb-0">
-                                    <CheckCircle size={16} className="shrink-0 mt-1 text-emerald-400" />
+                                    <TriangleAlert size={16} className="shrink-0 mt-1 text-red-400" />
                                     <div className="flex-1 min-w-0">
                                       <p className="text-zinc-500 italic text-sm mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
                                       <p className="text-zinc-300 text-sm">{flag.meaning}</p>
                                     </div>
+                                    <span className={`shrink-0 inline-block px-2 py-0.5 text-xs font-semibold rounded-full ${severityClass}`}>
+                                      {flag.severity}
+                                    </span>
                                   </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-zinc-500 text-sm italic">None found</p>
-                            )}
-                          </RevealSection>
-                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                            <RevealHeading>Clarity Scores</RevealHeading>
-                            <Bar label="Responsibilities" score={result.clarity_scores.responsibilities} />
-                            <Bar label="Success metrics" score={result.clarity_scores.success_metrics} />
-                            <Bar label="Team structure" score={result.clarity_scores.team_structure} />
-                            <Bar label="Growth path" score={result.clarity_scores.growth_path} />
-                            <Bar label="Compensation" score={result.clarity_scores.compensation} />
-                            <Bar label="Work-life balance" score={result.clarity_scores.work_life_balance} />
-                          </RevealSection>
-                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                            <RevealHeading><MessageCircle size={16} className="text-zinc-400" /> Questions to ask</RevealHeading>
-                            {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
-                              <ol className="space-y-2">
-                                {result.questions_to_ask.map((q, i) => (
-                                  <li key={i} className="flex gap-3 pb-2 border-b border-zinc-800 last:border-0 last:pb-0">
-                                    <span className="text-zinc-500 text-sm font-mono w-6 shrink-0">{i + 1}.</span>
-                                    <span className="text-zinc-300 text-sm">{q}</span>
-                                  </li>
-                                ))}
-                              </ol>
-                            ) : (
-                              <p className="text-zinc-500 text-sm italic">None generated</p>
-                            )}
-                          </RevealSection>
-                          {result.resume_match && (
-                            <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
-                              <RevealHeading>Resume Match</RevealHeading>
-                              <div className="text-center mb-6">
-                                <span className={`text-5xl font-bold ${
-                                  result.resume_match.score >= 70 ? 'text-emerald-400' :
-                                  result.resume_match.score >= 40 ? 'text-yellow-400' :
-                                  'text-red-400'
-                                }`}>
-                                  {result.resume_match.score}%
-                                </span>
-                                <p className="text-zinc-500 text-sm mt-1">Match score</p>
-                              </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                  <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1">
-                                    <Check size={14} /> Strengths
-                                  </h4>
-                                  {result.resume_match.strengths && result.resume_match.strengths.length > 0 ? (
-                                    <ul className="space-y-1">
-                                      {result.resume_match.strengths.map((s, i) => (
-                                        <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
-                                          <Check size={14} className="shrink-0 mt-0.5 text-emerald-400" />
-                                          {s}
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  ) : (
-                                    <p className="text-zinc-500 text-xs italic">None identified</p>
-                                  )}
-                                </div>
-                                <div>
-                                  <h4 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-1">
-                                    <X size={14} /> Gaps
-                                  </h4>
-                                  {result.resume_match.gaps && result.resume_match.gaps.length > 0 ? (
-                                    <ul className="space-y-1">
-                                      {result.resume_match.gaps.map((g, i) => (
-                                        <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
-                                          <X size={14} className="shrink-0 mt-0.5 text-red-400" />
-                                          {g}
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  ) : (
-                                    <p className="text-zinc-500 text-xs italic">None identified</p>
-                                  )}
-                                </div>
-                              </div>
-                            </RevealSection>
-                          )}
-                          <RevealSection className="content-visibility-auto rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900">
-                            <RevealHeading>Verdict</RevealHeading>
-                            <p className="text-lg leading-relaxed text-zinc-100 mb-4">{result.verdict.summary}</p>
-                            <div className="mb-4">
-                              {result.verdict.apply ? (
-                                <span className="inline-block px-4 py-1.5 text-sm font-bold rounded-full bg-emerald-900 text-emerald-300">
-                                  Apply
-                                </span>
-                              ) : (
-                                <span className="inline-block px-4 py-1.5 text-sm font-bold rounded-full bg-red-900 text-red-300">
-                                  Don't Apply
-                                </span>
-                              )}
+                                )
+                              })}
                             </div>
-                            <p className="text-zinc-500 text-sm">{result.verdict.apply_reason}</p>
-                            <button
-                              onClick={reset}
-                              className="mt-6 w-full bg-white text-black hover:bg-zinc-200 hover:scale-[1.04] font-semibold rounded-lg px-6 py-3 max-sm:py-2.5 transition-all"
-                            >
-                              Reset
-                            </button>
-                          </RevealSection>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="sticky bottom-0 left-0 right-0 pointer-events-none">
-                    <div className="max-w-2xl mx-auto px-4 max-sm:px-2 pb-6 max-sm:pb-3">
-                      <div className="rounded-2xl bg-black/20 backdrop-blur-lg shadow-2xl pointer-events-auto overflow-hidden border border-white/[0.06] relative">
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
-                        <div className="px-5 max-sm:px-3 pt-4 pb-3 relative z-10">
-                          <form onSubmit={handleSubmit}>
-                            <textarea
-                              ref={jdTextareaRef}
-                              value={jdText}
-                              onChange={(e) => {
-                                setJdText(e.target.value)
-                                autoResize(e.target)
-                              }}
-                              placeholder="Paste a job description or type one in..."
-                              rows={1}
-                              className="w-full px-0 py-0 bg-transparent border-0 text-white placeholder-zinc-500 focus:outline-none focus:ring-0 resize-none text-base max-sm:text-sm leading-relaxed"
-                              style={{ minHeight: "1.5em", maxHeight: "50vh" }}
-                            />
-                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-zinc-800/50 max-sm:flex-col max-sm:gap-2">
-                              <div className="flex items-center gap-2 max-sm:w-full max-sm:justify-start">
-                                {!showResume ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => setShowResume(true)}
-                                    className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 hover:scale-[1.04] transition-all"
-                                    style={{ textShadow: "0 0 6px rgba(255,255,255,0.25)" }}
-                                  >
-                                    + resume
-                                  </button>
+                          ) : (
+                            <p className="text-zinc-500 text-sm italic">None found</p>
+                          )}
+                        </RevealSection>
+                        <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                          <RevealHeading><CheckCircle size={16} className="text-emerald-400" /> Green Flags</RevealHeading>
+                          {result.green_flags && result.green_flags.length > 0 ? (
+                            <div className="space-y-3">
+                              {result.green_flags.map((flag, i) => (
+                                <div key={i} className="flex items-start gap-3 pb-3 border-b border-zinc-800 last:border-0 last:pb-0">
+                                  <CheckCircle size={16} className="shrink-0 mt-1 text-emerald-400" />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-zinc-500 italic text-sm mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
+                                    <p className="text-zinc-300 text-sm">{flag.meaning}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-zinc-500 text-sm italic">None found</p>
+                          )}
+                        </RevealSection>
+                        <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                          <RevealHeading>Clarity Scores</RevealHeading>
+                          <Bar label="Responsibilities" score={result.clarity_scores.responsibilities} />
+                          <Bar label="Success metrics" score={result.clarity_scores.success_metrics} />
+                          <Bar label="Team structure" score={result.clarity_scores.team_structure} />
+                          <Bar label="Growth path" score={result.clarity_scores.growth_path} />
+                          <Bar label="Compensation" score={result.clarity_scores.compensation} />
+                          <Bar label="Work-life balance" score={result.clarity_scores.work_life_balance} />
+                        </RevealSection>
+                        <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                          <RevealHeading><MessageCircle size={16} className="text-zinc-400" /> Questions to ask</RevealHeading>
+                          {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
+                            <ol className="space-y-2">
+                              {result.questions_to_ask.map((q, i) => (
+                                <li key={i} className="flex gap-3 pb-2 border-b border-zinc-800 last:border-0 last:pb-0">
+                                  <span className="text-zinc-500 text-sm font-mono w-6 shrink-0">{i + 1}.</span>
+                                  <span className="text-zinc-300 text-sm">{q}</span>
+                                </li>
+                              ))}
+                            </ol>
+                          ) : (
+                            <p className="text-zinc-500 text-sm italic">None generated</p>
+                          )}
+                        </RevealSection>
+                        {result.resume_match && (
+                          <RevealSection className="content-visibility-auto rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900">
+                            <RevealHeading>Resume Match</RevealHeading>
+                            <div className="text-center mb-6">
+                              <span className={`text-5xl font-bold ${
+                                result.resume_match.score >= 70 ? 'text-emerald-400' :
+                                result.resume_match.score >= 40 ? 'text-yellow-400' :
+                                'text-red-400'
+                              }`}>
+                                {result.resume_match.score}%
+                              </span>
+                              <p className="text-zinc-500 text-sm mt-1">Match score</p>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1">
+                                  <Check size={14} /> Strengths
+                                </h4>
+                                {result.resume_match.strengths && result.resume_match.strengths.length > 0 ? (
+                                  <ul className="space-y-1">
+                                    {result.resume_match.strengths.map((s, i) => (
+                                      <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
+                                        <Check size={14} className="shrink-0 mt-0.5 text-emerald-400" />
+                                        {s}
+                                      </li>
+                                    ))}
+                                  </ul>
                                 ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => { setShowResume(false); setResumeText("") }}
-                                    className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 hover:scale-[1.04] transition-all flex items-center gap-1"
-                                    style={{ textShadow: "0 0 6px rgba(255,255,255,0.25)" }}
-                                  >
-                                    <X size={12} /> resume
-                                  </button>
+                                  <p className="text-zinc-500 text-xs italic">None identified</p>
                                 )}
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-1">
+                                  <X size={14} /> Gaps
+                                </h4>
+                                {result.resume_match.gaps && result.resume_match.gaps.length > 0 ? (
+                                  <ul className="space-y-1">
+                                    {result.resume_match.gaps.map((g, i) => (
+                                      <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
+                                        <X size={14} className="shrink-0 mt-0.5 text-red-400" />
+                                        {g}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <p className="text-zinc-500 text-xs italic">None identified</p>
+                                )}
+                              </div>
+                            </div>
+                          </RevealSection>
+                        )}
+                        <RevealSection className="content-visibility-auto rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900">
+                          <RevealHeading>Verdict</RevealHeading>
+                          <p className="text-lg leading-relaxed text-zinc-100 mb-4">{result.verdict.summary}</p>
+                          <div className="mb-4">
+                            {result.verdict.apply ? (
+                              <span className="inline-block px-4 py-1.5 text-sm font-bold rounded-full bg-emerald-900 text-emerald-300">
+                                Apply
+                              </span>
+                            ) : (
+                              <span className="inline-block px-4 py-1.5 text-sm font-bold rounded-full bg-red-900 text-red-300">
+                                Don't Apply
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-zinc-500 text-sm">{result.verdict.apply_reason}</p>
+                          <button
+                            onClick={reset}
+                            className="mt-6 w-full bg-white text-black hover:bg-zinc-200 btn-scale font-semibold rounded-lg px-6 py-3 max-sm:py-2.5 transition-all"
+                          >
+                            Reset
+                          </button>
+                        </RevealSection>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="sticky bottom-0 left-0 right-0 pointer-events-none">
+                  <div className="max-w-2xl mx-auto px-4 max-sm:px-2 pb-6 max-sm:pb-3">
+                    <div className="rounded-2xl bg-black/20 backdrop-blur-lg shadow-2xl pointer-events-auto overflow-hidden border border-white/[0.06] relative">
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
+                      <div className="px-5 max-sm:px-3 pt-4 pb-3 relative z-10">
+                        <form onSubmit={handleSubmit}>
+                          <textarea
+                            ref={jdTextareaRef}
+                            value={jdText}
+                            onChange={(e) => {
+                              setJdText(e.target.value)
+                              autoResize(e.target)
+                            }}
+                            placeholder="Paste a job description or type one in..."
+                            rows={1}
+                            className="w-full px-0 py-0 bg-transparent border-0 text-white placeholder-zinc-500 focus:outline-none focus:ring-0 resize-none text-base max-sm:text-sm leading-relaxed"
+                            style={{ minHeight: "1.5em", maxHeight: "50vh" }}
+                          />
+                          <div className="flex items-center justify-between mt-2 pt-2 border-t border-zinc-800/50 max-sm:flex-col max-sm:gap-2">
+                            <div className="flex items-center gap-2 max-sm:w-full max-sm:justify-start">
+                              {!showResume ? (
                                 <button
                                   type="button"
-                                  onClick={loadSample}
-                                  className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 hover:scale-[1.04] transition-all"
+                                  onClick={() => setShowResume(true)}
+                                  className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 btn-scale-sm transition-all"
                                   style={{ textShadow: "0 0 6px rgba(255,255,255,0.25)" }}
                                 >
-                                  sample
+                                  + resume
                                 </button>
-                              </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => { setShowResume(false); setResumeText("") }}
+                                  className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1"
+                                  style={{ textShadow: "0 0 6px rgba(255,255,255,0.25)" }}
+                                >
+                                  <X size={12} /> resume
+                                </button>
+                              )}
                               <button
-                                type="submit"
-                                disabled={loading}
-                                className="bg-white text-black hover:bg-zinc-200 hover:scale-[1.04] font-semibold rounded-lg px-6 max-sm:px-4 py-2.5 text-sm max-sm:text-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 max-sm:w-full max-sm:justify-center"
+                                type="button"
+                                onClick={loadSample}
+                                className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 btn-scale-sm transition-all"
+                                style={{ textShadow: "0 0 6px rgba(255,255,255,0.25)" }}
                               >
-                                {loading ? <><Loader2 size={16} className="animate-spin" /> Decoding</> : "Decode \u2192"}
+                                sample
                               </button>
                             </div>
-                            {showResume && (
-                              <div className="mt-3 pt-3 border-t border-zinc-800/50">
-                                <textarea
-                                  value={resumeText}
-                                  onChange={(e) => setResumeText(e.target.value)}
-                                  placeholder="Paste your resume here..."
-                                  rows={3}
-                                  className="w-full px-0 py-0 bg-transparent border-0 text-white text-xs placeholder-zinc-600 focus:outline-none focus:ring-0 resize-none"
-                                />
-                              </div>
-                            )}
-                          </form>
-                        </div>
-                        <div className="relative h-[3px] w-full">
-                          <div
-                            className="absolute inset-0 animate-rgb rounded-full"
-                            style={{
-                              background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)",
-                            }}
-                          />
-                          <div
-                            className="absolute inset-0 blur-md opacity-60 animate-rgb"
-                            style={{
-                              background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)",
-                            }}
-                          />
-                        </div>
+                            <button
+                              type="submit"
+                              disabled={loading}
+                              className="bg-white text-black hover:bg-zinc-200 btn-scale font-semibold rounded-lg px-6 max-sm:px-4 py-2.5 text-sm max-sm:text-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 max-sm:w-full max-sm:justify-center"
+                            >
+                              {loading ? <><Loader2 size={16} className="animate-spin" /> Decoding</> : "Decode \u2192"}
+                            </button>
+                          </div>
+                          {showResume && (
+                            <div className="mt-3 pt-3 border-t border-zinc-800/50">
+                              <textarea
+                                value={resumeText}
+                                onChange={(e) => setResumeText(e.target.value)}
+                                placeholder="Paste your resume here..."
+                                rows={3}
+                                className="w-full px-0 py-0 bg-transparent border-0 text-white text-xs placeholder-zinc-600 focus:outline-none focus:ring-0 resize-none"
+                              />
+                            </div>
+                          )}
+                        </form>
+                      </div>
+                      <div className="relative h-[3px] w-full">
+                        <div
+                          className="absolute inset-0 animate-rgb rounded-full"
+                          style={{
+                            background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)",
+                          }}
+                        />
+                        <div
+                          className="absolute inset-0 blur-md opacity-60 animate-rgb"
+                          style={{
+                            background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)",
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </>
   )
 }
