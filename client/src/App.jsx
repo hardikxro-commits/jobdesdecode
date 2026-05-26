@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef, memo, useCallback } from "react"
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring, useAnimationControls } from "framer-motion"
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Sparkles, Braces, ArrowUp } from "lucide-react"
+import ForceFieldBackground from './ForceFieldBackground'
+import ForceFieldLoader from './ForceFieldLoader'
+import CardSwap, { Card } from './CardSwap'
 
 const PROVIDERS = {
   anthropic: {
@@ -130,45 +133,6 @@ Why Join Us:
 
 We are an equal opportunity employer and value diversity at our company. We encourage applications from all backgrounds.`
 
-function CardCopyBtn({ label }) {
-  const [copied, setCopied] = useState(false)
-
-  const copyText = async (text) => {
-    try {
-      await navigator.clipboard.writeText(text)
-    } catch {
-      const ta = document.createElement("textarea")
-      ta.value = text
-      ta.style.position = "fixed"; ta.style.opacity = "0"
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand("copy")
-      document.body.removeChild(ta)
-    }
-  }
-
-  const handleCopy = (e) => {
-    const card = e.currentTarget.closest('.result-card')
-    const text = card?.textContent?.trim() || ""
-    copyText(text).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
-    })
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/10 transition-all"
-      aria-label={`Copy ${label || 'card'} content`}
-      title={`Copy ${label || 'card'}`}
-    >
-      {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
-    </button>
-  )
-}
-
 function AnimatedScore({ value }) {
   const [display, setDisplay] = useState(0)
   const prevRef = useRef(0)
@@ -285,37 +249,6 @@ const Bar = memo(function Bar({ label, score }) {
     </motion.div>
   )
 })
-
-function TiltCard({ children, className = "" }) {
-  const rotateX = useMotionValue(0)
-  const rotateY = useMotionValue(0)
-  const springX = useSpring(rotateX, { stiffness: 150, damping: 15 })
-  const springY = useSpring(rotateY, { stiffness: 150, damping: 15 })
-
-  const onMouseMove = useCallback((e) => {
-    const el = e.currentTarget
-    const rect = el.getBoundingClientRect()
-    const px = (e.clientX - rect.left) / rect.width
-    const py = (e.clientY - rect.top) / rect.height
-    rotateX.set((py - 0.5) * -8)
-    rotateY.set((px - 0.5) * 8)
-  }, [])
-
-  const onMouseLeave = useCallback(() => {
-    rotateX.set(0); rotateY.set(0)
-  }, [])
-
-  return (
-    <motion.div
-      onMouseMove={onMouseMove}
-      onMouseLeave={onMouseLeave}
-      style={{ rotateX: springX, rotateY: springY }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  )
-}
 
 const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || "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"
 
@@ -436,157 +369,7 @@ function RevealSection({ children, className = "", delay = 0 }) {
   )
 }
 
-function RevealHeading({ children, className = "" }) {
-  const [inViewRef, inView] = useInView({ margin: "-30px" })
-  return (
-    <div ref={inViewRef} className={`gpu ${className}`} style={{
-      opacity: inView ? 1 : 0,
-      transform: inView ? 'translateY(0)' : 'translateY(16px)',
-      transition: 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-    }}>
-      {children}
-    </div>
-  )
-}
 
-function Loader() {
-  const [show, setShow] = useState(true)
-  const controls = useAnimationControls()
-  const [progress, setProgress] = useState(0)
-
-  useEffect(() => {
-    controls.start({
-      borderRadius: ["50%", "35%", "50%"],
-      rotate: [0, 180, 360],
-      scale: [1, 1.2, 1],
-      transition: { duration: 2.5, ease: [0.22, 1, 0.36, 1], times: [0, 0.5, 1] },
-    })
-
-    const timer = setTimeout(() => setProgress(100), 100)
-    const exitTimer = setTimeout(() => setShow(false), 2400)
-    return () => { clearTimeout(timer); clearTimeout(exitTimer) }
-  }, [])
-
-  if (!show) return null
-
-  return (
-    <motion.div
-      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#0a0a0f]"
-    >
-      <motion.div
-        animate={controls}
-        className="w-14 h-14 bg-gradient-to-br from-[#ff0064] to-[#6400ff] mb-8"
-      />
-      <motion.p
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.6 }}
-        className="text-white/40 text-[10px] tracking-[0.3em] uppercase font-mono"
-      >
-        Loading
-      </motion.p>
-      <div
-        className="absolute bottom-16 left-1/2 -translate-x-1/2 w-32 h-[2px] bg-white/5 rounded-full overflow-hidden"
-      >
-        <motion.div
-          className="h-full bg-gradient-to-r from-[#ff0064] via-[#6400ff] to-[#0096ff]"
-          initial={{ width: "0%" }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
-        />
-      </div>
-    </motion.div>
-  )
-}
-
-const bgParticles = Array.from({ length: 12 }, (_, i) => ({
-  id: i,
-  x: Math.random() * 100,
-  y: Math.random() * 100,
-  size: Math.random() * 3 + 2,
-  duration: (15 + Math.random() * 10).toFixed(1),
-  delay: (Math.random() * 10).toFixed(1),
-  opacity: (Math.random() * 0.3 + 0.15).toFixed(2),
-  color: ["#fff", "#ff0064", "#6400ff", "#0096ff"][Math.floor(Math.random() * 4)],
-}))
-
-const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity }) {
-  const parallaxRef = useRef(null)
-
-  useEffect(() => {
-    const el = parallaxRef.current
-    if (!el) return
-    let raf = null
-    const handler = (e) => {
-      if (!raf) {
-        raf = requestAnimationFrame(() => {
-          raf = null
-          el.style.transform = `translate3d(${(e.clientX / window.innerWidth - 0.5) * -20}px, ${(e.clientY / window.innerHeight - 0.5) * -20}px, 0)`
-        })
-      }
-    }
-    window.addEventListener("mousemove", handler, { passive: true })
-    return () => {
-      window.removeEventListener("mousemove", handler)
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [])
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <motion.div
-        className="absolute -inset-40 gpu"
-        style={{
-          opacity: blobOpacity ?? 1,
-          scale: blobScale ?? 1,
-          background: "radial-gradient(ellipse at 20% 40%, rgba(255,0,100,0.2), transparent 60%), radial-gradient(ellipse at 80% 30%, rgba(100,0,255,0.2), transparent 60%), radial-gradient(ellipse at 50% 70%, rgba(0,150,255,0.15), transparent 60%)",
-        }}
-      />
-      <div
-        ref={parallaxRef}
-        className="absolute -inset-40 gpu"
-        style={{
-          background: "radial-gradient(ellipse at 50% 50%, rgba(255,0,100,0.06), transparent 60%), radial-gradient(ellipse at 50% 50%, rgba(100,0,255,0.06), transparent 60%)",
-          filter: "blur(60px)",
-          opacity: 0.5,
-        }}
-      />
-      <div
-        className="absolute inset-0 animate-blob-breathe gpu"
-        style={{
-          background: "radial-gradient(ellipse at 70% 20%, rgba(255,0,200,0.1), transparent 50%), radial-gradient(ellipse at 30% 80%, rgba(0,100,255,0.1), transparent 50%)",
-          filter: "blur(80px)",
-        }}
-      />
-      <div className="absolute inset-0 gpu" style={{
-        opacity: gridOpacity ?? 0.03,
-        backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
-        backgroundSize: "60px 60px",
-      }} />
-
-      <div className="virtual-particles" />
-      {bgParticles.map((p) => (
-        <div
-          key={p.id}
-          className="absolute rounded-full gpu"
-          style={{
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: p.size,
-            height: p.size,
-            background: p.color,
-            opacity: p.opacity,
-            willChange: 'transform',
-            animation: `particle-float ${p.duration}s ease-in-out ${p.delay}s infinite`,
-          }}
-        />
-      ))}
-      <div className="absolute inset-0" style={{
-        background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%)",
-      }} />
-    </div>
-  )
-})
 
 function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, showJdGenerator, onJdGeneratorToggle }) {
   return (
@@ -1268,7 +1051,7 @@ Brief: ${jdBrief}`
     <>
       <div className="scanline-overlay" />
       <MouseGlow />
-      <Loader />
+      <ForceFieldLoader />
       {showContent && (
         <motion.div
           className="text-white scroll-container bg-unified"
@@ -1287,7 +1070,7 @@ Brief: ${jdBrief}`
 
           <div id="decoder" ref={mainAppRef}>
             <div className="min-h-screen text-white flex flex-col relative content-vis-auto">
-              <BgLayers />
+              <ForceFieldBackground />
               <div className="ambient-orb" style={{ width: '300px', height: '300px', top: '10%', left: '-5%', background: '#ff0064', animation: 'orbFloat1 20s ease-in-out infinite' }} />
 
               <div className="relative z-10 flex flex-col min-h-screen">
@@ -1389,255 +1172,228 @@ Brief: ${jdBrief}`
                         {loading && <LoadingSkeleton />}
 
 {result && (
-                       <motion.div
-                         ref={resultsRef}
-                         className="space-y-4"
-                         initial="hidden"
-                         whileInView="visible"
-                         viewport={{ once: true, margin: "-100px" }}
-                         variants={{
-                           hidden: {},
-                           visible: {
-                             transition: { staggerChildren: 0.06, delayChildren: 0.05 },
-                           },
-                         }}
-                       >
-                         <motion.div
-                           variants={{
-                             hidden: { opacity: 0, y: 20, scale: 0.9 },
-                             visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 18, stiffness: 200, mass: 0.7 } },
-                           }}
-                           className="flex gap-2 justify-end"
-                         >
-                           <button
-                             type="button"
-                             onClick={copyAnalysis}
-                             className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
-                           >
-                             <Copy size={12} /> {copied ? "Copied!" : "Copy"}
-                           </button>
-                           <button
-                             type="button"
-                             onClick={exportPDF}
-                             className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
-                           >
-                             <Download size={12} /> Export PDF
-                           </button>
-                          </motion.div>
+                      <div ref={resultsRef} className="flex flex-col items-center w-full">
+                        <div className="flex gap-2 justify-end w-full mb-3" style={{ maxWidth: '500px' }}>
+                          <button
+                            type="button"
+                            onClick={copyAnalysis}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                          >
+                            <Copy size={12} /> {copied ? "Copied!" : "Copy"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={exportPDF}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                          >
+                            <Download size={12} /> Export PDF
+                          </button>
+                          <button
+                            type="button"
+                            onClick={reset}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                          >
+                            <ArrowUp size={12} /> Reset
+                          </button>
+                          </div>
 
-                        <motion.div
-                          variants={{
-                            hidden: { opacity: 0, y: 40, scale: 0.85 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 16, stiffness: 180, mass: 0.8 } },
-                          }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-redflags"
+                        <div className="relative w-full" style={{ maxWidth: '500px', height: '420px', margin: '0 auto' }}>
+                        <CardSwap
+                          width="100%"
+                          height={380}
+                          cardDistance={28}
+                          verticalDistance={35}
+                          delay={6000}
+                          pauseOnHover={true}
+                          skewAmount={4}
+                          easing="elastic"
                         >
-                            <div className="card-corner-accent" style={{ '--card-accent': '#ef4444' }} />
-                            <div className="flex items-start justify-between gap-2">
-                              <RevealHeading><h2 className="flex items-center gap-2 text-xl font-display font-bold tracking-tight"><TriangleAlert size={16} className="text-red-400 icon-pulse" /> Red Flags</h2></RevealHeading>
-                              <CardCopyBtn label="Red Flags" />
+                          <Card key="summary" className="flex flex-col overflow-hidden god-card card-type-requirements">
+                            <div className="card-corner-accent" style={{ '--card-accent': '#3b82f6' }} />
+                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
+                              <Sparkles size={14} className="text-blue-400" />
+                              <h3 className="text-sm font-display font-bold tracking-tight">Role Summary</h3>
                             </div>
-                            {result.red_flags && result.red_flags.length > 0 ? (
-                              <div className="space-y-3">
-                                {result.red_flags.map((flag, i) => {
+                            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+                              <div>
+                                <p className="text-lg font-semibold text-white">{result.role_summary.title}</p>
+                                <div className="flex gap-2 mt-2">
+                                  <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-900/60 text-blue-300 border border-blue-800/40 uppercase tracking-wider">{result.role_summary.level}</span>
+                                  <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-purple-900/60 text-purple-300 border border-purple-800/40 uppercase tracking-wider">{result.role_summary.type === "IC" ? "Individual Contributor" : result.role_summary.type}</span>
+                                </div>
+                              </div>
+                              <p className="text-zinc-400 text-sm leading-relaxed">{result.role_summary.one_liner}</p>
+                            </div>
+                          </Card>
+                          <Card key="redflags" className="flex flex-col overflow-hidden god-card card-type-redflags">
+                            <div className="card-corner-accent" style={{ '--card-accent': '#ef4444' }} />
+                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
+                              <TriangleAlert size={14} className="text-red-400" />
+                              <h3 className="text-sm font-display font-bold tracking-tight">Red Flags <span className="text-xs text-zinc-500 font-mono">({result.red_flags?.length || 0})</span></h3>
+                            </div>
+                            <div className="flex-1 overflow-y-auto px-5 py-3 space-y-2">
+                              {result.red_flags && result.red_flags.length > 0 ? (
+                                result.red_flags.map((flag, i) => {
                                   let severityClass = "bg-yellow-900/60 text-yellow-300 border border-yellow-800/40"
                                   if (flag.severity === "moderate") severityClass = "bg-orange-900/60 text-orange-300 border border-orange-800/40"
                                   if (flag.severity === "serious") severityClass = "bg-red-900/60 text-red-300 border border-red-800/40"
                                   return (
-                                    <div key={i} className="flex items-start gap-3 pb-3 border-b border-zinc-800/50 last:border-0 last:pb-0 stagger-fade-in"
-                                      style={{ animationDelay: `${i * 70}ms` }}
-                                    >
-                                      <TriangleAlert size={16} className="shrink-0 mt-1 text-red-400" />
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-zinc-500 italic text-sm mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
-                                        <p className="text-zinc-300 text-sm">{flag.meaning}</p>
+                                    <div key={i} className="pb-2 border-b border-zinc-800/50 last:border-0 last:pb-0">
+                                      <div className="flex items-start gap-2">
+                                        <TriangleAlert size={12} className="shrink-0 mt-1 text-red-400" />
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-zinc-500 italic text-xs mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
+                                          <p className="text-zinc-300 text-xs">{flag.meaning}</p>
+                                        </div>
+                                        <span className={`shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded-full ${severityClass}`}>{flag.severity}</span>
                                       </div>
-                                      <span className={`shrink-0 inline-block px-2 py-0.5 text-xs font-semibold rounded-full ${severityClass}`}>
-                                        {flag.severity}
-                                      </span>
                                     </div>
                                   )
-                                })}
-                              </div>
-                            ) : (
-                              <p className="text-zinc-500 text-sm italic">None found</p>
-                            )}
-                          </motion.div>
-                        <motion.div
-                          variants={{
-                            hidden: { opacity: 0, y: 40, scale: 0.85 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 16, stiffness: 180, mass: 0.8 } },
-                          }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-greenflags"
-                        >
-                            <div className="card-corner-accent" style={{ '--card-accent': '#22c55e' }} />
-                            <div className="flex items-start justify-between gap-2">
-                              <RevealHeading><h2 className="flex items-center gap-2 text-xl font-display font-bold tracking-tight"><CheckCircle size={16} className="text-emerald-400 icon-pulse" /> Green Flags</h2></RevealHeading>
-                              <CardCopyBtn label="Green Flags" />
+                                })
+                              ) : (
+                                <p className="text-zinc-500 text-xs italic">None found</p>
+                              )}
                             </div>
-                            {result.green_flags && result.green_flags.length > 0 ? (
-                              <div className="space-y-3">
-                                {result.green_flags.map((flag, i) => (
-                                  <div key={i} className="flex items-start gap-3 pb-3 border-b border-zinc-800/50 last:border-0 last:pb-0 stagger-fade-in"
-                                    style={{ animationDelay: `${i * 70}ms` }}
-                                  >
-                                    <CheckCircle size={16} className="shrink-0 mt-1 text-emerald-400" />
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-zinc-500 italic text-sm mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
-                                      <p className="text-zinc-300 text-sm">{flag.meaning}</p>
+                          </Card>
+
+                          <Card key="greenflags" className="flex flex-col overflow-hidden god-card card-type-greenflags">
+                            <div className="card-corner-accent" style={{ '--card-accent': '#22c55e' }} />
+                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
+                              <CheckCircle size={14} className="text-emerald-400" />
+                              <h3 className="text-sm font-display font-bold tracking-tight">Green Flags <span className="text-xs text-zinc-500 font-mono">({result.green_flags?.length || 0})</span></h3>
+                            </div>
+                            <div className="flex-1 overflow-y-auto px-5 py-3 space-y-2">
+                              {result.green_flags && result.green_flags.length > 0 ? (
+                                result.green_flags.map((flag, i) => (
+                                  <div key={i} className="pb-2 border-b border-zinc-800/50 last:border-0 last:pb-0">
+                                    <div className="flex items-start gap-2">
+                                      <CheckCircle size={12} className="shrink-0 mt-1 text-emerald-400" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-zinc-500 italic text-xs mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
+                                        <p className="text-zinc-300 text-xs">{flag.meaning}</p>
+                                      </div>
                                     </div>
                                   </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-zinc-500 text-sm italic">None found</p>
-                            )}
-                          </motion.div>
-                        <motion.div
-                          variants={{
-                            hidden: { opacity: 0, y: 40, scale: 0.85 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 16, stiffness: 180, mass: 0.8 } },
-                          }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-scores"
-                        >
+                                ))
+                              ) : (
+                                <p className="text-zinc-500 text-xs italic">None found</p>
+                              )}
+                            </div>
+                          </Card>
+
+                          <Card key="scores" className="flex flex-col overflow-hidden god-card card-type-scores">
                             <div className="card-corner-accent" style={{ '--card-accent': '#a855f7' }} />
-                            <div className="flex items-start justify-between gap-2">
-                              <RevealHeading><h2 className="text-xl font-display font-bold tracking-tight">Clarity Scores</h2></RevealHeading>
-                              <CardCopyBtn label="Scores" />
+                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
+                              <h3 className="text-sm font-display font-bold tracking-tight">Clarity Scores</h3>
                             </div>
-                            {result.clarity_scores ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mt-4">
-                              <DecodeRing score={result.clarity_scores.responsibilities || 0} label="Responsibilities" />
-                              <DecodeRing score={result.clarity_scores.success_metrics || 0} label="Success Metrics" />
-                              <DecodeRing score={result.clarity_scores.team_structure || 0} label="Team Structure" />
-                              <DecodeRing score={result.clarity_scores.growth_path || 0} label="Growth Path" />
-                              <DecodeRing score={result.clarity_scores.compensation || 0} label="Compensation" />
-                              <DecodeRing score={result.clarity_scores.work_life_balance || 0} label="WLB" />
+                            <div className="flex-1 overflow-y-auto px-5 py-4">
+                              {result.clarity_scores ? (
+                                <div className="grid grid-cols-3 gap-3">
+                                  <DecodeRing score={result.clarity_scores.responsibilities || 0} label="Responsibilities" />
+                                  <DecodeRing score={result.clarity_scores.success_metrics || 0} label="Success Metrics" />
+                                  <DecodeRing score={result.clarity_scores.team_structure || 0} label="Team Structure" />
+                                  <DecodeRing score={result.clarity_scores.growth_path || 0} label="Growth Path" />
+                                  <DecodeRing score={result.clarity_scores.compensation || 0} label="Compensation" />
+                                  <DecodeRing score={result.clarity_scores.work_life_balance || 0} label="WLB" />
+                                </div>
+                              ) : (
+                                <p className="text-zinc-500 text-xs italic">No clarity scores available</p>
+                              )}
                             </div>
-                            ) : (
-                              <p className="text-zinc-500 text-sm italic">No clarity scores available</p>
-                            )}
-                          </motion.div>
-                        <motion.div
-                          variants={{
-                            hidden: { opacity: 0, y: 40, scale: 0.85 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 16, stiffness: 180, mass: 0.8 } },
-                          }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-questions"
-                        >
+                          </Card>
+
+                          <Card key="questions" className="flex flex-col overflow-hidden god-card card-type-questions">
                             <div className="card-corner-accent" style={{ '--card-accent': '#eab308' }} />
-                            <div className="flex items-start justify-between gap-2">
-                              <RevealHeading><h2 className="flex items-center gap-2 text-xl font-display font-bold tracking-tight"><MessageCircle size={16} className="text-zinc-400 icon-pulse" /> Questions to ask</h2></RevealHeading>
-                              <CardCopyBtn label="Questions" />
+                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
+                              <MessageCircle size={14} className="text-zinc-400" />
+                              <h3 className="text-sm font-display font-bold tracking-tight">Questions to Ask <span className="text-xs text-zinc-500 font-mono">({result.questions_to_ask?.length || 0})</span></h3>
                             </div>
-                            {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
-                              <ol className="space-y-2">
-                                {result.questions_to_ask.map((q, i) => (
-                                  <li key={i} className="flex gap-3 pb-2 border-b border-zinc-800/50 last:border-0 last:pb-0 stagger-fade-in"
-                                    style={{ animationDelay: `${i * 70}ms` }}
-                                  >
-                                    <span className="text-zinc-500 text-sm font-mono w-6 shrink-0">{i + 1}.</span>
-                                    <span className="text-zinc-300 text-sm">{q}</span>
-                                  </li>
-                                ))}
-                              </ol>
-                            ) : (
-                              <p className="text-zinc-500 text-sm italic">None generated</p>
-                            )}
-                          </motion.div>
+                            <div className="flex-1 overflow-y-auto px-5 py-3">
+                              {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
+                                <ol className="space-y-2">
+                                  {result.questions_to_ask.map((q, i) => (
+                                    <li key={i} className="flex gap-2 pb-2 border-b border-zinc-800/50 last:border-0 last:pb-0">
+                                      <span className="text-zinc-500 text-xs font-mono w-5 shrink-0">{i + 1}.</span>
+                                      <span className="text-zinc-300 text-xs">{q}</span>
+                                    </li>
+                                  ))}
+                                </ol>
+                              ) : (
+                                <p className="text-zinc-500 text-xs italic">None generated</p>
+                              )}
+                            </div>
+                          </Card>
+
                           {result.resume_match && (
-                            <motion.div
-                              variants={{
-                            hidden: { opacity: 0, y: 50, scale: 0.8 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 14, stiffness: 160, mass: 0.9 } },
-                              }}
-                              className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-resume"
-                            >
+                            <Card key="resume" className="flex flex-col overflow-hidden god-card card-type-resume">
                               <div className="card-corner-accent" style={{ '--card-accent': '#06b6d4' }} />
-                              <div className="flex items-start justify-between gap-2">
-                                <RevealHeading><h2 className="text-xl font-display font-bold tracking-tight">Resume Match</h2></RevealHeading>
-                                <CardCopyBtn label="Resume Match" />
+                              <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
+                                <h3 className="text-sm font-display font-bold tracking-tight">Resume Match</h3>
                               </div>
-                              <div className="flex justify-center mb-6">
-                                <DecodeRing score={result.resume_match.score} label="Match Score" />
-                              </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                  <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1">
-                                    <Check size={14} className="icon-float" /> Strengths
-                                  </h4>
-                                  {result.resume_match.strengths && result.resume_match.strengths.length > 0 ? (
-                                    <ul className="space-y-1">
-                                      {result.resume_match.strengths.map((s, i) => (
-                                        <li key={i} className="text-sm text-zinc-300 flex items-start gap-2 stagger-fade-in"
-                                          style={{ animationDelay: `${i * 60}ms` }}
-                                        >
-                                          <Check size={14} className="shrink-0 mt-0.5 text-emerald-400 icon-float" />
-                                          {s}
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  ) : (
-                                    <p className="text-zinc-500 text-xs italic">None identified</p>
-                                  )}
+                              <div className="flex-1 overflow-y-auto px-5 py-4">
+                                <div className="flex justify-center mb-4">
+                                  <DecodeRing score={result.resume_match.score} label="Match Score" />
                                 </div>
-                                <div>
-                                  <h4 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-1">
-                                    <X size={14} className="icon-float" /> Gaps
-                                  </h4>
-                                  {result.resume_match.gaps && result.resume_match.gaps.length > 0 ? (
-                                    <ul className="space-y-1">
-                                      {result.resume_match.gaps.map((g, i) => (
-                                        <li key={i} className="text-sm text-zinc-300 flex items-start gap-2 stagger-fade-in"
-                                          style={{ animationDelay: `${i * 60}ms` }}
-                                        >
-                                          <X size={14} className="shrink-0 mt-0.5 text-red-400" />
-                                          {g}
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  ) : (
-                                    <p className="text-zinc-500 text-xs italic">None identified</p>
-                                  )}
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <h4 className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1">
+                                      <Check size={12} /> Strengths
+                                    </h4>
+                                    {result.resume_match.strengths && result.resume_match.strengths.length > 0 ? (
+                                      <ul className="space-y-1">
+                                        {result.resume_match.strengths.map((s, i) => (
+                                          <li key={i} className="text-xs text-zinc-300 flex items-start gap-1">
+                                            <Check size={10} className="shrink-0 mt-0.5 text-emerald-400" />
+                                            {s}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    ) : (
+                                      <p className="text-zinc-500 text-[10px] italic">None identified</p>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <h4 className="text-[10px] font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-1">
+                                      <X size={12} /> Gaps
+                                    </h4>
+                                    {result.resume_match.gaps && result.resume_match.gaps.length > 0 ? (
+                                      <ul className="space-y-1">
+                                        {result.resume_match.gaps.map((g, i) => (
+                                          <li key={i} className="text-xs text-zinc-300 flex items-start gap-1">
+                                            <X size={10} className="shrink-0 mt-0.5 text-red-400" />
+                                            {g}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    ) : (
+                                      <p className="text-zinc-500 text-[10px] italic">None identified</p>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                            </motion.div>
+                            </Card>
                           )}
-                        <motion.div
-                          variants={{
-                            hidden: { opacity: 0, y: 60, scale: 0.75 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 12, stiffness: 140, mass: 1 } },
-                          }}
-                        >
-                          <TiltCard className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-verdict">
-                          <div className="card-corner-accent" style={{ '--card-accent': '#ff0064' }} />
-                          <div className="flex items-start justify-between gap-2">
-                            <RevealHeading><h2 className="text-2xl font-display font-bold tracking-tight">Verdict</h2></RevealHeading>
-                            <CardCopyBtn label="Verdict" />
-                          </div>
-                          <p className="text-xl leading-relaxed text-zinc-100 mb-4">{result.verdict.summary}</p>
-                          <div className="mb-4">
-                            {result.verdict.apply ? (
-                              <span className="inline-block px-5 py-2 text-base font-bold rounded-full bg-emerald-900 text-emerald-300">
-                                Apply
-                              </span>
-                            ) : (
-                              <span className="inline-block px-5 py-2 text-base font-bold rounded-full bg-red-900 text-red-300">
-                                Don't Apply
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-zinc-500 text-base">{result.verdict.apply_reason}</p>
-                          <button
-                            onClick={reset}
-                            className="ripple-btn mt-6 w-full bg-white text-black hover:bg-zinc-200 btn-scale font-semibold rounded-lg px-6 py-3 max-sm:py-2.5 transition-all"
-                            onMouseDown={addRipple}
-                          >
-                            Reset
-                          </button>
-                        </TiltCard>
-                        </motion.div>
-                      </motion.div>
+
+                          <Card key="verdict" className="flex flex-col overflow-hidden god-card card-type-verdict">
+                            <div className="card-corner-accent" style={{ '--card-accent': '#ff0064' }} />
+                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
+                              <h3 className="text-sm font-display font-bold tracking-tight">Verdict</h3>
+                            </div>
+                            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+                              <p className="text-sm leading-relaxed text-zinc-100">{result.verdict.summary}</p>
+                              <div>
+                                {result.verdict.apply ? (
+                                  <span className="inline-block px-3 py-1 text-xs font-bold rounded-full bg-emerald-900 text-emerald-300">Apply</span>
+                                ) : (
+                                  <span className="inline-block px-3 py-1 text-xs font-bold rounded-full bg-red-900 text-red-300">Don't Apply</span>
+                                )}
+                              </div>
+                              <p className="text-zinc-500 text-xs">{result.verdict.apply_reason}</p>
+                            </div>
+                          </Card>
+                        </CardSwap>
+                        </div>
+                      </div>
                     )}
                       </div>
                     </div>
