@@ -481,6 +481,12 @@ function Loader() {
       style={{ background: "#0a0a0f" }}
     >
       <div className="relative z-10 flex flex-col items-center gap-8">
+        <span
+          className="text-xs tracking-[0.3em] opacity-40"
+          style={{ fontFamily: '"IBM Plex Mono", monospace', color: "#ff0064" }}
+        >
+          ようこそ
+        </span>
         <div className="scan-reveal">
           <div
             className="text-[clamp(48px,12vw,96px)] font-black tracking-tight leading-none"
@@ -953,7 +959,7 @@ export default function App() {
   const chatEndRef = useRef(null)
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowContent(true), 4200)
+    const timer = setTimeout(() => setShowContent(true), 2000)
     return () => clearTimeout(timer)
   }, [])
 
@@ -1504,29 +1510,8 @@ Brief: ${jdBrief}`
                         </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24 },
-                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
-                          }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
-                        >
-                            <div className="flex items-start justify-between gap-2">
-                              <h2 className="text-2xl max-sm:text-xl font-bold mb-2">{result.role_summary.title}</h2>
-                              <CardCopyBtn label="Role Summary" />
-                            </div>
-                            <div className="flex gap-2 mb-3">
-                              <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
-                                {result.role_summary.level}
-                              </span>
-                              <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
-                                {result.role_summary.type === "IC" ? "Individual Contributor" : result.role_summary.type}
-                              </span>
-                            </div>
-                            <p className="text-zinc-400">{result.role_summary.one_liner}</p>
-                          </motion.div>
-                        <motion.div
-                          variants={{
-                            hidden: { opacity: 0, y: 24 },
-                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                            hidden: { opacity: 0, y: 24, scale: 0.95 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1557,8 +1542,8 @@ Brief: ${jdBrief}`
                           </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24 },
-                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                            hidden: { opacity: 0, y: 24, scale: 0.95 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1592,8 +1577,8 @@ Brief: ${jdBrief}`
                           </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24 },
-                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                            hidden: { opacity: 0, y: 24, scale: 0.95 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1619,8 +1604,8 @@ Brief: ${jdBrief}`
                           </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24 },
-                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                            hidden: { opacity: 0, y: 24, scale: 0.95 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1639,8 +1624,8 @@ Brief: ${jdBrief}`
                           </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24 },
-                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                            hidden: { opacity: 0, y: 24, scale: 0.95 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1664,8 +1649,8 @@ Brief: ${jdBrief}`
                           {result.resume_match && (
                             <motion.div
                               variants={{
-                                hidden: { opacity: 0, y: 24 },
-                                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                                hidden: { opacity: 0, y: 24, scale: 0.95 },
+                                visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                               }}
                               className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                             >
@@ -1716,8 +1701,8 @@ Brief: ${jdBrief}`
                           )}
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24 },
-                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                            hidden: { opacity: 0, y: 24, scale: 0.95 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                           }}
                           className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >

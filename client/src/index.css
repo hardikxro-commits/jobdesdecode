@@ -6,6 +6,14 @@
 .gpu {
   transform: translateZ(0);
   will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ── Content visibility for off-screen sections ── */
+.content-vis-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 500px;
 }
 
 /* ── Entrance animations (CSS, zero JS main thread) ── */
