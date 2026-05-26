@@ -431,99 +431,144 @@ function RevealHeading({ children, className = "" }) {
 function Loader() {
   const [show, setShow] = useState(true)
   const [exiting, setExiting] = useState(false)
-  const [terminalText, setTerminalText] = useState("")
-  const arcRef = useRef(null)
+  const [phase, setPhase] = useState(0)
+  const [terminalLines, setTerminalLines] = useState([])
 
-  const terminalLines = [
-    "> initializing decoder...",
-    "> connecting to neural interface...",
-    "> ready",
+  const bootSequence = [
+    { text: "> initializing decoder engine...", delay: 0 },
+    { text: "> loading neural interface...", delay: 350 },
+    { text: "> establishing secure channel...", delay: 700 },
+    { text: "> decrypting protocols...", delay: 1050 },
+    { text: "> analysis engine online.", delay: 1500 },
   ]
 
   useEffect(() => {
-    let cancelled = false
-    let lineIdx = 0
-    let charIdx = 0
-
-    const typeLine = () => {
-      if (cancelled) return
-      const line = terminalLines[lineIdx]
-      if (charIdx <= line.length) {
-        setTerminalText(line.slice(0, charIdx))
-        charIdx++
-        setTimeout(typeLine, 25)
-      } else if (lineIdx < terminalLines.length - 1) {
-        charIdx = 0
-        lineIdx++
-        setTimeout(typeLine, 150)
-      }
-    }
-
-    typeLine()
-
+    const timers = []
+    bootSequence.forEach(({ delay }) => {
+      timers.push(setTimeout(() => {
+        setPhase(p => Math.min(p + 1, bootSequence.length))
+      }, delay))
+    })
     const exitTimer = setTimeout(() => {
-      cancelled = true
       setExiting(true)
-      setTimeout(() => setShow(false), 400)
-    }, 1700)
-
+      setTimeout(() => setShow(false), 700)
+    }, 2200)
     return () => {
-      cancelled = true
+      timers.forEach(clearTimeout)
       clearTimeout(exitTimer)
     }
   }, [])
 
+  useEffect(() => {
+    if (phase === 0) return
+    const line = bootSequence[phase - 1]
+    if (!line) return
+    let i = 0
+    const interval = setInterval(() => {
+      i++
+      setTerminalLines(prev => {
+        const copy = [...prev]
+        copy[phase - 1] = line.text.slice(0, i)
+        return copy
+      })
+      if (i >= line.text.length) clearInterval(interval)
+    }, 15)
+    return () => clearInterval(interval)
+  }, [phase])
+
   if (!show) return null
+
+  const isReady = phase >= bootSequence.length
 
   return (
     <div
-      className={`fixed inset-0 z-[99999] flex flex-col items-center justify-center overflow-hidden ${exiting ? 'loader-exit' : ''}`}
-      style={{ background: "#0a0a0f" }}
+      className={`fixed inset-0 z-[99999] flex flex-col items-center justify-center overflow-hidden ${exiting ? 'loader-glitch-exit' : ''}`}
+      style={{ background: '#0a0a0f' }}
     >
-      <div className="relative z-10 flex flex-col items-center gap-8">
-        <span
-          className="text-sm tracking-[0.3em] opacity-40"
-          style={{ fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace', color: "#ff0064" }}
-        >
-          ようこそ
-        </span>
-        <div className="scan-reveal">
-          <div
-            className="text-[clamp(56px,14vw,128px)] font-black tracking-tight leading-none"
-            style={{ fontFamily: '"Playfair Display", serif', fontWeight: 900, color: "#fff" }}
-          >
-            JD-DECODER
+      <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+        <defs>
+          <linearGradient id="loaderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ff0064" />
+            <stop offset="50%" stopColor="#6400ff" />
+            <stop offset="100%" stopColor="#0096ff" />
+          </linearGradient>
+          <linearGradient id="loaderGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#ff0064" />
+            <stop offset="100%" stopColor="#6400ff" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div className="loader-rain" />
+
+      <div className="relative z-10 flex flex-col items-center gap-6">
+        <div className="relative flex items-center justify-center">
+          <div className="loader-ring-outer" />
+          <div className="loader-ring-mid" />
+          <div className="loader-ring-inner" />
+          <div className="relative z-10 w-14 h-14 rounded-full bg-[#0a0a0f] flex items-center justify-center border border-white/[0.04]">
+            <span className="text-xs font-black tracking-tight loader-logo-reveal" style={{ fontFamily: '"Playfair Display", serif', color: '#fff' }}>
+              JD
+            </span>
           </div>
         </div>
 
-        <div
-          className="text-xs tracking-[0.2em] uppercase terminal-cursor"
-          style={{ fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace', color: "#555", minHeight: "1.2em" }}
-        >
-          {terminalText}
+        <div className="flex flex-col items-center gap-1 min-h-[4em] justify-center" style={{ fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace' }}>
+          {Array.from({ length: phase }, (_, i) => (
+            <span
+              key={i}
+              className="loader-type-line text-xs tracking-wider"
+              style={{
+                color: i === phase - 1 && isReady ? '#ff0064' : i === phase - 1 ? '#888' : '#555',
+                animationDelay: '0s',
+                animationDuration: '0.3s',
+              }}
+            >
+              {terminalLines[i] || bootSequence[i]?.text || ''}
+              {i === phase - 1 && !isReady && (
+                <span className="animate-text-pulse" style={{ color: '#ff0064', marginLeft: 2 }}>_</span>
+              )}
+            </span>
+          ))}
         </div>
 
-        <svg width="100" height="100" viewBox="0 0 100 100" className="gpu">
-          <circle
-            cx="50" cy="50" r="45"
-            className="decode-ring-bg"
-          />
-          <circle
-            ref={arcRef}
-            cx="50" cy="50" r="45"
-            className="decode-ring-fill arc-fill"
-            style={{
-              stroke: "url(#loaderGrad)",
-            }}
-          />
-          <defs>
-            <linearGradient id="loaderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#ff0064" />
-              <stop offset="50%" stopColor="#6400ff" />
-              <stop offset="100%" stopColor="#0096ff" />
-            </linearGradient>
-          </defs>
-        </svg>
+        <div className="flex items-center gap-4">
+          <svg width="72" height="72" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="3" />
+            <circle
+              cx="50" cy="50" r="42"
+              fill="none"
+              stroke="url(#loaderGrad2)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray={264}
+              strokeDashoffset={264 - (phase / bootSequence.length) * 264}
+              style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1)' }}
+              transform="rotate(-90 50 50)"
+            />
+            <text
+              x="50" y="54"
+              textAnchor="middle"
+              fill="#fff"
+              fontSize="18"
+              fontWeight="700"
+              fontFamily='"JetBrains Mono", monospace'
+            >
+              {Math.round((phase / bootSequence.length) * 100)}%
+            </text>
+          </svg>
+        </div>
+
+        <span
+          className={`text-[10px] tracking-[0.3em] uppercase ${isReady ? 'loader-status-pulse' : ''}`}
+          style={{
+            fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace',
+            color: isReady ? '#22c55e' : '#444',
+            transition: 'color 0.4s ease',
+          }}
+        >
+          {isReady ? '● SYSTEM READY' : '○ INITIALIZING'}
+        </span>
       </div>
     </div>
   )
@@ -657,8 +702,8 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
       <div className="relative z-10 flex items-center justify-between px-6 py-4 max-sm:px-4 max-sm:py-3">
         <div className="flex items-center gap-2">
           <span
-            className="text-xl max-sm:text-lg font-bold tracking-tight"
-            style={{ fontFamily: '"Playfair Display", serif', fontWeight: 900, color: "#fff" }}
+            className="text-xl max-sm:text-lg font-bold tracking-tight nav-brand-glow"
+            style={{ fontFamily: '"Playfair Display", serif', fontWeight: 900 }}
           >
             JD-DEC
           </span>
@@ -670,7 +715,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
         <div className="flex items-center gap-3">
           <button
             onClick={onJdGeneratorToggle}
-            className="text-sm tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
+            className={`nav-underline ${showJdGenerator ? 'active' : ''} text-sm tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer btn-scale-sm`}
             style={{
               color: showJdGenerator ? "#fff" : "#888",
               background: showJdGenerator ? "rgba(255,255,255,0.08)" : "transparent",
@@ -681,7 +726,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
           </button>
           <button
             onClick={onHistoryToggle}
-            className="text-sm tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
+            className={`nav-underline ${showHistory ? 'active' : ''} text-sm tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer btn-scale-sm`}
             style={{
               color: showHistory ? "#fff" : "#888",
               background: showHistory ? "rgba(255,255,255,0.08)" : "transparent",
@@ -847,8 +892,14 @@ function HeroSection({ onGetStarted, scrollY }) {
       ref={heroContentRef}
       onMouseMove={handleHeroMouse}
       onMouseLeave={handleHeroLeave}
-      className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden hero-gradient"
+      className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden"
     >
+      <div className="section-bridge" />
+      <div className="floating-shape floating-hex" style={{ top: '15%', left: '8%' }} />
+      <div className="floating-shape floating-triangle" style={{ top: '55%', right: '10%' }} />
+      <div className="floating-shape floating-circle" style={{ top: '30%', right: '15%' }} />
+      <div className="floating-shape floating-diamond" style={{ bottom: '25%', left: '12%' }} />
+      <div className="floating-dot-grid" style={{ inset: 0 }} />
       <motion.div
         className="absolute inset-0 gpu"
         style={{ y: bgY }}
@@ -1241,7 +1292,7 @@ Brief: ${jdBrief}`
       <MouseGlow />
       <Loader />
       {showContent && (
-        <div className="text-white animate-app-entrance scroll-container" style={{ background: "#000" }}>
+        <div className="text-white animate-app-entrance scroll-container bg-unified">
           <Navbar showHistory={showHistory} onHistoryToggle={() => setShowHistory(!showHistory)} scrolled={scrolled} theme={theme} onThemeToggle={toggleTheme} showJdGenerator={showJdGenerator} onJdGeneratorToggle={() => setShowJdGenerator(!showJdGenerator)} />
           <ScrollDots />
           <ScrollProgress scrollY={scrollY} />
@@ -1252,8 +1303,13 @@ Brief: ${jdBrief}`
           </div>
 
           <div id="decoder" ref={mainAppRef} className="scroll-snap-child">
-            <div className="min-h-screen text-white flex flex-col relative" style={{ background: "#000" }}>
+            <div className="min-h-screen text-white flex flex-col relative">
               <BgLayers />
+              <div className="ambient-orb" style={{ width: '300px', height: '300px', top: '10%', left: '-5%', background: '#ff0064', animation: 'orbFloat1 20s ease-in-out infinite' }} />
+              <div className="ambient-orb" style={{ width: '250px', height: '250px', bottom: '20%', right: '-5%', background: '#6400ff', animation: 'orbFloat2 25s ease-in-out infinite' }} />
+              <div className="ambient-orb" style={{ width: '200px', height: '200px', top: '40%', right: '20%', background: '#0096ff', animation: 'orbFloat1 18s ease-in-out infinite reverse' }} />
+              <div className="floating-shape floating-hex" style={{ top: '20%', right: '5%', opacity: 0.03 }} />
+              <div className="floating-shape floating-diamond" style={{ bottom: '30%', left: '3%', opacity: 0.03 }} />
 
               <div className="relative z-10 flex flex-col min-h-screen">
                 <div className="max-sm:left-2 max-sm:right-2 max-sm:top-2 absolute top-4 right-4 z-10 flex flex-col items-end gap-2" style={{ top: "4rem" }}>
@@ -1401,8 +1457,9 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
                             visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
                           }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-requirements"
                         >
+                            <div className="card-corner-accent" style={{ '--card-accent': '#3b82f6' }} />
                             <div className="flex items-start justify-between gap-2">
                               <RevealHeading><h2 className="text-xl font-display font-bold tracking-tight">Real requirements</h2></RevealHeading>
                               <CardCopyBtn label="Requirements" />
@@ -1434,8 +1491,9 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
                             visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
                           }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-redflags"
                         >
+                            <div className="card-corner-accent" style={{ '--card-accent': '#ef4444' }} />
                             <div className="flex items-start justify-between gap-2">
                               <RevealHeading><h2 className="flex items-center gap-2 text-xl font-display font-bold tracking-tight"><TriangleAlert size={16} className="text-red-400 icon-pulse" /> Red Flags</h2></RevealHeading>
                               <CardCopyBtn label="Red Flags" />
@@ -1471,8 +1529,9 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
                             visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
                           }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-greenflags"
                         >
+                            <div className="card-corner-accent" style={{ '--card-accent': '#22c55e' }} />
                             <div className="flex items-start justify-between gap-2">
                               <RevealHeading><h2 className="flex items-center gap-2 text-xl font-display font-bold tracking-tight"><CheckCircle size={16} className="text-emerald-400 icon-pulse" /> Green Flags</h2></RevealHeading>
                               <CardCopyBtn label="Green Flags" />
@@ -1500,8 +1559,9 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
                             visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
                           }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-scores"
                         >
+                            <div className="card-corner-accent" style={{ '--card-accent': '#a855f7' }} />
                             <div className="flex items-start justify-between gap-2">
                               <RevealHeading><h2 className="text-xl font-display font-bold tracking-tight">Clarity Scores</h2></RevealHeading>
                               <CardCopyBtn label="Scores" />
@@ -1520,8 +1580,9 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
                             visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
                           }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-questions"
                         >
+                            <div className="card-corner-accent" style={{ '--card-accent': '#eab308' }} />
                             <div className="flex items-start justify-between gap-2">
                               <RevealHeading><h2 className="flex items-center gap-2 text-xl font-display font-bold tracking-tight"><MessageCircle size={16} className="text-zinc-400 icon-pulse" /> Questions to ask</h2></RevealHeading>
                               <CardCopyBtn label="Questions" />
@@ -1547,8 +1608,9 @@ Brief: ${jdBrief}`
                                 hidden: { opacity: 0, y: 30, scale: 0.9, filter: "blur(6px)" },
                                 visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 20, stiffness: 260, mass: 0.8 } },
                               }}
-                              className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
+                              className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-resume"
                             >
+                              <div className="card-corner-accent" style={{ '--card-accent': '#06b6d4' }} />
                               <div className="flex items-start justify-between gap-2">
                                 <RevealHeading><h2 className="text-xl font-display font-bold tracking-tight">Resume Match</h2></RevealHeading>
                                 <CardCopyBtn label="Resume Match" />
@@ -1603,8 +1665,9 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 40, scale: 0.85, filter: "blur(8px)" },
                             visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 16, stiffness: 220, mass: 0.9 } },
                           }}
-                          className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900 god-card card-float gpu result-card relative group"
+                          className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-verdict"
                         >
+                          <div className="card-corner-accent" style={{ '--card-accent': '#ff0064' }} />
                           <div className="flex items-start justify-between gap-2">
                             <RevealHeading><h2 className="text-2xl font-display font-bold tracking-tight">Verdict</h2></RevealHeading>
                             <CardCopyBtn label="Verdict" />
@@ -1637,7 +1700,8 @@ Brief: ${jdBrief}`
 
                 <div className="sticky bottom-0 left-0 right-0 pointer-events-none">
                   <div className="max-w-2xl mx-auto px-4 max-sm:px-2 pb-6 max-sm:pb-3">
-                    <div className="rounded-2xl bg-black/20 backdrop-blur-lg shadow-2xl pointer-events-auto overflow-hidden border border-white/[0.06] relative">
+                    <div className="rounded-2xl bg-black/20 backdrop-blur-lg shadow-2xl pointer-events-auto overflow-hidden border border-white/[0.06] relative input-bar-wrapper">
+                      <div className="input-bar-glow" />
                       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
                       <div className="px-5 max-sm:px-3 pt-4 pb-3 relative z-10">
                         <form onSubmit={handleSubmit}>
