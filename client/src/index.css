@@ -88,8 +88,8 @@
 
 /* ── Floating card animation ── */
 @keyframes card-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -4px, 0); }
 }
 .card-float {
   animation: card-float 5s ease-in-out infinite;
@@ -208,14 +208,14 @@
 
 /* ── Background animations ── */
 @keyframes particle-float {
-  0%, 100% { transform: translateY(0) translateX(0); }
-  25% { transform: translateY(-30px) translateX(10px); }
-  50% { transform: translateY(-10px) translateX(-10px); }
-  75% { transform: translateY(-35px) translateX(5px); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(10px, -30px, 0); }
+  50% { transform: translate3d(-10px, -10px, 0); }
+  75% { transform: translate3d(5px, -35px, 0); }
 }
 @keyframes blob-breathe {
-  0%, 100% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(1.12) rotate(3deg); }
+  0%, 100% { transform: scale3d(1, 1, 1) rotate(0deg); }
+  50% { transform: scale3d(1.12, 1.12, 1) rotate(3deg); }
 }
 .animate-blob-breathe { animation: blob-breathe 14s ease-in-out infinite; }
 
@@ -353,16 +353,25 @@
 }
 
 /* ── RGB strip ── */
-@keyframes rgb-strip {
-  0% { background-position: 0% 50%; }
-  25% { background-position: 50% 50%; }
-  50% { background-position: 100% 50%; }
-  75% { background-position: 50% 50%; }
-  100% { background-position: 0% 50%; }
+@keyframes rgb-slide {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-33.33%); }
+  50% { transform: translateX(-66.66%); }
+  75% { transform: translateX(-33.33%); }
+  100% { transform: translateX(0); }
 }
 .animate-rgb {
-  animation: rgb-strip 6s ease-in-out infinite;
-  background-size: 300% 100%;
+  position: relative;
+  overflow: hidden;
+  background: transparent !important;
+}
+.animate-rgb::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 300%;
+  background: linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064);
+  animation: rgb-slide 6s ease-in-out infinite;
 }
 
 /* ── Loader char animations ── */
@@ -455,22 +464,12 @@ body {
   background: transparent;
 }
 
-/* ── Hero animated gradient background ── */
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-.hero-gradient {
-  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-  background-size: 300% 300%;
-  animation: gradientShift 20s ease infinite;
-}
-
 /* ── Card hover micro-interactions ── */
 .result-card {
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
+  contain: paint;
+  backface-visibility: hidden;
 }
 .result-card:hover {
   transform: translateY(-6px) scale(1.02);
@@ -483,13 +482,12 @@ body {
   border-radius: 999px;
   background: linear-gradient(135deg, #ff0064, #6400ff, #0096ff);
   background-size: 200% 100%;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
   will-change: transform;
 }
 .cta-pill:hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.02);
   box-shadow: 0 8px 30px rgba(255, 0, 100, 0.3), 0 0 60px rgba(100, 0, 255, 0.15);
-  background-position: 100% 0;
 }
 
 /* ── Typewriter cursor ── */
@@ -505,15 +503,22 @@ body {
 }
 
 /* ── Loading skeleton ── */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
 .skeleton {
-  background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.06) 37%, rgba(255,255,255,0.02) 63%);
-  background-size: 200% 100%;
-  animation: shimmer 1.8s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
   border-radius: 8px;
+}
+.skeleton::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.06) 37%, transparent 63%);
+  transform: translateX(-100%);
+  animation: shimmerSlide 1.8s ease-in-out infinite;
+}
+@keyframes shimmerSlide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
 }
 
 /* ── Section contain for paint isolation ── */
@@ -736,19 +741,7 @@ html {
   background-clip: text;
 }
 
-@keyframes textGradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-.text-gradient-animated {
-  background: linear-gradient(135deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064);
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: textGradientShift 6s ease infinite;
-}
+
 
 /* ── Glassmorphism utility ── */
 .glass {
@@ -1069,8 +1062,6 @@ html {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  background-size: 200% 100%;
-  animation: textGradientShift 4s ease infinite;
 }
 
 /* ── Reduced motion ── */

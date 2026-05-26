@@ -610,6 +610,7 @@ const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity })
             height: p.size,
             background: p.color,
             opacity: p.opacity,
+            willChange: 'transform',
             animation: `particle-float ${p.duration}s ease-in-out ${p.delay}s infinite`,
           }}
         />
@@ -1227,7 +1228,7 @@ Brief: ${jdBrief}`
           </div>
 
           <div id="decoder" ref={mainAppRef}>
-            <div className="min-h-screen text-white flex flex-col relative">
+            <div className="min-h-screen text-white flex flex-col relative content-vis-auto">
               <BgLayers />
               <div className="ambient-orb" style={{ width: '300px', height: '300px', top: '10%', left: '-5%', background: '#ff0064', animation: 'orbFloat1 20s ease-in-out infinite' }} />
 
@@ -1264,8 +1265,8 @@ Brief: ${jdBrief}`
                           </button>
                         </div>
                         <div className="relative h-[3px] w-full shrink-0">
-                          <div className="absolute inset-0 animate-rgb rounded-full" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
-                          <div className="absolute inset-0 blur-md opacity-60 animate-rgb" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
+                          <div className="absolute inset-0 animate-rgb rounded-full" />
+                          <div className="absolute inset-0 blur-md opacity-60 animate-rgb"  />
                         </div>
                       </motion.div>
                     )}
@@ -1308,8 +1309,8 @@ Brief: ${jdBrief}`
                           )}
                         </div>
                         <div className="relative h-[3px] w-full shrink-0">
-                          <div className="absolute inset-0 animate-rgb rounded-full" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
-                          <div className="absolute inset-0 blur-md opacity-60 animate-rgb" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
+                          <div className="absolute inset-0 animate-rgb rounded-full" />
+                          <div className="absolute inset-0 blur-md opacity-60 animate-rgb"  />
                         </div>
                       </motion.div>
                     )}
