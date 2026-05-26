@@ -399,10 +399,7 @@ body {
   color: var(--text-primary);
   transition: background 0.4s ease, color 0.4s ease;
 }
-::-webkit-scrollbar {
-  width: 0;
-  background: transparent;
-}
+
 
 /* ── Card hover micro-interactions ── */
 .result-card {
