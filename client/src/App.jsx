@@ -647,7 +647,7 @@ const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity })
   )
 })
 
-function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle, scrolled, theme, onThemeToggle }) {
+function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, onDecoderClick }) {
   return (
     <nav
       className={`nav-blur fixed top-0 left-0 right-0 z-50 entrance-fade-down ${scrolled ? 'scrolled' : ''}`}
@@ -669,15 +669,15 @@ function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle, scrolled
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={onChatToggle}
+            onClick={onDecoderClick}
             className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
             style={{
-              color: showChat ? "#fff" : "#888",
-              background: showChat ? "rgba(255,255,255,0.08)" : "transparent",
+              color: "#fff",
+              background: "rgba(255,255,255,0.08)",
               fontFamily: '"IBM Plex Mono", monospace',
             }}
           >
-            CHAT
+            DECODER
           </button>
           <button
             onClick={onHistoryToggle}
@@ -924,10 +924,6 @@ export default function App() {
   const [jdBrief, setJdBrief] = useState("")
   const [generating, setGenerating] = useState(false)
   const [showJdGenerator, setShowJdGenerator] = useState(false)
-  const [showChat, setShowChat] = useState(false)
-  const [chatMessages, setChatMessages] = useState([])
-  const [chatInput, setChatInput] = useState("")
-  const [chatLoading, setChatLoading] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [history, setHistory] = useState(() => {
     try { return JSON.parse(localStorage.getItem("jd-history") || "[]") }
@@ -955,8 +951,7 @@ export default function App() {
 
   const resultsRef = useRef(null)
   const jdTextareaRef = useRef(null)
-  const chatInputRef = useRef(null)
-  const chatEndRef = useRef(null)
+
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 2000)
@@ -1147,50 +1142,6 @@ Brief: ${jdBrief}`
     setError(null)
   }
 
-  const sendChatMessage = async () => {
-    if (!chatInput.trim()) return
-    const userMsg = { role: "user", content: chatInput.trim() }
-    setChatMessages(prev => [...prev, userMsg])
-    setChatInput("")
-    setChatLoading(true)
-
-    const cfg = PROVIDERS.nvidia
-    const history = [...chatMessages, userMsg].map(m => ({ role: m.role, content: m.content }))
-
-    try {
-      const response = await fetch("/api/proxy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: cfg.url,
-          headers: cfg.headers(apiKey),
-          body: { ...cfg.bodyPrefix(cfg.defaultModel, ""), messages: history },
-        }),
-      })
-
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error?.message || data.error || `API error: ${response.status}`)
-
-      const raw = cfg.extract(data)
-      setChatMessages(prev => [...prev, { role: "assistant", content: raw }])
-    } catch (err) {
-      setChatMessages(prev => [...prev, { role: "assistant", content: `Error: ${err.message}` }])
-    } finally {
-      setChatLoading(false)
-    }
-  }
-
-  const handleChatKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      sendChatMessage()
-    }
-  }
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [chatMessages])
-
   const saveToHistory = (jd, res) => {
     const entry = { id: Date.now(), date: new Date().toLocaleString(), jd, result: res, provider, model }
     const updated = [entry, ...history].slice(0, 20)
@@ -1272,7 +1223,7 @@ Brief: ${jdBrief}`
       <Loader />
       {showContent && (
         <div className="text-white animate-app-entrance scroll-container" style={{ background: "#000" }}>
-          <Navbar showChat={showChat} onChatToggle={() => setShowChat(!showChat)} showHistory={showHistory} onHistoryToggle={() => setShowHistory(!showHistory)} scrolled={scrolled} theme={theme} onThemeToggle={toggleTheme} />
+          <Navbar showHistory={showHistory} onHistoryToggle={() => setShowHistory(!showHistory)} scrolled={scrolled} theme={theme} onThemeToggle={toggleTheme} onDecoderClick={() => mainAppRef.current?.scrollIntoView({ behavior: "smooth" })} />
           <ScrollDots />
           <ScrollProgress scrollY={scrollY} />
           <SectionIndicator />
@@ -1284,83 +1235,7 @@ Brief: ${jdBrief}`
           <div id="decoder" ref={mainAppRef} className="scroll-snap-child">
             <div className="min-h-screen text-white flex flex-col relative" style={{ background: "#000" }}>
               <BgLayers />
-              <AnimatePresence>
-                {showChat && (
-                  <motion.div
-                    initial={{ opacity: 0, x: -320 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -320 }}
-                    transition={{ type: "spring", damping: 28, stiffness: 300 }}
-                    className="absolute left-0 top-0 bottom-0 z-20 w-80 max-sm:w-full flex flex-col bg-black/20 backdrop-blur-lg border-r border-white/[0.06] shadow-2xl"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
-                    <div className="relative z-10 flex flex-col h-full">
-                      <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Chat</span>
-                        <button
-                          type="button"
-                          onClick={() => setShowChat(false)}
-                          className="text-zinc-500 hover:text-white transition-colors"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-                        {chatMessages.length === 0 && (
-                          <p className="text-zinc-600 text-xs text-center pt-8">Ask me anything about the job description...</p>
-                        )}
-                        {chatMessages.map((msg, i) => (
-                          <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                            <div className={`max-w-[85%] px-3 py-2 rounded-xl text-sm ${
-                              msg.role === "user"
-                                ? "bg-white/10 text-white"
-                                : "bg-white/[0.04] text-zinc-300 border border-white/[0.06]"
-                            }`}>
-                              <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                            </div>
-                          </div>
-                        ))}
-                        {chatLoading && (
-                          <div className="flex justify-start">
-                            <div className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-                              <Loader2 size={14} className="animate-spin" />
-                            </div>
-                          </div>
-                        )}
-                        <div ref={chatEndRef} />
-                      </div>
-                      <div className="p-3 border-t border-white/[0.06]">
-                        <div className="flex gap-2">
-                          <textarea
-                            ref={chatInputRef}
-                            value={chatInput}
-                            onChange={(e) => setChatInput(e.target.value)}
-                            onKeyDown={handleChatKeyDown}
-                            placeholder="Ask a question..."
-                            rows={1}
-                            className="flex-1 px-3 py-2 bg-black/20 border border-white/[0.06] rounded-xl text-white text-xs placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/20 resize-none"
-                            style={{ maxHeight: "120px" }}
-                          />
-                          <button
-                            type="button"
-                            onClick={sendChatMessage}
-                            disabled={chatLoading || !chatInput.trim()}
-                            className="shrink-0 self-end px-3 py-2 bg-white/10 hover:bg-white/20 btn-scale-sm disabled:opacity-30 disabled:cursor-not-allowed rounded-xl transition-all border border-white/[0.06]"
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-                              <path d="M22 2L11 13" /><path d="M22 2L15 22L11 13L2 9L22 2Z" />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="relative h-[3px] w-full shrink-0">
-                      <div className="absolute inset-0 animate-rgb rounded-full" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
-                      <div className="absolute inset-0 blur-md opacity-60 animate-rgb" style={{ background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)" }} />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+
               <div className="relative z-10 flex flex-col min-h-screen">
                 <div className="max-sm:left-2 max-sm:right-2 max-sm:top-2 absolute top-4 right-4 z-10 flex flex-col items-end gap-2" style={{ top: "4rem" }}>
                   <div className="flex gap-1.5 max-sm:flex-wrap max-sm:justify-end">
@@ -1649,8 +1524,8 @@ Brief: ${jdBrief}`
                           {result.resume_match && (
                             <motion.div
                               variants={{
-                                hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
-                                visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+                                hidden: { opacity: 0, y: 30, scale: 0.9, filter: "blur(6px)" },
+                                visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 20, stiffness: 260, mass: 0.8 } },
                               }}
                               className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                             >
@@ -1701,8 +1576,8 @@ Brief: ${jdBrief}`
                           )}
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
-                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+                            hidden: { opacity: 0, y: 40, scale: 0.85, filter: "blur(8px)" },
+                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 16, stiffness: 220, mass: 0.9 } },
                           }}
                           className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
