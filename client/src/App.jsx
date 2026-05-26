@@ -788,9 +788,6 @@ function HeroSection({ onGetStarted, scrollY }) {
   const contentOpacity = useTransform(scrollY, [0, vh * 0.8], [1, 0])
   const contentY = useTransform(scrollY, [0, vh * 0.8], [0, -120])
   const contentScale = useTransform(scrollY, [0, vh * 0.8], [1, 0.95])
-  const blobScale = useTransform(scrollY, [0, vh * 0.5], [1, 2.5])
-  const blobOpacity = useTransform(scrollY, [0, vh * 0.8], [0.4, 0])
-  const gridOpacity = useTransform(scrollY, [0, vh * 0.3], [0.03, 0])
   const chevronOpacity = useTransform(scrollY, [0, vh * 0.3], [1, 0])
   const glowOpacity = useTransform(scrollY, [vh * 0.3, vh * 0.9], [0, 1])
   const bgY = useTransform(scrollY, [0, vh], [0, vh * 0.3])
@@ -831,7 +828,7 @@ function HeroSection({ onGetStarted, scrollY }) {
         className="absolute inset-0 gpu"
         style={{ y: bgY }}
       >
-        <BgLayers blobOpacity={blobOpacity} blobScale={blobScale} gridOpacity={gridOpacity} />
+        <BgLayers />
       </motion.div>
 
       <motion.div
