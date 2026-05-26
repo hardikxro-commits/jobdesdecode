@@ -70,7 +70,7 @@ const PROVIDERS = {
   nvidia: {
     label: "NVIDIA (NIM)",
     url: "https://integrate.api.nvidia.com/v1/chat/completions",
-    defaultModel: "openai/gpt-oss-120b",
+    defaultModel: "meta/llama-3.1-8b-instruct",
     headers: (key) => ({
       "Content-Type": "application/json",
       Authorization: `Bearer ${key}`,
@@ -133,10 +133,24 @@ We are an equal opportunity employer and value diversity at our company. We enco
 function CardCopyBtn({ label }) {
   const [copied, setCopied] = useState(false)
 
+  const copyText = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      const ta = document.createElement("textarea")
+      ta.value = text
+      ta.style.position = "fixed"; ta.style.opacity = "0"
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand("copy")
+      document.body.removeChild(ta)
+    }
+  }
+
   const handleCopy = (e) => {
     const card = e.currentTarget.closest('.result-card')
     const text = card?.textContent?.trim() || ""
-    navigator.clipboard.writeText(text).then(() => {
+    copyText(text).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
     })
@@ -220,7 +234,7 @@ function DecodeRing({ score, label }) {
           fill="#fff"
           fontSize="22"
           fontWeight="700"
-          fontFamily='"Space Grotesk", system-ui'
+            fontFamily='"Inter", system-ui'
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 100, damping: 12, delay: 0.3 }}
@@ -303,7 +317,7 @@ function TiltCard({ children, className = "" }) {
   )
 }
 
-const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || "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"
+const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || ""
 
 
 
@@ -1167,7 +1181,7 @@ Brief: ${jdBrief}`
       `  ${r.verdict.apply ? "✓ Apply" : "✗ Don't Apply"} — ${r.verdict.apply_reason}`,
     ].join("\n")
 
-    navigator.clipboard.writeText(lines).then(() => {
+    copyText(lines).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     })
@@ -1200,7 +1214,7 @@ Brief: ${jdBrief}`
         >
           <Navbar showHistory={showHistory} onHistoryToggle={() => setShowHistory(!showHistory)} scrolled={scrolled} theme={theme} onThemeToggle={toggleTheme} showJdGenerator={showJdGenerator} onJdGeneratorToggle={() => setShowJdGenerator(!showJdGenerator)} />
           <ScrollDots />
-          <ScrollProgress scrollY={scrollY} />
+          <ScrollProgress />
           <SectionIndicator />
 
           <div id="hero">
@@ -1310,76 +1324,43 @@ Brief: ${jdBrief}`
 
                         {loading && <LoadingSkeleton />}
 
-                    {result && (
-                      <motion.div
-                        ref={resultsRef}
-                        className="space-y-4"
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true, margin: "-100px" }}
-                        variants={{
-                          hidden: {},
-                          visible: {
-                            transition: { staggerChildren: 0.06, delayChildren: 0.05 },
-                          },
-                        }}
-                      >
-                        <motion.div
-                          variants={{
-                            hidden: { opacity: 0, y: 20, scale: 0.9 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 18, stiffness: 200, mass: 0.7 } },
-                          }}
-                          className="flex gap-2 justify-end"
-                        >
-                          <button
-                            type="button"
-                            onClick={copyAnalysis}
-                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
-                          >
-                            <Copy size={12} /> {copied ? "Copied!" : "Copy"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={exportPDF}
-                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
-                          >
-                            <Download size={12} /> Export PDF
-                          </button>
-                        </motion.div>
-                        <motion.div
-                          variants={{
-                            hidden: { opacity: 0, y: 40, scale: 0.85 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 16, stiffness: 180, mass: 0.8 } },
-                          }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-requirements"
-                        >
-                            <div className="card-corner-accent" style={{ '--card-accent': '#3b82f6' }} />
-                            <div className="flex items-start justify-between gap-2">
-                              <RevealHeading><h2 className="text-xl font-display font-bold tracking-tight">Real requirements</h2></RevealHeading>
-                              <CardCopyBtn label="Requirements" />
-                            </div>
-                            {result.real_requirements && result.real_requirements.length > 0 ? (
-                              <div className="flex flex-wrap gap-2">
-                                {result.real_requirements.map((req, i) => {
-                                  let pillClass = "bg-blue-900/60 text-blue-200 border border-blue-800/40"
-                                  if (req.type === "nice_to_have") pillClass = "bg-zinc-800/60 text-zinc-300 border border-zinc-700/40"
-                                  if (req.type === "filler") pillClass = "bg-red-950/60 text-red-400 line-through border border-red-900/40"
-                                  return (
-                                    <span
-                                      key={i}
-                                      title={req.note || ""}
-                                      className={`inline-block px-3 py-1.5 text-sm font-medium rounded-full cursor-default stagger-fade-in ${pillClass}`}
-                                      style={{ animationDelay: `${i * 60}ms` }}
-                                    >
-                                      {req.skill}
-                                    </span>
-                                  )
-                                })}
-                              </div>
-                            ) : (
-                              <p className="text-zinc-500 text-sm italic">None found</p>
-                            )}
+{result && (
+                       <motion.div
+                         ref={resultsRef}
+                         className="space-y-4"
+                         initial="hidden"
+                         whileInView="visible"
+                         viewport={{ once: true, margin: "-100px" }}
+                         variants={{
+                           hidden: {},
+                           visible: {
+                             transition: { staggerChildren: 0.06, delayChildren: 0.05 },
+                           },
+                         }}
+                       >
+                         <motion.div
+                           variants={{
+                             hidden: { opacity: 0, y: 20, scale: 0.9 },
+                             visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 18, stiffness: 200, mass: 0.7 } },
+                           }}
+                           className="flex gap-2 justify-end"
+                         >
+                           <button
+                             type="button"
+                             onClick={copyAnalysis}
+                             className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                           >
+                             <Copy size={12} /> {copied ? "Copied!" : "Copy"}
+                           </button>
+                           <button
+                             type="button"
+                             onClick={exportPDF}
+                             className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                           >
+                             <Download size={12} /> Export PDF
+                           </button>
                           </motion.div>
+
                         <motion.div
                           variants={{
                             hidden: { opacity: 0, y: 40, scale: 0.85 },
@@ -1460,14 +1441,18 @@ Brief: ${jdBrief}`
                               <RevealHeading><h2 className="text-xl font-display font-bold tracking-tight">Clarity Scores</h2></RevealHeading>
                               <CardCopyBtn label="Scores" />
                             </div>
+                            {result.clarity_scores ? (
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mt-4">
-                              <DecodeRing score={result.clarity_scores.responsibilities} label="Responsibilities" />
-                              <DecodeRing score={result.clarity_scores.success_metrics} label="Success Metrics" />
-                              <DecodeRing score={result.clarity_scores.team_structure} label="Team Structure" />
-                              <DecodeRing score={result.clarity_scores.growth_path} label="Growth Path" />
-                              <DecodeRing score={result.clarity_scores.compensation} label="Compensation" />
-                              <DecodeRing score={result.clarity_scores.work_life_balance} label="WLB" />
+                              <DecodeRing score={result.clarity_scores.responsibilities || 0} label="Responsibilities" />
+                              <DecodeRing score={result.clarity_scores.success_metrics || 0} label="Success Metrics" />
+                              <DecodeRing score={result.clarity_scores.team_structure || 0} label="Team Structure" />
+                              <DecodeRing score={result.clarity_scores.growth_path || 0} label="Growth Path" />
+                              <DecodeRing score={result.clarity_scores.compensation || 0} label="Compensation" />
+                              <DecodeRing score={result.clarity_scores.work_life_balance || 0} label="WLB" />
                             </div>
+                            ) : (
+                              <p className="text-zinc-500 text-sm italic">No clarity scores available</p>
+                            )}
                           </motion.div>
                         <motion.div
                           variants={{

@@ -368,8 +368,8 @@ html {
 
 /* ── Global ── */
 * {
-  -webkit-user-select: none;
-  user-select: none;
+  -webkit-user-select: text;
+  user-select: text;
 }
 html {
   scroll-behavior: smooth;
@@ -703,10 +703,28 @@ html {
 .bg-unified {
   background: linear-gradient(180deg, #0f0c29 0%, #302b63 25%, #1a1a2e 50%, #0a0a0f 75%, #000 100%);
 }
+.light .bg-unified {
+  background: linear-gradient(180deg, #f4f4f5 0%, #e4e4e7 25%, #fafafa 50%, #f4f4f5 75%, #e4e4e7 100%);
+}
 
 /* ── Loader animations handled by framer-motion ── */
 
 /* ── Section bridge (handled by framer-motion) ── */
+
+/* ── Light theme overrides ── */
+.light .scroll-container.text-white { color: #18181b; }
+.light .text-zinc-300 { color: #27272a; }
+.light .text-zinc-400 { color: #52525b; }
+.light .text-zinc-500 { color: #71717a; }
+.light .bg-zinc-900\80 { background: rgba(244, 244, 245, 0.8); }
+.light .bg-zinc-900\/80 { background: rgba(244, 244, 245, 0.8); }
+.light .bg-black\/20 { background: rgba(0, 0, 0, 0.03); }
+.light .bg-black\/40 { background: rgba(0, 0, 0, 0.03); }
+.light .border-zinc-800 { border-color: rgba(0, 0, 0, 0.1); }
+.light .border-zinc-700 { border-color: rgba(0, 0, 0, 0.15); }
+.light .border-white\/\[0\.06\] { border-color: rgba(0, 0, 0, 0.08); }
+.light .border-white\/\[0\.08\] { border-color: rgba(0, 0, 0, 0.1); }
+.light .from-white\/\[0\.08\] { --tw-gradient-from: rgba(255,255,255,0.4); }
 
 /* ── Card header type colors ── */
 .card-type-requirements { --card-accent: #3b82f6; }
