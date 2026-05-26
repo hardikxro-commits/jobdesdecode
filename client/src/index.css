@@ -544,6 +544,163 @@ html {
   scroll-padding-top: 72px;
 }
 
+/* ── Scroll snap container ── */
+.scroll-container {
+  height: 100dvh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+.scroll-snap-child {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* ── Section dot navigation ── */
+.section-dots {
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+.section-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.section-dot:hover {
+  background: rgba(255,255,255,0.4);
+  transform: scale(1.3);
+}
+.section-dot.active {
+  background: #ff0064;
+  border-color: #ff0064;
+  box-shadow: 0 0 8px rgba(255,0,100,0.5);
+  transform: scale(1.2);
+}
+
+/* ── Scroll progress line ── */
+.scroll-progress {
+  position: fixed;
+  right: 7px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  z-index: 40;
+  background: rgba(255,255,255,0.06);
+  pointer-events: none;
+}
+.scroll-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(180deg, #ff0064, #6400ff, #0096ff);
+  transition: height 0.1s linear;
+}
+
+/* ── Section name indicator ── */
+.section-indicator {
+  position: fixed;
+  bottom: 32px;
+  left: 32px;
+  z-index: 30;
+  pointer-events: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  transition: opacity 0.4s ease;
+}
+
+/* ── New loader: scan-reveal ── */
+@keyframes scanReveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0% 0 0); }
+}
+.scan-reveal {
+  animation: scanReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+
+@keyframes typeCursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.terminal-cursor::after {
+  content: '▊';
+  animation: typeCursor 0.6s step-end infinite;
+  color: #ff0064;
+  margin-left: 2px;
+}
+
+@keyframes arcFill {
+  from { stroke-dashoffset: 283; }
+  to   { stroke-dashoffset: 0; }
+}
+.arc-fill {
+  stroke-dasharray: 283;
+  stroke-dashoffset: 283;
+  animation: arcFill 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes loaderExit {
+  to { opacity: 0; transform: scale(1.05); pointer-events: none; }
+}
+.loader-exit {
+  animation: loaderExit 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ── Decode Ring (Option B) ── */
+.decode-ring-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.decode-ring-svg {
+  transform: rotate(-90deg);
+}
+.decode-ring-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.06);
+  stroke-width: 6;
+}
+.decode-ring-fill {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.decode-ring-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ── Nav blur transition fix ── */
+.nav-blur {
+  backdrop-filter: blur(0px);
+  background: transparent;
+  transition: background 0.4s ease, backdrop-filter 0.4s ease;
+}
+.nav-blur.scrolled {
+  background: rgba(10, 10, 15, 0.8);
+  backdrop-filter: blur(16px);
+}
+
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -556,4 +713,8 @@ html {
   }
   .mouse-glow { display: none; }
   .scanline-overlay { display: none; }
+  .scroll-container { scroll-snap-type: none; }
+  .section-dots { display: none; }
+  .section-indicator { display: none; }
+  .scroll-progress { display: none; }
 }

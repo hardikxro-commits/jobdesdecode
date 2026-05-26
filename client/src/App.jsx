@@ -130,6 +130,64 @@ Why Join Us:
 
 We are an equal opportunity employer and value diversity at our company. We encourage applications from all backgrounds.`
 
+function DecodeRing({ score, label }) {
+  const radius = 42
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference - (score / 100) * circumference
+
+  const getLabel = (s) => {
+    if (s >= 80) return "Strong Match"
+    if (s >= 50) return "Partial Match"
+    return "Weak Match"
+  }
+
+  const getColor = (s) => {
+    if (s >= 80) return "#22c55e"
+    if (s >= 50) return "#eab308"
+    return "#ef4444"
+  }
+
+  const ringColor = getColor(score)
+
+  return (
+    <div className="decode-ring-container">
+      <svg width="110" height="110" viewBox="0 0 100 100" className="decode-ring-svg gpu">
+        <circle cx="50" cy="50" r={radius} className="decode-ring-bg" />
+        <circle
+          cx="50" cy="50" r={radius}
+          className="decode-ring-fill gpu"
+          style={{
+            stroke: ringColor,
+            strokeDasharray: circumference,
+            strokeDashoffset: offset,
+            filter: `drop-shadow(0 0 6px ${ringColor}40)`,
+          }}
+        />
+        <text
+          x="50" y="50"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill="#fff"
+          fontSize="22"
+          fontWeight="700"
+          fontFamily="system-ui"
+          style={{ transform: "rotate(90deg)", transformOrigin: "50px 50px" }}
+        >
+          {score}
+        </text>
+      </svg>
+      <span className="decode-ring-label" style={{ color: ringColor }}>
+        {getLabel(score)}
+      </span>
+      {label && (
+        <span style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 9, letterSpacing: "0.15em", color: "#666", textTransform: "uppercase" }}>
+          {label}
+        </span>
+      )}
+    </div>
+  )
+}
+
 const Bar = memo(function Bar({ label, score }) {
   let barColor = "bg-red-500"
   if (score >= 70) barColor = "bg-emerald-500"
@@ -250,7 +308,7 @@ function MouseGlow() {
   return <div ref={ref} className="mouse-glow gpu" />
 }
 
-function useInView({ once = true, margin = "-60px" } = {}) {
+function useInView({ once = true, margin = "-60px", threshold = 0.15 } = {}) {
   const ref = useRef(null)
   const [inView, setInView] = useState(false)
 
@@ -266,7 +324,7 @@ function useInView({ once = true, margin = "-60px" } = {}) {
           setInView(false)
         }
       },
-      { rootMargin: margin, threshold: 0 }
+      { rootMargin: margin, threshold }
     )
     observer.observe(el)
     return () => observer.disconnect()
@@ -313,11 +371,20 @@ function useScrollFade(ref, { threshold = 0.45 } = {}) {
   }, [ref, threshold])
 }
 
-function RevealSection({ children, className = "" }) {
-  const ref = useRef(null)
-  useScrollFade(ref)
+function RevealSection({ children, className = "", delay = 0 }) {
+  const [ref, inView] = useInView({ margin: "-40px", threshold: 0.15 })
   return (
-    <div ref={ref} className={`gpu ${className}`} style={{ opacity: 0 }}>
+    <div
+      ref={ref}
+      className={`gpu ${className}`}
+      style={{
+        opacity: 0,
+        transform: "translateY(20px)",
+        transition: `opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
+        willChange: "transform, opacity",
+        ...(inView ? { opacity: 1, transform: "translateY(0)" } : {}),
+      }}
+    >
       {children}
     </div>
   )
@@ -339,173 +406,94 @@ function RevealHeading({ children, className = "" }) {
 function Loader() {
   const [show, setShow] = useState(true)
   const [exiting, setExiting] = useState(false)
-  const progressRef = useRef(null)
-  const barRef = useRef(null)
+  const [terminalText, setTerminalText] = useState("")
+  const arcRef = useRef(null)
+
+  const terminalLines = [
+    "> initializing decoder...",
+    "> connecting to neural interface...",
+    "> ready",
+  ]
 
   useEffect(() => {
-    const start = performance.now()
-    const duration = 5000
-    let frame
+    let cancelled = false
+    let lineIdx = 0
+    let charIdx = 0
 
-    const tick = () => {
-      const elapsed = performance.now() - start
-      const n = Math.min(elapsed / duration, 1)
-      let pct
-      if (n < 0.08) {
-        pct = (n / 0.08) * 4
-      } else if (n < 0.3) {
-        pct = 4 + ((n - 0.08) / 0.22) * 26
-      } else if (n < 0.7) {
-        pct = 30 + ((n - 0.3) / 0.4) * 30
-      } else if (n < 0.92) {
-        pct = 60 + ((n - 0.7) / 0.22) * 35
-      } else {
-        pct = 95 + ((n - 0.92) / 0.08) * 5
-      }
-      const rounded = Math.min(Math.round(pct), 99)
-
-      if (progressRef.current) progressRef.current.textContent = rounded
-      if (barRef.current) barRef.current.style.transform = `scaleX(${rounded / 100})`
-
-      if (n < 1) {
-        frame = requestAnimationFrame(tick)
-      } else {
-        setTimeout(() => {
-          if (progressRef.current) progressRef.current.textContent = "100"
-          if (barRef.current) barRef.current.style.transform = "scaleX(1)"
-          setExiting(true)
-          setTimeout(() => setShow(false), 800)
-        }, 400)
+    const typeLine = () => {
+      if (cancelled) return
+      const line = terminalLines[lineIdx]
+      if (charIdx <= line.length) {
+        setTerminalText(line.slice(0, charIdx))
+        charIdx++
+        setTimeout(typeLine, 25)
+      } else if (lineIdx < terminalLines.length - 1) {
+        charIdx = 0
+        lineIdx++
+        setTimeout(typeLine, 150)
       }
     }
 
-    frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
-  }, [])
+    typeLine()
 
-  const letters = [
-    { char: "J", anim: "firstChar", delay: 0.4 },
-    { char: "D", anim: "fromBottomOutRight", delay: 0.65 },
-    { char: "-", anim: "fromLeftOutTop", delay: 0.9 },
-    { char: "D", anim: "fromBottomOutLeft", delay: 1.15 },
-    { char: "E", anim: "fromRightOutTop", delay: 1.4 },
-    { char: "C", anim: "fromBottomOutLeft", delay: 1.65 },
-    { char: "O", anim: "fromRightOutTop", delay: 1.9 },
-    { char: "D", anim: "fromBottomOutRight", delay: 2.15 },
-    { char: "E", anim: "fromLeftOutTop", delay: 2.4 },
-    { char: "R", anim: "fromBottomOutLeft", delay: 2.65 },
-  ]
+    const exitTimer = setTimeout(() => {
+      cancelled = true
+      setExiting(true)
+      setTimeout(() => setShow(false), 400)
+    }, 1700)
+
+    return () => {
+      cancelled = true
+      clearTimeout(exitTimer)
+    }
+  }, [])
 
   if (!show) return null
 
   return (
     <div
-      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center overflow-hidden transition-opacity duration-1000"
-      style={{ background: "#000", opacity: exiting ? 0 : 1 }}
+      className={`fixed inset-0 z-[99999] flex flex-col items-center justify-center overflow-hidden ${exiting ? 'loader-exit' : ''}`}
+      style={{ background: "#0a0a0f" }}
     >
-      <div className="absolute inset-0 overflow-hidden">
-        <div
-          className="absolute -inset-40 animate-loader-blob gpu"
-          style={{
-            background: "radial-gradient(ellipse at 25% 35%, rgba(255,0,100,0.12), transparent 60%), radial-gradient(ellipse at 75% 65%, rgba(100,0,255,0.12), transparent 60%), radial-gradient(ellipse at 50% 50%, rgba(0,150,255,0.08), transparent 60%)",
-            filter: "blur(60px)",
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: "linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)",
-            backgroundSize: "60px 60px",
-            animation: "grid-scroll 20s linear infinite",
-          }}
-        />
-      </div>
-
-      <div
-        className="absolute top-6 left-0 right-0 flex justify-between px-6 z-10 overflow-hidden"
-        style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, fontWeight: 500, color: "#666" }}
-      >
-        <span className="entrance-fade-down" style={{ animationDelay: "0.2s" }}>AI-POWERED</span>
-        <span className="entrance-fade-down" style={{ animationDelay: "0.3s" }}>JOB ANALYSIS</span>
-        <span className="entrance-fade-down" style={{ animationDelay: "0.4s" }}>2026</span>
-      </div>
-
-      <div
-        className="z-10 mb-8 entrance-fade-up"
-        style={{ animationDelay: "0.15s" }}
-      >
-        <span
-          className="tracking-[0.4em] text-xs uppercase"
-          style={{
-            fontFamily: '"Saira Extra Condensed", Impact, sans-serif',
-            fontSize: "clamp(14px, 2vw, 20px)",
-            color: "#555",
-          }}
-        >
-          LOADING
-        </span>
-      </div>
-
-      <div className="relative z-10 flex items-center justify-center" style={{ fontFamily: '"Sofia Sans Extra Condensed", "Saira Extra Condensed", Impact, sans-serif', fontSize: "clamp(56px, 14vw, 130px)", lineHeight: 1, gap: "0.04em" }}>
-        {letters.map((l, i) => (
-          <span
-            key={i}
-            className={`${l.anim} loader-char`}
-            style={{
-              animationDelay: `${l.delay}s`,
-              animationDuration: "0.9s",
-              animationTimingFunction: "cubic-bezier(0.83, 0, 0.17, 1)",
-              color: i === 2 ? "transparent" : "#fff",
-              textShadow: "0 0 80px rgba(255,255,255,0.08)",
-              width: i === 2 ? "0.3em" : "auto",
-            }}
+      <div className="relative z-10 flex flex-col items-center gap-8">
+        <div className="scan-reveal">
+          <div
+            className="text-[clamp(48px,12vw,96px)] font-black tracking-tight leading-none"
+            style={{ fontFamily: '"Segoe UI", system-ui, sans-serif', fontWeight: 900, color: "#fff" }}
           >
-            {l.char}
-          </span>
-        ))}
-      </div>
+            JD-DECODER
+          </div>
+        </div>
 
-      <div
-        className="relative z-10 mt-12 flex items-start gap-1 overflow-hidden entrance-fade-up"
-        style={{ fontFamily: '"IBM Plex Mono", monospace', animationDelay: "0.3s" }}
-      >
-        <span
-          ref={progressRef}
-          className="text-[clamp(28px,6vw,56px)] font-light tracking-wider"
-          style={{ color: "#fff" }}
+        <div
+          className="text-xs tracking-[0.2em] uppercase terminal-cursor"
+          style={{ fontFamily: '"IBM Plex Mono", monospace', color: "#555", minHeight: "1.2em" }}
         >
-          0
-        </span>
-        <span
-          className="text-[clamp(18px,4vw,36px)] font-light"
-          style={{ color: "#555", marginTop: "0.1em" }}
-        >
-          %
-        </span>
-      </div>
+          {terminalText}
+        </div>
 
-      <div
-        className="absolute bottom-6 left-0 right-0 flex justify-between px-6 z-10 overflow-hidden"
-        style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, fontWeight: 500, color: "#666" }}
-      >
-        <span className="entrance-fade-up" style={{ animationDelay: "0.5s" }}>
-          PASTE ANY <span style={{ color: "#ff0064" }}>JOB DESCRIPTION</span>
-        </span>
-        <span className="entrance-fade-up" style={{ animationDelay: "0.6s" }}>
-          @JD-DECODER
-        </span>
+        <svg width="100" height="100" viewBox="0 0 100 100" className="gpu">
+          <circle
+            cx="50" cy="50" r="45"
+            className="decode-ring-bg"
+          />
+          <circle
+            ref={arcRef}
+            cx="50" cy="50" r="45"
+            className="decode-ring-fill arc-fill"
+            style={{
+              stroke: "url(#loaderGrad)",
+            }}
+          />
+          <defs>
+            <linearGradient id="loaderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#ff0064" />
+              <stop offset="50%" stopColor="#6400ff" />
+              <stop offset="100%" stopColor="#0096ff" />
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
-
-      <div
-        ref={barRef}
-        className="absolute bottom-0 left-0 right-0 h-[2px] z-10"
-        style={{
-          background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff)",
-          transformOrigin: "left",
-          transform: "scaleX(0)",
-          transition: "transform 0.3s ease-out",
-        }}
-      />
     </div>
   )
 }
@@ -631,10 +619,10 @@ const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity })
 function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle, scrolled, theme, onThemeToggle }) {
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 entrance-fade-down ${scrolled ? 'nav-scrolled' : ''}`}
-      style={{ animationDelay: "0.3s", willChange: "transform", transition: "box-shadow 0.3s ease, background 0.3s ease" }}
+      className={`nav-blur fixed top-0 left-0 right-0 z-50 entrance-fade-down ${scrolled ? 'scrolled' : ''}`}
+      style={{ animationDelay: "0.3s", willChange: "transform" }}
     >
-      <div className="absolute inset-0 backdrop-blur-lg bg-black/30" />
+      <div className="absolute inset-0" />
       <div className="relative z-10 flex items-center justify-between px-6 py-4 max-sm:px-4 max-sm:py-3">
         <div className="flex items-center gap-2">
           <span
@@ -685,6 +673,105 @@ function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle, scrolled
         </div>
       </div>
     </nav>
+  )
+}
+
+const SECTION_NAMES = ["hero", "decoder", "results"]
+const SECTION_LABELS = ["Home", "Decoder", "Results"]
+
+function ScrollDots() {
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  useEffect(() => {
+    const observers = SECTION_NAMES.map((id, i) => {
+      const el = document.getElementById(id)
+      if (!el) return null
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) setActiveIndex(i)
+        },
+        { threshold: 0.3 }
+      )
+      observer.observe(el)
+      return observer
+    })
+    return () => observers.forEach(o => o?.disconnect())
+  }, [])
+
+  const scrollTo = (i) => {
+    const el = document.getElementById(SECTION_NAMES[i])
+    el?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
+  return (
+    <div className="section-dots">
+      {SECTION_NAMES.map((_, i) => (
+        <button
+          key={i}
+          className={`section-dot ${i === activeIndex ? 'active' : ''}`}
+          onClick={() => scrollTo(i)}
+          aria-label={`Go to ${SECTION_LABELS[i]}`}
+        />
+      ))}
+    </div>
+  )
+}
+
+function ScrollProgress({ scrollY }) {
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    let raf = null
+    const handler = () => {
+      if (!raf) raf = requestAnimationFrame(() => {
+        const docEl = document.documentElement
+        const total = docEl.scrollHeight - window.innerHeight
+        setProgress(total > 0 ? (window.scrollY / total) * 100 : 0)
+        raf = null
+      })
+    }
+    window.addEventListener("scroll", handler, { passive: true })
+    handler()
+    return () => {
+      window.removeEventListener("scroll", handler)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [])
+
+  return (
+    <div className="scroll-progress">
+      <div className="scroll-progress-fill" style={{ height: `${progress}%` }} />
+    </div>
+  )
+}
+
+function SectionIndicator() {
+  const [section, setSection] = useState(SECTION_LABELS[0])
+
+  useEffect(() => {
+    const observers = SECTION_NAMES.map((id, i) => {
+      const el = document.getElementById(id)
+      if (!el) return null
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setSection(SECTION_LABELS[i])
+            window.history.replaceState(null, "", `#${id}`)
+          }
+        },
+        { threshold: 0.3 }
+      )
+      observer.observe(el)
+      return observer
+    })
+
+    return () => observers.forEach(o => o?.disconnect())
+  }, [])
+
+  return (
+    <div className="section-indicator" style={{ opacity: section === SECTION_LABELS[0] ? 0 : 1 }}>
+      — {section}
+    </div>
   )
 }
 
@@ -1157,20 +1244,18 @@ Brief: ${jdBrief}`
       <MouseGlow />
       <Loader />
       {showContent && (
-        <div className="min-h-screen text-white animate-app-entrance" style={{ background: "#000" }}>
+        <div className="text-white animate-app-entrance scroll-container" style={{ background: "#000" }}>
           <Navbar showChat={showChat} onChatToggle={() => setShowChat(!showChat)} showHistory={showHistory} onHistoryToggle={() => setShowHistory(!showHistory)} scrolled={scrolled} theme={theme} onThemeToggle={toggleTheme} />
-          <HeroSection onGetStarted={getStarted} scrollY={scrollY} />
+          <ScrollDots />
+          <ScrollProgress scrollY={scrollY} />
+          <SectionIndicator />
 
-          <motion.div
-            ref={mainAppRef}
-            className="relative"
-            style={{
-              background: "#000",
-              opacity: mainOpacity,
-              y: mainY,
-            }}
-          >
-            <div className="min-h-screen text-white flex flex-col relative">
+          <div id="hero" className="scroll-snap-child">
+            <HeroSection onGetStarted={getStarted} scrollY={scrollY} />
+          </div>
+
+          <div id="decoder" ref={mainAppRef} className="scroll-snap-child">
+            <div className="min-h-screen text-white flex flex-col relative" style={{ background: "#000" }}>
               <BgLayers />
               <AnimatePresence>
                 {showChat && (
@@ -1507,12 +1592,14 @@ Brief: ${jdBrief}`
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
                         >
                             <RevealHeading>Clarity Scores</RevealHeading>
-                            <Bar label="Responsibilities" score={result.clarity_scores.responsibilities} />
-                            <Bar label="Success metrics" score={result.clarity_scores.success_metrics} />
-                            <Bar label="Team structure" score={result.clarity_scores.team_structure} />
-                            <Bar label="Growth path" score={result.clarity_scores.growth_path} />
-                            <Bar label="Compensation" score={result.clarity_scores.compensation} />
-                            <Bar label="Work-life balance" score={result.clarity_scores.work_life_balance} />
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mt-4">
+                              <DecodeRing score={result.clarity_scores.responsibilities} label="Responsibilities" />
+                              <DecodeRing score={result.clarity_scores.success_metrics} label="Success Metrics" />
+                              <DecodeRing score={result.clarity_scores.team_structure} label="Team Structure" />
+                              <DecodeRing score={result.clarity_scores.growth_path} label="Growth Path" />
+                              <DecodeRing score={result.clarity_scores.compensation} label="Compensation" />
+                              <DecodeRing score={result.clarity_scores.work_life_balance} label="WLB" />
+                            </div>
                           </motion.div>
                         <motion.div
                           variants={{
@@ -1544,15 +1631,8 @@ Brief: ${jdBrief}`
                               className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
                             >
                               <RevealHeading>Resume Match</RevealHeading>
-                              <div className="text-center mb-6">
-                                <span className={`text-5xl font-bold ${
-                                  result.resume_match.score >= 70 ? 'text-emerald-400' :
-                                  result.resume_match.score >= 40 ? 'text-yellow-400' :
-                                  'text-red-400'
-                                }`}>
-                                  {result.resume_match.score}%
-                                </span>
-                                <p className="text-zinc-500 text-sm mt-1">Match score</p>
+                              <div className="flex justify-center mb-6">
+                                <DecodeRing score={result.resume_match.score} label="Match Score" />
                               </div>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
@@ -1715,7 +1795,7 @@ Brief: ${jdBrief}`
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       )}
     </>
