@@ -130,6 +130,31 @@ Why Join Us:
 
 We are an equal opportunity employer and value diversity at our company. We encourage applications from all backgrounds.`
 
+function CardCopyBtn({ label }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = (e) => {
+    const card = e.currentTarget.closest('.result-card')
+    const text = card?.textContent?.trim() || ""
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/10 transition-all"
+      aria-label={`Copy ${label || 'card'} content`}
+      title={`Copy ${label || 'card'}`}
+    >
+      {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+    </button>
+  )
+}
+
 function DecodeRing({ score, label }) {
   const radius = 42
   const circumference = 2 * Math.PI * radius
@@ -1221,16 +1246,12 @@ Brief: ${jdBrief}`
     })
   }
 
-  const exportJSON = () => {
+  const exportPDF = () => {
     if (!result) return
-    const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `jd-analysis-${Date.now()}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+    window.print()
   }
+
+
 
   const scrolled = useScrollPosition() > 50
 
@@ -1475,10 +1496,10 @@ Brief: ${jdBrief}`
                           </button>
                           <button
                             type="button"
-                            onClick={exportJSON}
+                            onClick={exportPDF}
                             className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
                           >
-                            <Download size={12} /> Export JSON
+                            <Download size={12} /> Export PDF
                           </button>
                         </motion.div>
                         <motion.div
@@ -1486,9 +1507,12 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 24 },
                             visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                           }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
-                            <h2 className="text-2xl max-sm:text-xl font-bold mb-2">{result.role_summary.title}</h2>
+                            <div className="flex items-start justify-between gap-2">
+                              <h2 className="text-2xl max-sm:text-xl font-bold mb-2">{result.role_summary.title}</h2>
+                              <CardCopyBtn label="Role Summary" />
+                            </div>
                             <div className="flex gap-2 mb-3">
                               <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
                                 {result.role_summary.level}
@@ -1504,9 +1528,12 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 24 },
                             visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                           }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
-                            <RevealHeading>Real requirements</RevealHeading>
+                            <div className="flex items-start justify-between gap-2">
+                              <RevealHeading>Real requirements</RevealHeading>
+                              <CardCopyBtn label="Requirements" />
+                            </div>
                             {result.real_requirements && result.real_requirements.length > 0 ? (
                               <div className="flex flex-wrap gap-2">
                                 {result.real_requirements.map((req, i) => {
@@ -1533,9 +1560,12 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 24 },
                             visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                           }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
-                            <RevealHeading><TriangleAlert size={16} className="text-red-400 icon-pulse" /> Red Flags</RevealHeading>
+                            <div className="flex items-start justify-between gap-2">
+                              <RevealHeading><TriangleAlert size={16} className="text-red-400 icon-pulse" /> Red Flags</RevealHeading>
+                              <CardCopyBtn label="Red Flags" />
+                            </div>
                             {result.red_flags && result.red_flags.length > 0 ? (
                               <div className="space-y-3">
                                 {result.red_flags.map((flag, i) => {
@@ -1565,9 +1595,12 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 24 },
                             visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                           }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
-                            <RevealHeading><CheckCircle size={16} className="text-emerald-400 icon-pulse" /> Green Flags</RevealHeading>
+                            <div className="flex items-start justify-between gap-2">
+                              <RevealHeading><CheckCircle size={16} className="text-emerald-400 icon-pulse" /> Green Flags</RevealHeading>
+                              <CardCopyBtn label="Green Flags" />
+                            </div>
                             {result.green_flags && result.green_flags.length > 0 ? (
                               <div className="space-y-3">
                                 {result.green_flags.map((flag, i) => (
@@ -1589,9 +1622,12 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 24 },
                             visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                           }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
-                            <RevealHeading>Clarity Scores</RevealHeading>
+                            <div className="flex items-start justify-between gap-2">
+                              <RevealHeading>Clarity Scores</RevealHeading>
+                              <CardCopyBtn label="Scores" />
+                            </div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mt-4">
                               <DecodeRing score={result.clarity_scores.responsibilities} label="Responsibilities" />
                               <DecodeRing score={result.clarity_scores.success_metrics} label="Success Metrics" />
@@ -1606,9 +1642,12 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 24 },
                             visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                           }}
-                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
-                            <RevealHeading><MessageCircle size={16} className="text-zinc-400 icon-pulse" /> Questions to ask</RevealHeading>
+                            <div className="flex items-start justify-between gap-2">
+                              <RevealHeading><MessageCircle size={16} className="text-zinc-400 icon-pulse" /> Questions to ask</RevealHeading>
+                              <CardCopyBtn label="Questions" />
+                            </div>
                             {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
                               <ol className="space-y-2">
                                 {result.questions_to_ask.map((q, i) => (
@@ -1628,9 +1667,12 @@ Brief: ${jdBrief}`
                                 hidden: { opacity: 0, y: 24 },
                                 visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                               }}
-                              className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                              className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                             >
-                              <RevealHeading>Resume Match</RevealHeading>
+                              <div className="flex items-start justify-between gap-2">
+                                <RevealHeading>Resume Match</RevealHeading>
+                                <CardCopyBtn label="Resume Match" />
+                              </div>
                               <div className="flex justify-center mb-6">
                                 <DecodeRing score={result.resume_match.score} label="Match Score" />
                               </div>
@@ -1677,9 +1719,12 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 24 },
                             visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
                           }}
-                          className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900 god-card card-float gpu result-card"
+                          className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
-                          <RevealHeading>Verdict</RevealHeading>
+                          <div className="flex items-start justify-between gap-2">
+                            <RevealHeading>Verdict</RevealHeading>
+                            <CardCopyBtn label="Verdict" />
+                          </div>
                           <p className="text-lg leading-relaxed text-zinc-100 mb-4">{result.verdict.summary}</p>
                           <div className="mb-4">
                             {result.verdict.apply ? (

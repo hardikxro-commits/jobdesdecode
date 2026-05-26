@@ -530,6 +530,32 @@ body {
   transition: box-shadow 0.3s ease, background 0.3s ease;
 }
 
+/* ── Print styles ── */
+@media print {
+  .scanline-overlay,
+  .mouse-glow,
+  .section-dots,
+  .section-indicator,
+  .scroll-progress,
+  nav,
+  .scroll-container > div:not([id="decoder"]),
+  #decoder > div > div:first-child,
+  .sticky,
+  button,
+  textarea {
+    display: none !important;
+  }
+  #decoder .space-y-4 {
+    display: block !important;
+  }
+  .god-card {
+    break-inside: avoid;
+    border: 1px solid #333 !important;
+    page-break-inside: avoid;
+  }
+  body { background: #000 !important; color: #fff !important; }
+}
+
 /* ── Smooth scroll offset for fixed nav ── */
 html {
   scroll-padding-top: 72px;
