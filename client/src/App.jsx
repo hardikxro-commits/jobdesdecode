@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useLayoutEffect, memo, useCallback } from "react"
+import { useState, useEffect, useRef, memo, useCallback } from "react"
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Sparkles, Braces } from "lucide-react"
 
@@ -266,18 +266,15 @@ function useTypewriter(text, speed = 40, delay = 0) {
 function useScrollPosition() {
   const [scrollY, setScrollY] = useState(0)
   useEffect(() => {
-    let raf = null
+    let last = 0
     const handler = () => {
-      if (!raf) raf = requestAnimationFrame(() => {
-        setScrollY(window.scrollY)
-        raf = null
-      })
+      const now = Date.now()
+      if (now - last < 80) return
+      last = now
+      setScrollY(window.scrollY)
     }
     window.addEventListener("scroll", handler, { passive: true })
-    return () => {
-      window.removeEventListener("scroll", handler)
-      if (raf) cancelAnimationFrame(raf)
-    }
+    return () => window.removeEventListener("scroll", handler)
   }, [])
   return scrollY
 }
@@ -358,44 +355,6 @@ function useInView({ once = true, margin = "-60px", threshold = 0.15 } = {}) {
   return [ref, inView]
 }
 
-function useScrollFade(ref, { threshold = 0.45 } = {}) {
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-    let raf = null
-
-    const update = () => {
-      const rect = el.getBoundingClientRect()
-      const vh = window.innerHeight
-      const elCenter = rect.top + rect.height / 2
-      const viewCenter = vh / 2
-      const maxDist = vh * threshold
-      const dist = Math.abs(elCenter - viewCenter)
-      const progress = 1 - Math.min(1, dist / maxDist)
-      const opacity = Math.max(0, Math.min(1, progress))
-
-      el.style.opacity = opacity
-      if (opacity < 1) {
-        el.style.transform = `translateY(${(1 - opacity) * 35}px)`
-      } else {
-        el.style.transform = ''
-      }
-      raf = null
-    }
-
-    const handler = () => {
-      if (!raf) raf = requestAnimationFrame(update)
-    }
-
-    window.addEventListener("scroll", handler, { passive: true })
-    update()
-    return () => {
-      window.removeEventListener("scroll", handler)
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [ref, threshold])
-}
-
 function RevealSection({ children, className = "", delay = 0 }) {
   const [ref, inView] = useInView({ margin: "-40px", threshold: 0.15 })
   return (
@@ -417,13 +376,13 @@ function RevealSection({ children, className = "", delay = 0 }) {
 
 function RevealHeading({ children, className = "" }) {
   const [inViewRef, inView] = useInView({ margin: "-30px" })
-  const fadeRef = useRef(null)
-  useScrollFade(fadeRef)
   return (
-    <div ref={fadeRef} className={`gpu ${className}`} style={{ opacity: 0 }}>
-      <div ref={inViewRef} className={`reveal-heading ${inView ? "in-view" : ""}`}>
-        {children}
-      </div>
+    <div ref={inViewRef} className={`gpu ${className}`} style={{
+      opacity: inView ? 1 : 0,
+      transform: inView ? 'translateY(0)' : 'translateY(16px)',
+      transition: 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+    }}>
+      {children}
     </div>
   )
 }
@@ -574,15 +533,15 @@ function Loader() {
   )
 }
 
-const bgParticles = Array.from({ length: 80 }, (_, i) => ({
+const bgParticles = Array.from({ length: 12 }, (_, i) => ({
   id: i,
   x: Math.random() * 100,
   y: Math.random() * 100,
-  size: Math.random() * 4 + 1,
-  duration: (Math.random() * 6 + 5).toFixed(1),
-  delay: (Math.random() * 8).toFixed(1),
-  opacity: (Math.random() * 0.35 + 0.1).toFixed(2),
-  color: ["#fff", "#ff0064", "#6400ff", "#0096ff", "#ff00c8"][Math.floor(Math.random() * 5)],
+  size: Math.random() * 3 + 2,
+  duration: (15 + Math.random() * 10).toFixed(1),
+  delay: (Math.random() * 10).toFixed(1),
+  opacity: (Math.random() * 0.3 + 0.15).toFixed(2),
+  color: ["#fff", "#ff0064", "#6400ff", "#0096ff"][Math.floor(Math.random() * 4)],
 }))
 
 const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity }) {
@@ -638,35 +597,7 @@ const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity })
         backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
         backgroundSize: "60px 60px",
       }} />
-      <div
-        className="absolute rounded-full"
-        style={{
-          width: "40vmin",
-          height: "40vmin",
-          top: "50%",
-          left: "50%",
-          marginTop: "-20vmin",
-          marginLeft: "-20vmin",
-          border: "1px solid rgba(255,0,100,0.08)",
-          animation: "ring-pulse 4s ease-in-out infinite",
-          transform: "translateZ(0)",
-        }}
-      >
-        <div
-          className="absolute rounded-full"
-          style={{
-            width: 8,
-            height: 8,
-            top: -4,
-            left: "50%",
-            marginLeft: -4,
-            background: "#ff0064",
-            boxShadow: "0 0 12px #ff0064, 0 0 30px #ff0064",
-            animation: "orbit 8s linear infinite",
-            transform: "translateZ(0)",
-          }}
-        />
-      </div>
+
       <div className="virtual-particles" />
       {bgParticles.map((p) => (
         <div
@@ -678,10 +609,8 @@ const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity })
             width: p.size,
             height: p.size,
             background: p.color,
-            boxShadow: `0 0 ${p.size * 5}px ${p.color}, 0 0 ${p.size * 12}px ${p.color}`,
             opacity: p.opacity,
-            "--p-opacity": p.opacity,
-            animation: `particle-float ${p.duration}s ease-in-out ${p.delay}s infinite, particle-glow ${(parseFloat(p.duration) * 0.7).toFixed(1)}s ease-in-out ${p.delay}s infinite`,
+            animation: `particle-float ${p.duration}s ease-in-out ${p.delay}s infinite`,
           }}
         />
       ))}
@@ -793,30 +722,33 @@ function ScrollDots() {
   )
 }
 
-function ScrollProgress({ scrollY }) {
-  const [progress, setProgress] = useState(0)
+function ScrollProgress() {
+  const scrollRef = useRef(0)
+  const fillRef = useRef(null)
 
   useEffect(() => {
-    let raf = null
+    const fill = fillRef.current
+    if (!fill) return
+    let ticking = false
     const handler = () => {
-      if (!raf) raf = requestAnimationFrame(() => {
-        const docEl = document.documentElement
-        const total = docEl.scrollHeight - window.innerHeight
-        setProgress(total > 0 ? (window.scrollY / total) * 100 : 0)
-        raf = null
-      })
+      if (!ticking) {
+        ticking = true
+        requestAnimationFrame(() => {
+          ticking = false
+          const total = document.documentElement.scrollHeight - window.innerHeight
+          const pct = total > 0 ? (window.scrollY / total) : 0
+          fill.style.transform = `scaleY(${pct})`
+        })
+      }
     }
     window.addEventListener("scroll", handler, { passive: true })
     handler()
-    return () => {
-      window.removeEventListener("scroll", handler)
-      if (raf) cancelAnimationFrame(raf)
-    }
+    return () => window.removeEventListener("scroll", handler)
   }, [])
 
   return (
     <div className="scroll-progress">
-      <div className="scroll-progress-fill" style={{ height: `${progress}%` }} />
+      <div ref={fillRef} className="scroll-progress-fill" />
     </div>
   )
 }
@@ -895,11 +827,6 @@ function HeroSection({ onGetStarted, scrollY }) {
       className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden"
     >
       <div className="section-bridge" />
-      <div className="floating-shape floating-hex" style={{ top: '15%', left: '8%' }} />
-      <div className="floating-shape floating-triangle" style={{ top: '55%', right: '10%' }} />
-      <div className="floating-shape floating-circle" style={{ top: '30%', right: '15%' }} />
-      <div className="floating-shape floating-diamond" style={{ bottom: '25%', left: '12%' }} />
-      <div className="floating-dot-grid" style={{ inset: 0 }} />
       <motion.div
         className="absolute inset-0 gpu"
         style={{ y: bgY }}
@@ -1298,18 +1225,14 @@ Brief: ${jdBrief}`
           <ScrollProgress scrollY={scrollY} />
           <SectionIndicator />
 
-          <div id="hero" className="scroll-snap-child">
+          <div id="hero">
             <HeroSection onGetStarted={getStarted} scrollY={scrollY} />
           </div>
 
-          <div id="decoder" ref={mainAppRef} className="scroll-snap-child">
+          <div id="decoder" ref={mainAppRef}>
             <div className="min-h-screen text-white flex flex-col relative">
               <BgLayers />
               <div className="ambient-orb" style={{ width: '300px', height: '300px', top: '10%', left: '-5%', background: '#ff0064', animation: 'orbFloat1 20s ease-in-out infinite' }} />
-              <div className="ambient-orb" style={{ width: '250px', height: '250px', bottom: '20%', right: '-5%', background: '#6400ff', animation: 'orbFloat2 25s ease-in-out infinite' }} />
-              <div className="ambient-orb" style={{ width: '200px', height: '200px', top: '40%', right: '20%', background: '#0096ff', animation: 'orbFloat1 18s ease-in-out infinite reverse' }} />
-              <div className="floating-shape floating-hex" style={{ top: '20%', right: '5%', opacity: 0.03 }} />
-              <div className="floating-shape floating-diamond" style={{ bottom: '30%', left: '3%', opacity: 0.03 }} />
 
               <div className="relative z-10 flex flex-col min-h-screen">
                 <div className="max-sm:left-2 max-sm:right-2 max-sm:top-2 absolute top-4 right-4 z-10 flex flex-col items-end gap-2" style={{ top: "4rem" }}>
