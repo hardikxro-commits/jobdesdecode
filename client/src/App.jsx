@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo, useCallback } from "react"
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Sparkles, Braces, ArrowUp } from "lucide-react"
 import ForceFieldBackground from './ForceFieldBackground'
 import ForceFieldLoader from './ForceFieldLoader'
@@ -540,67 +540,17 @@ function SectionIndicator() {
   )
 }
 
-function RotatingRings() {
-  return (
-    <svg width="420" height="420" viewBox="0 0 420 420" className="opacity-[0.06]" style={{ animation: "spinOuter 30s linear infinite" }}>
-      <circle cx="210" cy="210" r="170" fill="none" stroke="#ff0064" strokeWidth="1" strokeDasharray="6 12" />
-      <circle cx="210" cy="210" r="130" fill="none" stroke="#6400ff" strokeWidth="1" strokeDasharray="3 16"
-        style={{ animation: "spinInner 20s linear infinite", transformOrigin: "210px 210px" }} />
-      <circle cx="210" cy="210" r="210" fill="none" stroke="#0096ff" strokeWidth="0.5" strokeDasharray="1 10"
-        style={{ animation: "spinOuter 40s linear infinite", transformOrigin: "210px 210px" }} />
-      <circle cx="210" cy="210" r="50" fill="none" stroke="#ff0064" strokeWidth="0.5" strokeDasharray="2 6"
-        style={{ animation: "spinInner 15s linear infinite", transformOrigin: "210px 210px" }} />
-    </svg>
-  )
-}
-
 function HeroSection({ onGetStarted, scrollY }) {
   const vh = typeof window !== "undefined" ? window.innerHeight : 720
   const contentOpacity = useTransform(scrollY, [0, vh * 0.7], [1, 0])
   const contentY = useTransform(scrollY, [0, vh * 0.7], [0, -80])
-  const bgY = useTransform(scrollY, [0, vh], [0, vh * 0.2])
-
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
-  const springX = useSpring(mouseX, { stiffness: 80, damping: 25 })
-  const springY = useSpring(mouseY, { stiffness: 80, damping: 25 })
-
-  const handleMouse = useCallback((e) => {
-    mouseX.set((e.clientX / window.innerWidth - 0.5) * 24)
-    mouseY.set((e.clientY / window.innerHeight - 0.5) * 24)
-  }, [])
-  const handleLeave = useCallback(() => {
-    mouseX.set(0); mouseY.set(0)
-  }, [])
 
   return (
-    <section
-      onMouseMove={handleMouse}
-      onMouseLeave={handleLeave}
-      className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden"
-    >
-      <div className="absolute inset-0">
-        <div className="absolute inset-0" style={{
-          background: "radial-gradient(ellipse at 50% 45%, rgba(255,0,100,0.06), transparent 65%), radial-gradient(ellipse at 80% 55%, rgba(100,0,255,0.04), transparent 65%)",
-        }} />
-        <div className="absolute inset-0 opacity-[0.015]" style={{
-          backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
-          backgroundSize: "80px 80px",
-        }} />
-        <div className="absolute inset-0" style={{
-          background: "radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.5) 100%)",
-        }} />
-      </div>
+    <section className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden">
+      <ForceFieldBackground />
 
       <motion.div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        style={{ y: bgY, x: springX }}
-      >
-        <RotatingRings />
-      </motion.div>
-
-      <motion.div
-        className="relative z-10 text-center px-6 max-w-4xl mx-auto"
+        className="relative z-10 text-center px-6 max-w-4xl mx-auto pointer-events-none"
         style={{ opacity: contentOpacity, y: contentY }}
       >
         <motion.p
@@ -645,7 +595,7 @@ function HeroSection({ onGetStarted, scrollY }) {
         >
           <button
             onClick={onGetStarted}
-            className="px-8 py-2.5 rounded-full text-xs font-medium tracking-widest uppercase text-white/70 border border-white/15 hover:bg-white/5 hover:text-white hover:border-white/30 transition-all cursor-pointer"
+            className="px-8 py-2.5 rounded-full text-xs font-medium tracking-widest uppercase text-white/70 border border-white/15 hover:bg-white/5 hover:text-white hover:border-white/30 transition-all cursor-pointer pointer-events-auto"
             onMouseDown={addRipple}
           >
             Get Started
