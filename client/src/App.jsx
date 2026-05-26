@@ -1317,26 +1317,18 @@ Brief: ${jdBrief}`
                   </AnimatePresence>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-4 max-sm:px-2 pb-4 mt-16">
-                  <div className="max-w-2xl mx-auto">
-                    {error && (
-                      <div className="rounded-xl p-4 max-sm:p-3 mb-4 border border-red-900 bg-red-950 text-red-300 text-sm max-sm:text-xs flex items-start gap-2">
-                        <TriangleAlert size={18} className="shrink-0 mt-0.5" />
-                        {error}
-                      </div>
-                    )}
+                <div className="flex flex-col flex-1">
+                  {(result || loading || error) && (
+                    <div className="flex-1 overflow-y-auto px-4 max-sm:px-2 pb-4 mt-16">
+                      <div className="max-w-2xl mx-auto">
+                        {error && (
+                          <div className="rounded-xl p-4 max-sm:p-3 mb-4 border border-red-900 bg-red-950 text-red-300 text-sm max-sm:text-xs flex items-start gap-2">
+                            <TriangleAlert size={18} className="shrink-0 mt-0.5" />
+                            {error}
+                          </div>
+                        )}
 
-                    {loading && <LoadingSkeleton />}
-
-                    {!result && !error && !loading && (
-                      <div className="flex flex-col items-center justify-center py-24 text-zinc-500 empty-pulse">
-                        <div className="w-16 h-16 rounded-2xl border border-zinc-800 bg-zinc-900/50 flex items-center justify-center mb-4">
-                          <Braces size={28} className="text-zinc-600" />
-                        </div>
-                        <p className="text-sm font-medium">Awaiting analysis</p>
-                        <p className="text-xs text-zinc-600 mt-1">Paste a JD above and hit <span className="text-zinc-400 font-mono">Decode</span></p>
-                      </div>
-                    )}
+                        {loading && <LoadingSkeleton />}
 
                     {result && (
                       <motion.div
@@ -1616,87 +1608,97 @@ Brief: ${jdBrief}`
                         </motion.div>
                       </motion.div>
                     )}
-                  </div>
-                </div>
+                      </div>
+                    </div>
+                  )}
 
-                <div className="sticky bottom-0 left-0 right-0 pointer-events-none">
-                  <div className="max-w-2xl mx-auto px-4 max-sm:px-2 pb-6 max-sm:pb-3">
-                    <div className="rounded-2xl bg-black/40 backdrop-blur-xl shadow-2xl pointer-events-auto overflow-hidden border border-white/[0.08]">
-                      <div className="px-5 max-sm:px-3 pt-4 pb-3">
-                        <form onSubmit={handleSubmit}>
-                          <div className="flex items-end gap-2">
-                            <textarea
-                              ref={jdTextareaRef}
-                              value={jdText}
-                              onChange={(e) => {
-                                setJdText(e.target.value)
-                                autoResize(e.target)
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                  e.preventDefault()
-                                  handleSubmit(e)
-                                }
-                              }}
-                              placeholder="Paste a job description or type one in..."
-                              rows={1}
-                              className="flex-1 px-0 py-0 bg-transparent border-0 text-white placeholder-zinc-500 focus:outline-none focus:ring-0 resize-none text-base max-sm:text-sm leading-relaxed"
-                              style={{ minHeight: "1.5em", maxHeight: "50vh" }}
-                            />
-                            <button
-                              type="submit"
-                              disabled={loading || !jdText.trim()}
-                              className="shrink-0 mb-[1px] rounded-xl bg-white text-black hover:bg-zinc-200 btn-scale p-2.5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                              onMouseDown={addRipple}
-                            >
-                              {loading
-                                ? <Loader2 size={16} className="animate-spin" />
-                                : <ArrowUp size={16} />
-                              }
-                            </button>
+                  <div className={`${!result && !loading && !error ? 'flex-1 flex flex-col items-center justify-center px-4' : 'px-4'} max-sm:px-2 pb-6 max-sm:pb-3`}>
+                    <div className="max-w-2xl mx-auto w-full">
+                      {!result && !loading && !error && (
+                        <div className="mb-6 text-center">
+                          <div className="w-16 h-16 rounded-2xl border border-zinc-800 bg-zinc-900/50 flex items-center justify-center mx-auto mb-4">
+                            <Braces size={28} className="text-zinc-600" />
                           </div>
-                          <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-800/40 max-sm:flex-col max-sm:gap-2">
-                            <div className="flex items-center gap-2 max-sm:w-full">
-                              {!showResume ? (
-                                <button
-                                  type="button"
-                                  onClick={() => setShowResume(true)}
-                                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 transition-all"
-                                >
-                                  + resume
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => { setShowResume(false); setResumeText("") }}
-                                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 transition-all flex items-center gap-1"
-                                >
-                                  <X size={12} /> resume
-                                </button>
-                              )}
+                          <p className="text-sm font-medium text-zinc-500">Awaiting analysis</p>
+                          <p className="text-xs text-zinc-600 mt-1">Paste a JD above and hit send</p>
+                        </div>
+                      )}
+                      <div className="rounded-2xl bg-black/40 backdrop-blur-xl shadow-2xl pointer-events-auto overflow-hidden border border-white/[0.08]">
+                        <div className="px-5 max-sm:px-3 pt-4 pb-3">
+                          <form onSubmit={handleSubmit}>
+                            <div className="flex items-end gap-2">
+                              <textarea
+                                ref={jdTextareaRef}
+                                value={jdText}
+                                onChange={(e) => {
+                                  setJdText(e.target.value)
+                                  autoResize(e.target)
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault()
+                                    handleSubmit(e)
+                                  }
+                                }}
+                                placeholder="Paste a job description or type one in..."
+                                rows={1}
+                                className="flex-1 px-0 py-0 bg-transparent border-0 text-white placeholder-zinc-500 focus:outline-none focus:ring-0 resize-none text-base max-sm:text-sm leading-relaxed"
+                                style={{ minHeight: "1.5em", maxHeight: "50vh" }}
+                              />
                               <button
-                                type="button"
-                                onClick={loadSample}
-                                className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 transition-all"
+                                type="submit"
+                                disabled={loading || !jdText.trim()}
+                                className="shrink-0 mb-[1px] rounded-xl bg-white text-black hover:bg-zinc-200 btn-scale p-2.5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                onMouseDown={addRipple}
                               >
-                                sample
+                                {loading
+                                  ? <Loader2 size={16} className="animate-spin" />
+                                  : <ArrowUp size={16} />
+                                }
                               </button>
                             </div>
-                          </div>
-                          {showResume && (
-                            <div className="mt-3 pt-3 border-t border-zinc-800/40">
-                              <textarea
-                                value={resumeText}
-                                onChange={(e) => setResumeText(e.target.value)}
-                                placeholder="Paste your resume here..."
-                                rows={3}
-                                className="w-full px-0 py-0 bg-transparent border-0 text-white text-xs placeholder-zinc-600 focus:outline-none focus:ring-0 resize-none"
-                              />
+                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-800/40 max-sm:flex-col max-sm:gap-2">
+                              <div className="flex items-center gap-2 max-sm:w-full">
+                                {!showResume ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowResume(true)}
+                                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 transition-all"
+                                  >
+                                    + resume
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => { setShowResume(false); setResumeText("") }}
+                                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 transition-all flex items-center gap-1"
+                                  >
+                                    <X size={12} /> resume
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={loadSample}
+                                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 transition-all"
+                                >
+                                  sample
+                                </button>
+                              </div>
                             </div>
-                          )}
-                        </form>
+                            {showResume && (
+                              <div className="mt-3 pt-3 border-t border-zinc-800/40">
+                                <textarea
+                                  value={resumeText}
+                                  onChange={(e) => setResumeText(e.target.value)}
+                                  placeholder="Paste your resume here..."
+                                  rows={3}
+                                  className="w-full px-0 py-0 bg-transparent border-0 text-white text-xs placeholder-zinc-600 focus:outline-none focus:ring-0 resize-none"
+                                />
+                              </div>
+                            )}
+                          </form>
+                        </div>
                       </div>
-
                     </div>
                   </div>
                 </div>
