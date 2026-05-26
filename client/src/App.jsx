@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, memo, useCallback } from "react"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Sparkles, Braces, ArrowUp } from "lucide-react"
 import ForceFieldBackground from './ForceFieldBackground'
-import ForceFieldLoader from './ForceFieldLoader'
+import Preloader from './Preloader'
 import CardSwap, { Card } from './CardSwap'
 
 const PROVIDERS = {
@@ -544,84 +544,222 @@ function HeroSection({ onGetStarted, scrollY }) {
   const vh = typeof window !== "undefined" ? window.innerHeight : 720
   const contentOpacity = useTransform(scrollY, [0, vh * 0.7], [1, 0])
   const contentY = useTransform(scrollY, [0, vh * 0.7], [0, -80])
+  const fadeOut = useTransform(scrollY, [0, vh * 0.8], [1, 0])
+
+  const mouseRef = useRef({ x: 0.5, y: 0.5 })
+  const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 })
+  useEffect(() => {
+    const onMove = (e) => {
+      const mx = e.clientX / window.innerWidth
+      const my = e.clientY / window.innerHeight
+      mouseRef.current = { x: mx, y: my }
+      setMouse({ x: mx, y: my })
+    }
+    window.addEventListener("mousemove", onMove)
+    return () => window.removeEventListener("mousemove", onMove)
+  }, [])
+
+  const decChars = "DEC".split("")
+  const deChars = "DE".split("")
+  const taglineChars = "Cut through the noise.".split("")
 
   return (
-    <section className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden">
-      <ForceFieldBackground />
+    <section className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden bg-black">
+      <motion.div
+        className="absolute inset-0"
+        style={{ opacity: fadeOut }}
+      >
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)",
+          backgroundSize: "40px 40px",
+        }} />
+        <motion.div
+          className="absolute w-[500px] h-[500px] rounded-full blur-[100px] opacity-15"
+          style={{
+            background: "radial-gradient(circle, #ff0064, transparent 70%)",
+            left: `${20 + mouse.x * 10}%`,
+            top: `${20 + mouse.y * 10}%`,
+            x: (mouse.x - 0.5) * -20,
+            y: (mouse.y - 0.5) * -20,
+          }}
+          transition={{ type: "spring", stiffness: 50, damping: 30 }}
+        />
+        <motion.div
+          className="absolute w-[400px] h-[400px] rounded-full blur-[100px] opacity-10"
+          style={{
+            background: "radial-gradient(circle, #6400ff, transparent 70%)",
+            right: `${15 + (1 - mouse.x) * 10}%`,
+            bottom: `${20 + (1 - mouse.y) * 10}%`,
+            x: (mouse.x - 0.5) * 15,
+            y: (mouse.y - 0.5) * 15,
+          }}
+          transition={{ type: "spring", stiffness: 40, damping: 25 }}
+        />
+        <motion.div
+          className="absolute w-[350px] h-[350px] rounded-full blur-[90px] opacity-8"
+          style={{
+            background: "radial-gradient(circle, #0096ff, transparent 70%)",
+            left: `${50 + (mouse.x - 0.5) * 5}%`,
+            top: `${60 + (mouse.y - 0.5) * 5}%`,
+          }}
+          transition={{ type: "spring", stiffness: 60, damping: 35 }}
+        />
+
+        <motion.div
+          className="absolute top-[15%] left-[12%] w-3 h-3 border border-white/20 rotate-45"
+          animate={{
+            y: [0, -15, 0],
+            rotate: [45, 90, 45],
+            opacity: [0.2, 0.4, 0.2],
+          }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          style={{ x: (mouse.x - 0.5) * -30, y: (mouse.y - 0.5) * -30 }}
+        />
+        <motion.div
+          className="absolute bottom-[25%] right-[15%] w-4 h-4 rounded-full border border-white/15"
+          animate={{
+            y: [0, -20, 0],
+            scale: [1, 1.3, 1],
+            opacity: [0.15, 0.35, 0.15],
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          style={{ x: (mouse.x - 0.5) * 25, y: (mouse.y - 0.5) * 25 }}
+        />
+        <motion.div
+          className="absolute top-[40%] right-[20%] w-[2px] h-8 bg-white/10"
+          animate={{ height: [32, 48, 32], opacity: [0.1, 0.3, 0.1] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          style={{ x: (mouse.x - 0.5) * -20, y: (mouse.y - 0.5) * -20 }}
+        />
+        <motion.div
+          className="absolute bottom-[30%] left-[20%] w-5 h-5 border border-white/10 rounded-full"
+          animate={{
+            scale: [1, 1.5, 1],
+            opacity: [0.1, 0.25, 0.1],
+          }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          style={{ x: (mouse.x - 0.5) * 35, y: (mouse.y - 0.5) * 35 }}
+        />
+      </motion.div>
 
       <motion.div
-        className="relative z-10 text-center px-6 max-w-4xl mx-auto pointer-events-none"
+        className="relative z-10 text-center px-6 max-w-4xl mx-auto"
         style={{ opacity: contentOpacity, y: contentY }}
       >
-        <motion.p
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
-          className="text-xs uppercase tracking-[0.3em] mb-8 text-white/25 font-mono"
+        <motion.div
+          className="flex items-center justify-center gap-1 mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.3 }}
         >
-          AI-Powered Job Analysis
-        </motion.p>
+          <motion.div
+            className="w-1 h-1 rounded-full bg-[#ff0064]"
+            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <span className="text-xs uppercase tracking-[0.3em] text-white/25 font-mono mx-2">
+            AI-Powered Job Analysis
+          </span>
+          <motion.div
+            className="w-1 h-1 rounded-full bg-[#0096ff]"
+            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+          />
+        </motion.div>
 
-        <h1 className="text-[clamp(44px,10vw,120px)] font-black tracking-tight leading-[0.85] mb-6">
-          <span className="text-white">DEC</span>
-          <span className="relative inline-block w-[0.5em] h-[0.5em] align-middle mx-1">
+        <h1 className="text-[clamp(44px,10vw,120px)] font-black tracking-tight leading-[0.85] mb-6 flex items-center justify-center flex-wrap">
+          {decChars.map((ch, i) => (
+            <motion.span
+              key={`dec-${i}`}
+              className="text-white inline-block"
+              initial={{ opacity: 0, y: 60, rotateX: -90 }}
+              animate={{ opacity: 1, y: 0, rotateX: 0 }}
+              transition={{ delay: 0.5 + i * 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {ch}
+            </motion.span>
+          ))}
+          <motion.span
+            className="relative inline-block w-[0.5em] h-[0.5em] align-middle mx-2"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.9, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          >
             <motion.span
               className="absolute inset-0 border-[1.5px] border-white/70 rounded-full"
-              animate={{ scale: [1, 1.2, 1], opacity: [0.6, 0.2, 0.6] }}
+              animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0.15, 0.6] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.span
               className="absolute inset-[25%] bg-white/80 rounded-full"
-              animate={{ scale: [1, 0.7, 1] }}
+              animate={{ scale: [1, 0.6, 1] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             />
-          </span>
-          <span className="text-white">DE</span>
+          </motion.span>
+          {deChars.map((ch, i) => (
+            <motion.span
+              key={`de-${i}`}
+              className="text-white inline-block"
+              initial={{ opacity: 0, y: 60, rotateX: -90 }}
+              animate={{ opacity: 1, y: 0, rotateX: 0 }}
+              transition={{ delay: 0.9 + i * 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {ch}
+            </motion.span>
+          ))}
         </h1>
 
         <motion.p
+          className="text-base text-white/35 font-light tracking-wide mb-10 max-w-md mx-auto h-6 overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.9, duration: 0.8 }}
-          className="text-base text-white/35 font-light tracking-wide mb-10 max-w-md mx-auto"
+          transition={{ delay: 1.3, duration: 0.3 }}
         >
-          Cut through the noise.
+          {taglineChars.map((ch, i) => (
+            <motion.span
+              key={i}
+              className="inline-block"
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.3 + i * 0.025, duration: 0.3, ease: "easeOut" }}
+            >
+              {ch === " " ? "\u00A0" : ch}
+            </motion.span>
+          ))}
         </motion.p>
 
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2, duration: 0.6 }}
+          transition={{ delay: 1.8, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
           <button
             onClick={onGetStarted}
-            className="px-8 py-2.5 rounded-full text-xs font-medium tracking-widest uppercase text-white/70 border border-white/15 hover:bg-white/5 hover:text-white hover:border-white/30 transition-all cursor-pointer pointer-events-auto"
+            className="group relative px-8 py-3 rounded-full text-xs font-medium tracking-widest uppercase text-white/80 border border-white/20 hover:text-white transition-all cursor-pointer overflow-hidden"
             onMouseDown={addRipple}
           >
-            Get Started
+            <motion.span
+              className="absolute inset-0 bg-gradient-to-r from-[#ff0064]/20 via-[#6400ff]/20 to-[#0096ff]/20 opacity-0 group-hover:opacity-100"
+              animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              style={{ backgroundSize: "200% 100%" }}
+            />
+            <span className="relative z-10">Get Started</span>
           </button>
         </motion.div>
       </motion.div>
 
       <motion.div
         className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        style={{ opacity: useTransform(scrollY, [0, vh * 0.25], [1, 0]) }}
+        style={{ opacity: useTransform(scrollY, [0, vh * 0.2], [1, 0]) }}
       >
+        <span className="text-[10px] text-white/15 tracking-[0.2em] uppercase font-mono">Scroll</span>
         <motion.div
-          className="w-px h-10 bg-gradient-to-b from-white/20 to-transparent"
-          animate={{ opacity: [0.4, 0.1, 0.4] }}
+          className="w-px h-8 bg-gradient-to-b from-white/20 to-transparent"
+          animate={{ opacity: [0.4, 0.1, 0.4], scaleY: [1, 1.5, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
       </motion.div>
-
-      <motion.div
-        className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none"
-        style={{
-          opacity: useTransform(scrollY, [vh * 0.3, vh * 0.8], [0, 0.4]),
-          background: "linear-gradient(to top, rgba(255,0,100,0.15), transparent)",
-          filter: "blur(40px)",
-        }}
-      />
     </section>
   )
 }
@@ -691,6 +829,23 @@ export default function App() {
       autoResize(jdTextareaRef.current)
     }
   }, [jdText])
+
+  function jsonRepair(json) {
+    let s = json.trim()
+    try { JSON.parse(s); return s } catch {}
+    s = s.replace(/,(\s*[}\]])/g, '$1')
+    s = s.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3')
+    s = s.replace(/:\s*'([^']*?)'\s*([,}\]])/g, ':"$1"$2')
+    s = s.replace(/:\s*'([^']*?)'\s*:/g, ':"$1":')
+    s = s.replace(/"apply":\s*true\b/gi, '"apply": true')
+    s = s.replace(/"apply":\s*false\b/gi, '"apply": false')
+    s = s.replace(/\b(true|false|null)\b/g, '$1')
+    try { const r = JSON.parse(s); return s } catch {}
+    s = s.replace(/\\(?!["\\/bfnrt])/g, '\\\\')
+    try { const r = JSON.parse(s); return s } catch {}
+    const match = s.match(/\{.*\}/s)
+    return match ? match[0] : json
+  }
 
   const analyseJD = async () => {
     setLoading(true)
@@ -776,7 +931,8 @@ ${jdText}${resumeSection}`
       const firstBracket = cleaned.indexOf("[")
       if (firstBrace === -1) throw new Error("No JSON object found in response")
       const jsonStr = cleaned.slice(firstBrace, lastBrace + 1)
-      const parsed = JSON.parse(jsonStr)
+      const repaired = jsonRepair(jsonStr)
+      const parsed = JSON.parse(repaired)
       setResult(parsed)
       saveToHistory(jdText, parsed)
     } catch (err) {
@@ -1001,7 +1157,7 @@ Brief: ${jdBrief}`
     <>
       <div className="scanline-overlay" />
       <MouseGlow />
-      <ForceFieldLoader />
+      <Preloader />
       {showContent && (
         <motion.div
           className="text-white scroll-container bg-unified"
