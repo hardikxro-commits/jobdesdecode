@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ── GPU compositing ── */
 .gpu {
   transform: translateZ(0);
@@ -751,11 +763,7 @@ html {
   color: #fff;
 }
 
-/* ── Card 3D tilt container ── */
-.card-tilt {
-  transform-style: preserve-3d;
-  perspective: 800px;
-}
+
 .card-tilt-inner {
   transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;

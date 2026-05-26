@@ -1335,18 +1335,19 @@ Brief: ${jdBrief}`
                         ref={resultsRef}
                         className="space-y-4"
                         initial="hidden"
-                        animate="visible"
+                        whileInView="visible"
+                        viewport={{ once: true, margin: "-100px" }}
                         variants={{
                           hidden: {},
                           visible: {
-                            transition: { staggerChildren: 0.07, delayChildren: 0.1 },
+                            transition: { staggerChildren: 0.06, delayChildren: 0.05 },
                           },
                         }}
                       >
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 20 },
-                            visible: { opacity: 1, y: 0, transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
+                            hidden: { opacity: 0, y: 20, scale: 0.9 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 18, stiffness: 200, mass: 0.7 } },
                           }}
                           className="flex gap-2 justify-end"
                         >
@@ -1367,8 +1368,8 @@ Brief: ${jdBrief}`
                         </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
-                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
+                            hidden: { opacity: 0, y: 40, scale: 0.85 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 16, stiffness: 180, mass: 0.8 } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-requirements"
                         >
@@ -1401,8 +1402,8 @@ Brief: ${jdBrief}`
                           </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
-                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
+                            hidden: { opacity: 0, y: 40, scale: 0.85 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 16, stiffness: 180, mass: 0.8 } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-redflags"
                         >
@@ -1439,8 +1440,8 @@ Brief: ${jdBrief}`
                           </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
-                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
+                            hidden: { opacity: 0, y: 40, scale: 0.85 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 16, stiffness: 180, mass: 0.8 } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-greenflags"
                         >
@@ -1469,8 +1470,8 @@ Brief: ${jdBrief}`
                           </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
-                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
+                            hidden: { opacity: 0, y: 40, scale: 0.85 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 16, stiffness: 180, mass: 0.8 } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-scores"
                         >
@@ -1490,8 +1491,8 @@ Brief: ${jdBrief}`
                           </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
-                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
+                            hidden: { opacity: 0, y: 40, scale: 0.85 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 16, stiffness: 180, mass: 0.8 } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-questions"
                         >
@@ -1518,8 +1519,8 @@ Brief: ${jdBrief}`
                           {result.resume_match && (
                             <motion.div
                               variants={{
-                                hidden: { opacity: 0, y: 30, scale: 0.9, filter: "blur(6px)" },
-                                visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 20, stiffness: 260, mass: 0.8 } },
+                            hidden: { opacity: 0, y: 50, scale: 0.8 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 14, stiffness: 160, mass: 0.9 } },
                               }}
                               className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-resume"
                             >
@@ -1575,8 +1576,8 @@ Brief: ${jdBrief}`
                           )}
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 40, scale: 0.85, filter: "blur(8px)" },
-                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 16, stiffness: 220, mass: 0.9 } },
+                            hidden: { opacity: 0, y: 60, scale: 0.75 },
+                            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 12, stiffness: 140, mass: 1 } },
                           }}
                           className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-verdict"
                         >
