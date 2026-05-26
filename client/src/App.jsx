@@ -405,7 +405,7 @@ function RevealSection({ children, className = "", delay = 0 }) {
       style={{
         opacity: 0,
         transform: "translateY(20px)",
-        transition: `opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
+        transition: `opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform 0.55s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`,
         willChange: "transform, opacity",
         ...(inView ? { opacity: 1, transform: "translateY(0)" } : {}),
       }}
@@ -1482,14 +1482,14 @@ Brief: ${jdBrief}`
                         variants={{
                           hidden: {},
                           visible: {
-                            transition: { staggerChildren: 0.1, delayChildren: 0.15 },
+                            transition: { staggerChildren: 0.07, delayChildren: 0.1 },
                           },
                         }}
                       >
                         <motion.div
                           variants={{
                             hidden: { opacity: 0, y: 20 },
-                            visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
                           }}
                           className="flex gap-2 justify-end"
                         >
@@ -1510,8 +1510,8 @@ Brief: ${jdBrief}`
                         </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24, scale: 0.95 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                            hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
+                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1542,8 +1542,8 @@ Brief: ${jdBrief}`
                           </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24, scale: 0.95 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                            hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
+                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1577,8 +1577,8 @@ Brief: ${jdBrief}`
                           </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24, scale: 0.95 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                            hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
+                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1604,8 +1604,8 @@ Brief: ${jdBrief}`
                           </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24, scale: 0.95 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                            hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
+                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1624,8 +1624,8 @@ Brief: ${jdBrief}`
                           </motion.div>
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24, scale: 0.95 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                            hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
+                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1649,8 +1649,8 @@ Brief: ${jdBrief}`
                           {result.resume_match && (
                             <motion.div
                               variants={{
-                                hidden: { opacity: 0, y: 24, scale: 0.95 },
-                                visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                                hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
+                                visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
                               }}
                               className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                             >
@@ -1701,8 +1701,8 @@ Brief: ${jdBrief}`
                           )}
                         <motion.div
                           variants={{
-                            hidden: { opacity: 0, y: 24, scale: 0.95 },
-                            visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                            hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
+                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
                           }}
                           className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
