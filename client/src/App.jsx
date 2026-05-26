@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, memo, useCallback } from "react"
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
-import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Sparkles, Braces } from "lucide-react"
+import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Sparkles, Braces, ArrowUp } from "lucide-react"
 
 const PROVIDERS = {
   anthropic: {
@@ -1621,31 +1621,47 @@ Brief: ${jdBrief}`
 
                 <div className="sticky bottom-0 left-0 right-0 pointer-events-none">
                   <div className="max-w-2xl mx-auto px-4 max-sm:px-2 pb-6 max-sm:pb-3">
-                    <div className="rounded-2xl bg-black/20 backdrop-blur-lg shadow-2xl pointer-events-auto overflow-hidden border border-white/[0.06] relative input-bar-wrapper">
-                      <div className="input-bar-glow" />
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
-                      <div className="px-5 max-sm:px-3 pt-4 pb-3 relative z-10">
+                    <div className="rounded-2xl bg-black/40 backdrop-blur-xl shadow-2xl pointer-events-auto overflow-hidden border border-white/[0.08]">
+                      <div className="px-5 max-sm:px-3 pt-4 pb-3">
                         <form onSubmit={handleSubmit}>
-                          <textarea
-                            ref={jdTextareaRef}
-                            value={jdText}
-                            onChange={(e) => {
-                              setJdText(e.target.value)
-                              autoResize(e.target)
-                            }}
-                            placeholder="Paste a job description or type one in..."
-                            rows={1}
-                            className="w-full px-0 py-0 bg-transparent border-0 text-white placeholder-zinc-500 focus:outline-none focus:ring-0 resize-none text-base max-sm:text-sm leading-relaxed"
-                            style={{ minHeight: "1.5em", maxHeight: "50vh" }}
-                          />
-                          <div className="flex items-center justify-between mt-2 pt-2 border-t border-zinc-800/50 max-sm:flex-col max-sm:gap-2">
-                            <div className="flex items-center gap-2 max-sm:w-full max-sm:justify-start">
+                          <div className="flex items-end gap-2">
+                            <textarea
+                              ref={jdTextareaRef}
+                              value={jdText}
+                              onChange={(e) => {
+                                setJdText(e.target.value)
+                                autoResize(e.target)
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                  e.preventDefault()
+                                  handleSubmit(e)
+                                }
+                              }}
+                              placeholder="Paste a job description or type one in..."
+                              rows={1}
+                              className="flex-1 px-0 py-0 bg-transparent border-0 text-white placeholder-zinc-500 focus:outline-none focus:ring-0 resize-none text-base max-sm:text-sm leading-relaxed"
+                              style={{ minHeight: "1.5em", maxHeight: "50vh" }}
+                            />
+                            <button
+                              type="submit"
+                              disabled={loading || !jdText.trim()}
+                              className="shrink-0 mb-[1px] rounded-xl bg-white text-black hover:bg-zinc-200 btn-scale p-2.5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                              onMouseDown={addRipple}
+                            >
+                              {loading
+                                ? <Loader2 size={16} className="animate-spin" />
+                                : <ArrowUp size={16} />
+                              }
+                            </button>
+                          </div>
+                          <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-800/40 max-sm:flex-col max-sm:gap-2">
+                            <div className="flex items-center gap-2 max-sm:w-full">
                               {!showResume ? (
                                 <button
                                   type="button"
                                   onClick={() => setShowResume(true)}
-                                  className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 btn-scale-sm transition-all"
-                                  style={{ textShadow: "0 0 6px rgba(255,255,255,0.25)" }}
+                                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 transition-all"
                                 >
                                   + resume
                                 </button>
@@ -1653,8 +1669,7 @@ Brief: ${jdBrief}`
                                 <button
                                   type="button"
                                   onClick={() => { setShowResume(false); setResumeText("") }}
-                                  className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1"
-                                  style={{ textShadow: "0 0 6px rgba(255,255,255,0.25)" }}
+                                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 transition-all flex items-center gap-1"
                                 >
                                   <X size={12} /> resume
                                 </button>
@@ -1662,23 +1677,14 @@ Brief: ${jdBrief}`
                               <button
                                 type="button"
                                 onClick={loadSample}
-                                className="px-3 max-sm:px-2 py-1.5 max-sm:py-1 rounded-lg text-xs max-sm:text-[10px] font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-white/80 hover:text-white hover:bg-white/10 btn-scale-sm transition-all"
-                                style={{ textShadow: "0 0 6px rgba(255,255,255,0.25)" }}
+                                className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 transition-all"
                               >
                                 sample
                               </button>
                             </div>
-                            <button
-                              type="submit"
-                              disabled={loading}
-                              className="ripple-btn bg-white text-black hover:bg-zinc-200 btn-scale font-semibold rounded-lg px-6 max-sm:px-4 py-2.5 text-sm max-sm:text-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 max-sm:w-full max-sm:justify-center"
-                              onMouseDown={addRipple}
-                            >
-                              {loading ? <><Loader2 size={16} className="animate-spin" /> Decoding</> : "Decode \u2192"}
-                            </button>
                           </div>
                           {showResume && (
-                            <div className="mt-3 pt-3 border-t border-zinc-800/50">
+                            <div className="mt-3 pt-3 border-t border-zinc-800/40">
                               <textarea
                                 value={resumeText}
                                 onChange={(e) => setResumeText(e.target.value)}
@@ -1690,20 +1696,7 @@ Brief: ${jdBrief}`
                           )}
                         </form>
                       </div>
-                      <div className="relative h-[3px] w-full">
-                        <div
-                          className="absolute inset-0 animate-rgb rounded-full"
-                          style={{
-                            background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)",
-                          }}
-                        />
-                        <div
-                          className="absolute inset-0 blur-md opacity-60 animate-rgb"
-                          style={{
-                            background: "linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064)",
-                          }}
-                        />
-                      </div>
+
                     </div>
                   </div>
                 </div>

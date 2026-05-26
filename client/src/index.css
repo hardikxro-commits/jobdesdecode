@@ -352,28 +352,6 @@
   );
 }
 
-/* ── RGB strip ── */
-@keyframes rgb-slide {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-33.33%); }
-  50% { transform: translateX(-66.66%); }
-  75% { transform: translateX(-33.33%); }
-  100% { transform: translateX(0); }
-}
-.animate-rgb {
-  position: relative;
-  overflow: hidden;
-  background: transparent !important;
-}
-.animate-rgb::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  width: 300%;
-  background: linear-gradient(90deg, #ff0064, #6400ff, #0096ff, #ff00c8, #ff0064);
-  animation: rgb-slide 6s ease-in-out infinite;
-}
-
 /* ── Loader char animations ── */
 .loader-char {
   display: inline-block;
@@ -974,24 +952,7 @@ html {
 .card-type-resume { --card-accent: #06b6d4; }
 .card-type-verdict { --card-accent: #ff0064; }
 
-/* ── Input bar focus glow ── */
-.input-bar-wrapper:focus-within {
-  border-color: rgba(255,0,100,0.2);
-}
-.input-bar-wrapper:focus-within .input-bar-glow {
-  opacity: 1;
-}
-.input-bar-glow {
-  position: absolute;
-  inset: -2px;
-  border-radius: 16px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  background: linear-gradient(135deg, #ff0064, #6400ff, #0096ff);
-  z-index: -1;
-  filter: blur(8px);
-}
+
 
 /* ── Navbar gradient underline ── */
 .nav-underline {
