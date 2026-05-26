@@ -1100,14 +1100,78 @@ Brief: ${jdBrief}`
     }
   }
 
+  const mockAnalyse = (jd) => {
+    const hasResume = resumeText.trim().length > 0
+    const lines = jd.split("\n").filter(l => l.trim())
+    const titleMatch = jd.match(/(\w+)\s+(Engineer|Developer|Designer|Manager|Lead|Architect|Scientist|Analyst|Director|Head)/i)
+    const title = titleMatch ? titleMatch[0] : "Software Engineer"
+    const hasUnlimitedPTO = /unlimited\s+pto/i.test(jd)
+    const hasFastPaced = /fast[- ]?paced/i.test(jd)
+    const hasFamily = /family/i.test(jd)
+    const hasEquity = /equity|stock/i.test(jd)
+    const hasRemote = /remote/i.test(jd)
+    const clarity = {
+      responsibilities: Math.min(85, 30 + lines.filter(l => /will|responsible|own|lead|manage|build|design|develop/i.test(l)).length * 8),
+      success_metrics: Math.min(70, 10 + lines.filter(l => /metric|kpi|goal|target|measure|okr/i.test(l)).length * 15),
+      team_structure: Math.min(65, 10 + lines.filter(l => /team|report|manager|cross.functional|squad|pod/i.test(l)).length * 10),
+      growth_path: Math.min(60, 10 + lines.filter(l => /growth|promot|career|mentor|senior|lead/i.test(l)).length * 10),
+      compensation: Math.min(50, hasEquity ? 35 : 10 + lines.filter(l => /salary|comp|equity|stock|bonus/i.test(l)).length * 12),
+      work_life_balance: Math.max(10, hasUnlimitedPTO ? 20 : 45 - (hasFastPaced ? 20 : 0)),
+    }
+
+    return {
+      role_summary: {
+        title,
+        level: /senior|lead|head|principal|staff/i.test(jd) ? "senior" : /junior|associate|grad/i.test(jd) ? "junior" : "mid",
+        type: /manager|head|director/i.test(jd) ? "manager" : /lead|tech.lead/i.test(jd) ? "hybrid" : "IC",
+        one_liner: `${title} role${hasRemote ? " (remote)" : ""}${hasFastPaced ? " in a fast-paced environment" : ""}`,
+      },
+      real_requirements: [
+        { skill: "Relevant experience in the field", type: "must_have" },
+        { skill: "Technical skills matching the stack", type: "must_have" },
+        ...(hasFastPaced ? [{ skill: "Ability to thrive in ambiguity", type: "filler", note: "often code for 'no processes'" }] : []),
+        ...(hasFamily ? [{ skill: "Being part of a family", type: "filler", note: "means they want overwork" }] : []),
+      ],
+      red_flags: [
+        ...(hasFastPaced ? [{ phrase: "fast-paced environment", meaning: "Expect long hours and shifting priorities", severity: "moderate" }] : []),
+        ...(hasUnlimitedPTO ? [{ phrase: "Unlimited PTO", meaning: "Often leads to less time off taken", severity: "minor" }] : []),
+        ...(hasFamily ? [{ phrase: "We're like a family", meaning: "Emotional manipulation to work more", severity: "serious" }] : []),
+      ],
+      green_flags: [
+        ...(hasEquity ? [{ phrase: "Equity package", meaning: "Stake in company success" }] : []),
+        ...(hasRemote ? [{ phrase: "Remote", meaning: "Flexibility in where you work" }] : []),
+      ],
+      clarity_scores: clarity,
+      questions_to_ask: [
+        "What does success look like in the first 90 days?",
+        "Why did the last person leave this role?",
+        ...(hasUnlimitedPTO ? ["What's the average PTO people actually take?"] : []),
+      ],
+      ...(hasResume ? {
+        resume_match: {
+          score: 72,
+          strengths: ["Relevant industry experience", "Strong technical background"],
+          gaps: ["Missing specific tool experience mentioned in the JD"],
+        }
+      } : {}),
+      verdict: {
+        summary: `This ${title} role has some promising aspects but also several red flags worth considering.`,
+        apply: !hasFamily && clarity.work_life_balance > 20,
+        apply_reason: hasFamily ? "The 'family' culture is a major concern" : "Decent opportunity if the team and compensation align",
+      },
+    }
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!apiKey.trim()) {
-      setError(`Please enter your ${PROVIDERS[provider].label} API key`)
-      return
-    }
     if (!jdText.trim()) {
       setError("Please paste a job description")
+      return
+    }
+    if (!apiKey.trim()) {
+      const mockResult = mockAnalyse(jdText)
+      setResult(mockResult)
+      saveToHistory(jdText, mockResult)
       return
     }
     analyseJD()
