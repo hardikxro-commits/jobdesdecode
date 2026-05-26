@@ -647,7 +647,7 @@ const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity })
   )
 })
 
-function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, onDecoderClick }) {
+function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, showJdGenerator, onJdGeneratorToggle }) {
   return (
     <nav
       className={`nav-blur fixed top-0 left-0 right-0 z-50 entrance-fade-down ${scrolled ? 'scrolled' : ''}`}
@@ -669,15 +669,15 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={onDecoderClick}
+            onClick={onJdGeneratorToggle}
             className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
             style={{
-              color: "#fff",
-              background: "rgba(255,255,255,0.08)",
+              color: showJdGenerator ? "#fff" : "#888",
+              background: showJdGenerator ? "rgba(255,255,255,0.08)" : "transparent",
               fontFamily: '"IBM Plex Mono", monospace',
             }}
           >
-            DECODER
+            GENERATE JD
           </button>
           <button
             onClick={onHistoryToggle}
@@ -1223,7 +1223,7 @@ Brief: ${jdBrief}`
       <Loader />
       {showContent && (
         <div className="text-white animate-app-entrance scroll-container" style={{ background: "#000" }}>
-          <Navbar showHistory={showHistory} onHistoryToggle={() => setShowHistory(!showHistory)} scrolled={scrolled} theme={theme} onThemeToggle={toggleTheme} onDecoderClick={() => mainAppRef.current?.scrollIntoView({ behavior: "smooth" })} />
+          <Navbar showHistory={showHistory} onHistoryToggle={() => setShowHistory(!showHistory)} scrolled={scrolled} theme={theme} onThemeToggle={toggleTheme} showJdGenerator={showJdGenerator} onJdGeneratorToggle={() => setShowJdGenerator(!showJdGenerator)} />
           <ScrollDots />
           <ScrollProgress scrollY={scrollY} />
           <SectionIndicator />
@@ -1238,16 +1238,6 @@ Brief: ${jdBrief}`
 
               <div className="relative z-10 flex flex-col min-h-screen">
                 <div className="max-sm:left-2 max-sm:right-2 max-sm:top-2 absolute top-4 right-4 z-10 flex flex-col items-end gap-2" style={{ top: "4rem" }}>
-                  <div className="flex gap-1.5 max-sm:flex-wrap max-sm:justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setShowJdGenerator(!showJdGenerator)}
-                      className="rounded-xl px-3 py-2 bg-black/20 backdrop-blur-xl text-white/90 hover:text-white hover:bg-white/10 btn-scale-sm transition-all text-xs font-medium border border-white/[0.06] max-sm:text-[10px] max-sm:px-2 max-sm:py-1.5"
-                      style={{ textShadow: "0 0 8px rgba(255,255,255,0.4), 0 0 20px rgba(255,255,255,0.15)" }}
-                    >
-                      {showJdGenerator ? "Close Generator" : "Generate JD"}
-                    </button>
-                  </div>
 
                   <AnimatePresence>
                     {showJdGenerator && (
