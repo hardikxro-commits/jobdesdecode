@@ -51,42 +51,33 @@
 /* ── Scroll reveal (continuous scroll-driven fade via useScrollFade hook) ── */
 /* Initial opacity is set inline by the hook; will-change via .gpu class */
 
-/* ── God card: animated gradient border + shimmer ── */
+/* ── God card: top-edge accent glow ── */
 .god-card {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
 }
 .god-card::before {
   content: '';
   position: absolute;
-  top: -2px; left: -2px; right: -2px; bottom: -2px;
-  border-radius: inherit;
-  padding: 2px;
-  background: conic-gradient(#ff0064, #6400ff, #0096ff, #ff00c8, #ff0064);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
   pointer-events: none;
-  animation: border-spin 4s linear infinite;
-  will-change: transform;
-}
-@keyframes border-spin {
-  to { transform: rotate(360deg); }
 }
 .god-card::after {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.04) 55%, transparent 65%);
-  background-size: 200% 100%;
-  animation: shimmer-sweep 5s ease-in-out infinite;
+  top: -1px;
+  left: 30%;
+  right: 30%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,0,100,0.15), rgba(100,0,255,0.15), transparent);
+  filter: blur(3px);
   pointer-events: none;
-}
-@keyframes shimmer-sweep {
-  0%, 100% { background-position: 200% 0; }
-  50% { background-position: -200% 0; }
 }
 
 /* ── Floating card animation ── */
