@@ -162,6 +162,10 @@ html {
 
 /* ── Hero animations handled by framer-motion ── */
 
+/* ── Ring rotation animations ── */
+@keyframes spinOuter { to { transform: rotate(360deg); } }
+@keyframes spinInner { to { transform: rotate(-360deg); } }
+
 /* ── Loader animations handled by framer-motion ── */
 
 /* ── Background animations ── */

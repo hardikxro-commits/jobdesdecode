@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo, useCallback } from "react"
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring, useAnimationControls, useMotionValueEvent } from "framer-motion"
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring, useAnimationControls } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Sparkles, Braces, ArrowUp } from "lucide-react"
 
 const PROVIDERS = {
@@ -156,13 +156,26 @@ function CardCopyBtn({ label }) {
 }
 
 function AnimatedScore({ value }) {
-  const count = useMotionValue(0)
-  const springVal = useSpring(count, { stiffness: 50, damping: 15 })
   const [display, setDisplay] = useState(0)
+  const prevRef = useRef(0)
 
-  useEffect(() => { count.set(value) }, [value])
+  useEffect(() => {
+    let raf
+    const startVal = prevRef.current
+    const diff = value - startVal
+    const startTime = performance.now()
+    const duration = 800
 
-  useMotionValueEvent(springVal, "change", (v) => setDisplay(Math.round(v)))
+    const tick = (now) => {
+      const t = Math.min((now - startTime) / duration, 1)
+      const ease = 1 - Math.pow(1 - t, 3)
+      setDisplay(Math.round(startVal + diff * ease))
+      if (t < 1) raf = requestAnimationFrame(tick)
+      else prevRef.current = value
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [value])
 
   return <>{display}</>
 }
@@ -282,7 +295,7 @@ function TiltCard({ children, className = "" }) {
     <motion.div
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
-      style={{ rotateX: springX, rotateY: springY, transformStyle: "preserve-3d" }}
+      style={{ rotateX: springX, rotateY: springY }}
       className={className}
     >
       {children}
@@ -425,11 +438,7 @@ function RevealHeading({ children, className = "" }) {
 function Loader() {
   const [show, setShow] = useState(true)
   const controls = useAnimationControls()
-  const progress = useMotionValue(0)
-  const springProgress = useSpring(progress, { stiffness: 40, damping: 20 })
-
-  const [pct, setPct] = useState(0)
-  useMotionValueEvent(springProgress, "change", (v) => setPct(Math.round(v)))
+  const [progress, setProgress] = useState(0)
 
   useEffect(() => {
     controls.start({
@@ -439,10 +448,9 @@ function Loader() {
       transition: { duration: 2.5, ease: [0.22, 1, 0.36, 1], times: [0, 0.5, 1] },
     })
 
-    progress.set(100, { duration: 2, ease: [0.22, 1, 0.36, 1] })
-
+    const timer = setTimeout(() => setProgress(100), 100)
     const exitTimer = setTimeout(() => setShow(false), 2400)
-    return () => clearTimeout(exitTimer)
+    return () => { clearTimeout(timer); clearTimeout(exitTimer) }
   }, [])
 
   if (!show) return null
@@ -450,10 +458,6 @@ function Loader() {
   return (
     <motion.div
       className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#0a0a0f]"
-      initial={{ opacity: 1 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, scale: 1.02 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
       <motion.div
         animate={controls}
@@ -467,17 +471,16 @@ function Loader() {
       >
         Loading
       </motion.p>
-      <motion.div
+      <div
         className="absolute bottom-16 left-1/2 -translate-x-1/2 w-32 h-[2px] bg-white/5 rounded-full overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
       >
         <motion.div
           className="h-full bg-gradient-to-r from-[#ff0064] via-[#6400ff] to-[#0096ff]"
-          style={{ width: useTransform(springProgress, [0, 100], ["0%", "100%"]) }}
+          initial={{ width: "0%" }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
         />
-      </motion.div>
+      </div>
     </motion.div>
   )
 }
@@ -741,43 +744,15 @@ function SectionIndicator() {
 }
 
 function RotatingRings() {
-  const angle = useMotionValue(0)
-  useEffect(() => {
-    let raf
-    const animate = () => {
-      angle.set(angle.get() + 0.15)
-      raf = requestAnimationFrame(animate)
-    }
-    raf = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(raf)
-  }, [])
-
   return (
-    <svg width="420" height="420" viewBox="0 0 420 420" className="opacity-[0.06]">
-      <motion.circle
-        cx="210" cy="210" r="170"
-        fill="none" stroke="#ff0064" strokeWidth="1"
-        strokeDasharray="6 12"
-        style={{ rotate: useTransform(angle, [0, 360], [0, 360]), transformOrigin: "210px 210px" }}
-      />
-      <motion.circle
-        cx="210" cy="210" r="130"
-        fill="none" stroke="#6400ff" strokeWidth="1"
-        strokeDasharray="3 16"
-        style={{ rotate: useTransform(angle, [0, 360], [360, 0]), transformOrigin: "210px 210px" }}
-      />
-      <motion.circle
-        cx="210" cy="210" r="210"
-        fill="none" stroke="#0096ff" strokeWidth="0.5"
-        strokeDasharray="1 10"
-        style={{ rotate: useTransform(angle, [0, 360], [0, 720]), transformOrigin: "210px 210px" }}
-      />
-      <motion.circle
-        cx="210" cy="210" r="50"
-        fill="none" stroke="#ff0064" strokeWidth="0.5"
-        strokeDasharray="2 6"
-        style={{ rotate: useTransform(angle, [0, 360], [720, 0]), transformOrigin: "210px 210px" }}
-      />
+    <svg width="420" height="420" viewBox="0 0 420 420" className="opacity-[0.06]" style={{ animation: "spinOuter 30s linear infinite" }}>
+      <circle cx="210" cy="210" r="170" fill="none" stroke="#ff0064" strokeWidth="1" strokeDasharray="6 12" />
+      <circle cx="210" cy="210" r="130" fill="none" stroke="#6400ff" strokeWidth="1" strokeDasharray="3 16"
+        style={{ animation: "spinInner 20s linear infinite", transformOrigin: "210px 210px" }} />
+      <circle cx="210" cy="210" r="210" fill="none" stroke="#0096ff" strokeWidth="0.5" strokeDasharray="1 10"
+        style={{ animation: "spinOuter 40s linear infinite", transformOrigin: "210px 210px" }} />
+      <circle cx="210" cy="210" r="50" fill="none" stroke="#ff0064" strokeWidth="0.5" strokeDasharray="2 6"
+        style={{ animation: "spinInner 15s linear infinite", transformOrigin: "210px 210px" }} />
     </svg>
   )
 }
