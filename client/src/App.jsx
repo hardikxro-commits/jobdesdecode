@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useLayoutEffect, memo, useCallback } from "react"
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
-import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Sparkles } from "lucide-react"
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
+import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Sparkles, Braces } from "lucide-react"
 
 const PROVIDERS = {
   anthropic: {
@@ -818,6 +818,22 @@ function HeroSection({ onGetStarted, scrollY }) {
   const glowOpacity = useTransform(scrollY, [vh * 0.3, vh * 0.9], [0, 1])
   const bgY = useTransform(scrollY, [0, vh], [0, vh * 0.3])
 
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+  const springX = useSpring(mouseX, { stiffness: 150, damping: 15 })
+  const springY = useSpring(mouseY, { stiffness: 150, damping: 15 })
+  const heroContentRef = useRef(null)
+  const handleHeroMouse = useCallback((e) => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 12
+    const y = (e.clientY / window.innerHeight - 0.5) * 12
+    mouseX.set(x)
+    mouseY.set(y)
+  }, [])
+  const handleHeroLeave = useCallback(() => {
+    mouseX.set(0)
+    mouseY.set(0)
+  }, [])
+
   const typedLine = useTypewriter("NEXT MOVE", 50, 2.2)
   const [showCursor, setShowCursor] = useState(false)
 
@@ -828,6 +844,9 @@ function HeroSection({ onGetStarted, scrollY }) {
 
   return (
     <section
+      ref={heroContentRef}
+      onMouseMove={handleHeroMouse}
+      onMouseLeave={handleHeroLeave}
       className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden hero-gradient"
     >
       <motion.div
@@ -839,7 +858,7 @@ function HeroSection({ onGetStarted, scrollY }) {
 
       <motion.div
         className="relative z-10 text-center px-6 max-w-4xl mx-auto"
-        style={{ opacity: contentOpacity, y: contentY, scale: contentScale }}
+        style={{ opacity: contentOpacity, y: contentY, scale: contentScale, x: springX, transformPerspective: 1200 }}
       >
         <p
           className="text-sm uppercase tracking-[0.3em] mb-6 entrance-fade-up"
@@ -1333,8 +1352,12 @@ Brief: ${jdBrief}`
                     {loading && <LoadingSkeleton />}
 
                     {!result && !error && !loading && (
-                      <div className="flex flex-col items-center justify-center py-16 text-zinc-400">
-                        <p className="text-sm">Your decoded results will appear here</p>
+                      <div className="flex flex-col items-center justify-center py-24 text-zinc-500 empty-pulse">
+                        <div className="w-16 h-16 rounded-2xl border border-zinc-800 bg-zinc-900/50 flex items-center justify-center mb-4">
+                          <Braces size={28} className="text-zinc-600" />
+                        </div>
+                        <p className="text-sm font-medium">Awaiting analysis</p>
+                        <p className="text-xs text-zinc-600 mt-1">Paste a JD above and hit <span className="text-zinc-400 font-mono">Decode</span></p>
                       </div>
                     )}
 
@@ -1387,14 +1410,15 @@ Brief: ${jdBrief}`
                             {result.real_requirements && result.real_requirements.length > 0 ? (
                               <div className="flex flex-wrap gap-2">
                                 {result.real_requirements.map((req, i) => {
-                                  let pillClass = "bg-blue-900 text-blue-200"
-                                  if (req.type === "nice_to_have") pillClass = "bg-zinc-700 text-zinc-300"
-                                  if (req.type === "filler") pillClass = "bg-red-950 text-red-400 line-through"
+                                  let pillClass = "bg-blue-900/60 text-blue-200 border border-blue-800/40"
+                                  if (req.type === "nice_to_have") pillClass = "bg-zinc-800/60 text-zinc-300 border border-zinc-700/40"
+                                  if (req.type === "filler") pillClass = "bg-red-950/60 text-red-400 line-through border border-red-900/40"
                                   return (
                                     <span
                                       key={i}
                                       title={req.note || ""}
-                                      className={`inline-block px-3 py-1.5 text-sm font-medium rounded-full cursor-default ${pillClass}`}
+                                      className={`inline-block px-3 py-1.5 text-sm font-medium rounded-full cursor-default stagger-fade-in ${pillClass}`}
+                                      style={{ animationDelay: `${i * 60}ms` }}
                                     >
                                       {req.skill}
                                     </span>
@@ -1419,11 +1443,13 @@ Brief: ${jdBrief}`
                             {result.red_flags && result.red_flags.length > 0 ? (
                               <div className="space-y-3">
                                 {result.red_flags.map((flag, i) => {
-                                  let severityClass = "bg-yellow-900 text-yellow-300"
-                                  if (flag.severity === "moderate") severityClass = "bg-orange-900 text-orange-300"
-                                  if (flag.severity === "serious") severityClass = "bg-red-900 text-red-300"
+                                  let severityClass = "bg-yellow-900/60 text-yellow-300 border border-yellow-800/40"
+                                  if (flag.severity === "moderate") severityClass = "bg-orange-900/60 text-orange-300 border border-orange-800/40"
+                                  if (flag.severity === "serious") severityClass = "bg-red-900/60 text-red-300 border border-red-800/40"
                                   return (
-                                    <div key={i} className="flex items-start gap-3 pb-3 border-b border-zinc-800 last:border-0 last:pb-0">
+                                    <div key={i} className="flex items-start gap-3 pb-3 border-b border-zinc-800/50 last:border-0 last:pb-0 stagger-fade-in"
+                                      style={{ animationDelay: `${i * 70}ms` }}
+                                    >
                                       <TriangleAlert size={16} className="shrink-0 mt-1 text-red-400" />
                                       <div className="flex-1 min-w-0">
                                         <p className="text-zinc-500 italic text-sm mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
@@ -1454,7 +1480,9 @@ Brief: ${jdBrief}`
                             {result.green_flags && result.green_flags.length > 0 ? (
                               <div className="space-y-3">
                                 {result.green_flags.map((flag, i) => (
-                                  <div key={i} className="flex items-start gap-3 pb-3 border-b border-zinc-800 last:border-0 last:pb-0">
+                                  <div key={i} className="flex items-start gap-3 pb-3 border-b border-zinc-800/50 last:border-0 last:pb-0 stagger-fade-in"
+                                    style={{ animationDelay: `${i * 70}ms` }}
+                                  >
                                     <CheckCircle size={16} className="shrink-0 mt-1 text-emerald-400" />
                                     <div className="flex-1 min-w-0">
                                       <p className="text-zinc-500 italic text-sm mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
@@ -1501,7 +1529,9 @@ Brief: ${jdBrief}`
                             {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
                               <ol className="space-y-2">
                                 {result.questions_to_ask.map((q, i) => (
-                                  <li key={i} className="flex gap-3 pb-2 border-b border-zinc-800 last:border-0 last:pb-0">
+                                  <li key={i} className="flex gap-3 pb-2 border-b border-zinc-800/50 last:border-0 last:pb-0 stagger-fade-in"
+                                    style={{ animationDelay: `${i * 70}ms` }}
+                                  >
                                     <span className="text-zinc-500 text-sm font-mono w-6 shrink-0">{i + 1}.</span>
                                     <span className="text-zinc-300 text-sm">{q}</span>
                                   </li>
@@ -1534,7 +1564,9 @@ Brief: ${jdBrief}`
                                   {result.resume_match.strengths && result.resume_match.strengths.length > 0 ? (
                                     <ul className="space-y-1">
                                       {result.resume_match.strengths.map((s, i) => (
-                                        <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
+                                        <li key={i} className="text-sm text-zinc-300 flex items-start gap-2 stagger-fade-in"
+                                          style={{ animationDelay: `${i * 60}ms` }}
+                                        >
                                           <Check size={14} className="shrink-0 mt-0.5 text-emerald-400 icon-float" />
                                           {s}
                                         </li>
@@ -1551,7 +1583,9 @@ Brief: ${jdBrief}`
                                   {result.resume_match.gaps && result.resume_match.gaps.length > 0 ? (
                                     <ul className="space-y-1">
                                       {result.resume_match.gaps.map((g, i) => (
-                                        <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
+                                        <li key={i} className="text-sm text-zinc-300 flex items-start gap-2 stagger-fade-in"
+                                          style={{ animationDelay: `${i * 60}ms` }}
+                                        >
                                           <X size={14} className="shrink-0 mt-0.5 text-red-400" />
                                           {g}
                                         </li>
