@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo, useCallback } from "react"
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring, useAnimationControls, useMotionValueEvent } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Sparkles, Braces, ArrowUp } from "lucide-react"
 
 const PROVIDERS = {
@@ -155,6 +155,18 @@ function CardCopyBtn({ label }) {
   )
 }
 
+function AnimatedScore({ value }) {
+  const count = useMotionValue(0)
+  const springVal = useSpring(count, { stiffness: 50, damping: 15 })
+  const [display, setDisplay] = useState(0)
+
+  useEffect(() => { count.set(value) }, [value])
+
+  useMotionValueEvent(springVal, "change", (v) => setDisplay(Math.round(v)))
+
+  return <>{display}</>
+}
+
 function DecodeRing({ score, label }) {
   const radius = 42
   const circumference = 2 * Math.PI * radius
@@ -188,7 +200,7 @@ function DecodeRing({ score, label }) {
             filter: `drop-shadow(0 0 6px ${ringColor}40)`,
           }}
         />
-        <text
+        <motion.text
           x="50" y="50"
           textAnchor="middle"
           dominantBaseline="middle"
@@ -196,10 +208,12 @@ function DecodeRing({ score, label }) {
           fontSize="22"
           fontWeight="700"
           fontFamily='"Space Grotesk", system-ui'
-          style={{ transform: "rotate(90deg)", transformOrigin: "50px 50px" }}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 100, damping: 12, delay: 0.3 }}
         >
-          {score}
-        </text>
+          <AnimatedScore value={score} />
+        </motion.text>
       </svg>
       <span className="decode-ring-label" style={{ color: ringColor }}>
         {getLabel(score)}
@@ -223,45 +237,62 @@ const Bar = memo(function Bar({ label, score }) {
   else if (score >= 40) textColor = "text-yellow-400"
 
   return (
-    <div className="mb-3">
+    <motion.div
+      className="mb-3"
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ type: "spring", stiffness: 100, damping: 18 }}
+    >
       <div className="flex justify-between items-center mb-1">
         <span className="text-base text-zinc-400">{label}</span>
         <span className={`text-sm font-bold ${textColor}`}>{score}</span>
       </div>
       <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-500 ${barColor}`}
-          style={{ width: `${score}%` }}
+        <motion.div
+          className={`h-full rounded-full ${barColor}`}
+          initial={{ width: 0 }}
+          animate={{ width: `${score}%` }}
+          transition={{ type: "spring", stiffness: 60, damping: 20, delay: 0.1 }}
         />
       </div>
-    </div>
+    </motion.div>
   )
 })
 
+function TiltCard({ children, className = "" }) {
+  const rotateX = useMotionValue(0)
+  const rotateY = useMotionValue(0)
+  const springX = useSpring(rotateX, { stiffness: 150, damping: 15 })
+  const springY = useSpring(rotateY, { stiffness: 150, damping: 15 })
+
+  const onMouseMove = useCallback((e) => {
+    const el = e.currentTarget
+    const rect = el.getBoundingClientRect()
+    const px = (e.clientX - rect.left) / rect.width
+    const py = (e.clientY - rect.top) / rect.height
+    rotateX.set((py - 0.5) * -8)
+    rotateY.set((px - 0.5) * 8)
+  }, [])
+
+  const onMouseLeave = useCallback(() => {
+    rotateX.set(0); rotateY.set(0)
+  }, [])
+
+  return (
+    <motion.div
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      style={{ rotateX: springX, rotateY: springY, transformStyle: "preserve-3d" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
 const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || "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"
 
-function useTypewriter(text, speed = 40, delay = 0) {
-  const [displayed, setDisplayed] = useState("")
-  const [started, setStarted] = useState(false)
 
-  useEffect(() => {
-    const timer = setTimeout(() => setStarted(true), delay * 1000)
-    return () => clearTimeout(timer)
-  }, [delay])
-
-  useEffect(() => {
-    if (!started) return
-    let i = 0
-    const interval = setInterval(() => {
-      i++
-      setDisplayed(text.slice(0, i))
-      if (i >= text.length) clearInterval(interval)
-    }, speed)
-    return () => clearInterval(interval)
-  }, [started, text, speed])
-
-  return displayed
-}
 
 function useScrollPosition() {
   const [scrollY, setScrollY] = useState(0)
@@ -281,18 +312,22 @@ function useScrollPosition() {
 
 function LoadingSkeleton() {
   return (
-    <div className="space-y-4 animate-app-entrance">
-      <div className="skeleton h-8 w-3/4" />
-      <div className="skeleton h-4 w-1/2" />
+    <motion.div
+      className="space-y-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
+      <motion.div className="skeleton h-8 w-3/4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} />
+      <motion.div className="skeleton h-4 w-1/2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-        <div className="skeleton h-32" />
-        <div className="skeleton h-32" />
-        <div className="skeleton h-32" />
-        <div className="skeleton h-32" />
+        {[0,1,2,3].map(i => (
+          <motion.div key={i} className="skeleton h-32" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.05 }} />
+        ))}
       </div>
-      <div className="skeleton h-24" />
-      <div className="skeleton h-40" />
-    </div>
+      <motion.div className="skeleton h-24" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} />
+      <motion.div className="skeleton h-40" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} />
+    </motion.div>
   )
 }
 
@@ -389,147 +424,61 @@ function RevealHeading({ children, className = "" }) {
 
 function Loader() {
   const [show, setShow] = useState(true)
-  const [exiting, setExiting] = useState(false)
-  const [phase, setPhase] = useState(0)
-  const [terminalLines, setTerminalLines] = useState([])
+  const controls = useAnimationControls()
+  const progress = useMotionValue(0)
+  const springProgress = useSpring(progress, { stiffness: 40, damping: 20 })
 
-  const bootSequence = [
-    { text: "> initializing decoder engine...", delay: 0 },
-    { text: "> loading neural interface...", delay: 350 },
-    { text: "> establishing secure channel...", delay: 700 },
-    { text: "> decrypting protocols...", delay: 1050 },
-    { text: "> analysis engine online.", delay: 1500 },
-  ]
+  const [pct, setPct] = useState(0)
+  useMotionValueEvent(springProgress, "change", (v) => setPct(Math.round(v)))
 
   useEffect(() => {
-    const timers = []
-    bootSequence.forEach(({ delay }) => {
-      timers.push(setTimeout(() => {
-        setPhase(p => Math.min(p + 1, bootSequence.length))
-      }, delay))
+    controls.start({
+      borderRadius: ["50%", "35%", "50%"],
+      rotate: [0, 180, 360],
+      scale: [1, 1.2, 1],
+      transition: { duration: 2.5, ease: [0.22, 1, 0.36, 1], times: [0, 0.5, 1] },
     })
-    const exitTimer = setTimeout(() => {
-      setExiting(true)
-      setTimeout(() => setShow(false), 700)
-    }, 2200)
-    return () => {
-      timers.forEach(clearTimeout)
-      clearTimeout(exitTimer)
-    }
-  }, [])
 
-  useEffect(() => {
-    if (phase === 0) return
-    const line = bootSequence[phase - 1]
-    if (!line) return
-    let i = 0
-    const interval = setInterval(() => {
-      i++
-      setTerminalLines(prev => {
-        const copy = [...prev]
-        copy[phase - 1] = line.text.slice(0, i)
-        return copy
-      })
-      if (i >= line.text.length) clearInterval(interval)
-    }, 15)
-    return () => clearInterval(interval)
-  }, [phase])
+    progress.set(100, { duration: 2, ease: [0.22, 1, 0.36, 1] })
+
+    const exitTimer = setTimeout(() => setShow(false), 2400)
+    return () => clearTimeout(exitTimer)
+  }, [])
 
   if (!show) return null
 
-  const isReady = phase >= bootSequence.length
-
   return (
-    <div
-      className={`fixed inset-0 z-[99999] flex flex-col items-center justify-center overflow-hidden ${exiting ? 'loader-glitch-exit' : ''}`}
-      style={{ background: '#0a0a0f' }}
+    <motion.div
+      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#0a0a0f]"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, scale: 1.02 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
-      <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-        <defs>
-          <linearGradient id="loaderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#ff0064" />
-            <stop offset="50%" stopColor="#6400ff" />
-            <stop offset="100%" stopColor="#0096ff" />
-          </linearGradient>
-          <linearGradient id="loaderGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ff0064" />
-            <stop offset="100%" stopColor="#6400ff" />
-          </linearGradient>
-        </defs>
-      </svg>
-
-      <div className="loader-rain" />
-
-      <div className="relative z-10 flex flex-col items-center gap-6">
-        <div className="relative flex items-center justify-center">
-          <div className="loader-ring-outer" />
-          <div className="loader-ring-mid" />
-          <div className="loader-ring-inner" />
-          <div className="relative z-10 w-14 h-14 rounded-full bg-[#0a0a0f] flex items-center justify-center border border-white/[0.04]">
-            <span className="text-xs font-black tracking-tight loader-logo-reveal" style={{ fontFamily: '"Playfair Display", serif', color: '#fff' }}>
-              JD
-            </span>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center gap-1 min-h-[4em] justify-center" style={{ fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace' }}>
-          {Array.from({ length: phase }, (_, i) => (
-            <span
-              key={i}
-              className="loader-type-line text-xs tracking-wider"
-              style={{
-                color: i === phase - 1 && isReady ? '#ff0064' : i === phase - 1 ? '#888' : '#555',
-                animationDelay: '0s',
-                animationDuration: '0.3s',
-              }}
-            >
-              {terminalLines[i] || bootSequence[i]?.text || ''}
-              {i === phase - 1 && !isReady && (
-                <span className="animate-text-pulse" style={{ color: '#ff0064', marginLeft: 2 }}>_</span>
-              )}
-            </span>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-4">
-          <svg width="72" height="72" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="3" />
-            <circle
-              cx="50" cy="50" r="42"
-              fill="none"
-              stroke="url(#loaderGrad2)"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeDasharray={264}
-              strokeDashoffset={264 - (phase / bootSequence.length) * 264}
-              style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1)' }}
-              transform="rotate(-90 50 50)"
-            />
-            <text
-              x="50" y="54"
-              textAnchor="middle"
-              fill="#fff"
-              fontSize="18"
-              fontWeight="700"
-              fontFamily='"JetBrains Mono", monospace'
-            >
-              {Math.round((phase / bootSequence.length) * 100)}%
-            </text>
-          </svg>
-        </div>
-
-        <span
-          className={`text-[10px] tracking-[0.3em] uppercase ${isReady ? 'loader-status-pulse' : ''}`}
-          style={{
-            fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace',
-            color: isReady ? '#22c55e' : '#444',
-            transition: 'color 0.4s ease',
-          }}
-        >
-          {isReady ? '● SYSTEM READY' : '○ INITIALIZING'}
-        </span>
-      </div>
-    </div>
+      <motion.div
+        animate={controls}
+        className="w-14 h-14 bg-gradient-to-br from-[#ff0064] to-[#6400ff] mb-8"
+      />
+      <motion.p
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.6 }}
+        className="text-white/40 text-[10px] tracking-[0.3em] uppercase font-mono"
+      >
+        Loading
+      </motion.p>
+      <motion.div
+        className="absolute bottom-16 left-1/2 -translate-x-1/2 w-32 h-[2px] bg-white/5 rounded-full overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
+        <motion.div
+          className="h-full bg-gradient-to-r from-[#ff0064] via-[#6400ff] to-[#0096ff]"
+          style={{ width: useTransform(springProgress, [0, 100], ["0%", "100%"]) }}
+        />
+      </motion.div>
+    </motion.div>
   )
 }
 
@@ -624,9 +573,16 @@ const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity })
 
 function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, showJdGenerator, onJdGeneratorToggle }) {
   return (
-    <nav
-      className={`nav-blur fixed top-0 left-0 right-0 z-50 entrance-fade-down ${scrolled ? 'scrolled' : ''}`}
-      style={{ animationDelay: "0.3s", willChange: "transform" }}
+    <motion.nav
+      className="fixed top-0 left-0 right-0 z-50"
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      style={{
+        backdropFilter: scrolled ? "blur(16px)" : "blur(0px)",
+        background: scrolled ? "rgba(10, 10, 15, 0.8)" : "transparent",
+        transition: "background 0.4s ease, backdrop-filter 0.4s ease",
+      }}
     >
       <div className="absolute inset-0" />
       <div className="relative z-10 flex items-center justify-between px-6 py-4 max-sm:px-4 max-sm:py-3">
@@ -678,7 +634,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
           </button>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   )
 }
 
@@ -784,120 +740,164 @@ function SectionIndicator() {
   )
 }
 
+function RotatingRings() {
+  const angle = useMotionValue(0)
+  useEffect(() => {
+    let raf
+    const animate = () => {
+      angle.set(angle.get() + 0.15)
+      raf = requestAnimationFrame(animate)
+    }
+    raf = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(raf)
+  }, [])
+
+  return (
+    <svg width="420" height="420" viewBox="0 0 420 420" className="opacity-[0.06]">
+      <motion.circle
+        cx="210" cy="210" r="170"
+        fill="none" stroke="#ff0064" strokeWidth="1"
+        strokeDasharray="6 12"
+        style={{ rotate: useTransform(angle, [0, 360], [0, 360]), transformOrigin: "210px 210px" }}
+      />
+      <motion.circle
+        cx="210" cy="210" r="130"
+        fill="none" stroke="#6400ff" strokeWidth="1"
+        strokeDasharray="3 16"
+        style={{ rotate: useTransform(angle, [0, 360], [360, 0]), transformOrigin: "210px 210px" }}
+      />
+      <motion.circle
+        cx="210" cy="210" r="210"
+        fill="none" stroke="#0096ff" strokeWidth="0.5"
+        strokeDasharray="1 10"
+        style={{ rotate: useTransform(angle, [0, 360], [0, 720]), transformOrigin: "210px 210px" }}
+      />
+      <motion.circle
+        cx="210" cy="210" r="50"
+        fill="none" stroke="#ff0064" strokeWidth="0.5"
+        strokeDasharray="2 6"
+        style={{ rotate: useTransform(angle, [0, 360], [720, 0]), transformOrigin: "210px 210px" }}
+      />
+    </svg>
+  )
+}
+
 function HeroSection({ onGetStarted, scrollY }) {
   const vh = typeof window !== "undefined" ? window.innerHeight : 720
-  const contentOpacity = useTransform(scrollY, [0, vh * 0.8], [1, 0])
-  const contentY = useTransform(scrollY, [0, vh * 0.8], [0, -120])
-  const contentScale = useTransform(scrollY, [0, vh * 0.8], [1, 0.95])
-  const chevronOpacity = useTransform(scrollY, [0, vh * 0.3], [1, 0])
-  const glowOpacity = useTransform(scrollY, [vh * 0.3, vh * 0.9], [0, 1])
-  const bgY = useTransform(scrollY, [0, vh], [0, vh * 0.3])
+  const contentOpacity = useTransform(scrollY, [0, vh * 0.7], [1, 0])
+  const contentY = useTransform(scrollY, [0, vh * 0.7], [0, -80])
+  const bgY = useTransform(scrollY, [0, vh], [0, vh * 0.2])
 
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
-  const springX = useSpring(mouseX, { stiffness: 150, damping: 15 })
-  const springY = useSpring(mouseY, { stiffness: 150, damping: 15 })
-  const heroContentRef = useRef(null)
-  const handleHeroMouse = useCallback((e) => {
-    const x = (e.clientX / window.innerWidth - 0.5) * 12
-    const y = (e.clientY / window.innerHeight - 0.5) * 12
-    mouseX.set(x)
-    mouseY.set(y)
-  }, [])
-  const handleHeroLeave = useCallback(() => {
-    mouseX.set(0)
-    mouseY.set(0)
-  }, [])
+  const springX = useSpring(mouseX, { stiffness: 80, damping: 25 })
+  const springY = useSpring(mouseY, { stiffness: 80, damping: 25 })
 
-  const typedLine = useTypewriter("NEXT MOVE", 50, 2.2)
-  const [showCursor, setShowCursor] = useState(false)
-
-  useEffect(() => {
-    const t = setTimeout(() => setShowCursor(true), 2200)
-    return () => clearTimeout(t)
+  const handleMouse = useCallback((e) => {
+    mouseX.set((e.clientX / window.innerWidth - 0.5) * 24)
+    mouseY.set((e.clientY / window.innerHeight - 0.5) * 24)
+  }, [])
+  const handleLeave = useCallback(() => {
+    mouseX.set(0); mouseY.set(0)
   }, [])
 
   return (
     <section
-      ref={heroContentRef}
-      onMouseMove={handleHeroMouse}
-      onMouseLeave={handleHeroLeave}
+      onMouseMove={handleMouse}
+      onMouseLeave={handleLeave}
       className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden"
     >
-      <div className="section-bridge" />
+      <div className="absolute inset-0">
+        <div className="absolute inset-0" style={{
+          background: "radial-gradient(ellipse at 50% 45%, rgba(255,0,100,0.06), transparent 65%), radial-gradient(ellipse at 80% 55%, rgba(100,0,255,0.04), transparent 65%)",
+        }} />
+        <div className="absolute inset-0 opacity-[0.015]" style={{
+          backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
+          backgroundSize: "80px 80px",
+        }} />
+        <div className="absolute inset-0" style={{
+          background: "radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.5) 100%)",
+        }} />
+      </div>
+
       <motion.div
-        className="absolute inset-0 gpu"
-        style={{ y: bgY }}
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        style={{ y: bgY, x: springX }}
       >
-        <BgLayers />
+        <RotatingRings />
       </motion.div>
 
       <motion.div
         className="relative z-10 text-center px-6 max-w-4xl mx-auto"
-        style={{ opacity: contentOpacity, y: contentY, scale: contentScale, x: springX, transformPerspective: 1200 }}
+        style={{ opacity: contentOpacity, y: contentY }}
       >
-        <p
-          className="text-sm uppercase tracking-[0.3em] mb-6 entrance-fade-up"
-          style={{ color: "#888", fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace', animationDelay: "0.5s" }}
+        <motion.p
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="text-xs uppercase tracking-[0.3em] mb-8 text-white/25 font-mono"
         >
-          <span className="animate-text-pulse">AI-POWERED</span> JOB ANALYSIS
-        </p>
+          AI-Powered Job Analysis
+        </motion.p>
 
-        <h1
-            className="text-[clamp(48px,10vw,120px)] font-black tracking-tight leading-[0.85] mb-8"
-          style={{ color: "#fff", fontFamily: '"Playfair Display", serif', fontWeight: 900 }}
-        >
-          DECODE YOUR<br />
-          <span className="relative inline-block">
-            <span className={`${showCursor ? 'typewriter-cursor' : ''}`}>
-              {typedLine || (showCursor ? '' : 'NEXT MOVE')}
-            </span>
+        <h1 className="text-[clamp(44px,10vw,120px)] font-black tracking-tight leading-[0.85] mb-6">
+          <span className="text-white">DEC</span>
+          <span className="relative inline-block w-[0.5em] h-[0.5em] align-middle mx-1">
+            <motion.span
+              className="absolute inset-0 border-[1.5px] border-white/70 rounded-full"
+              animate={{ scale: [1, 1.2, 1], opacity: [0.6, 0.2, 0.6] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.span
+              className="absolute inset-[25%] bg-white/80 rounded-full"
+              animate={{ scale: [1, 0.7, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
           </span>
+          <span className="text-white">DE</span>
         </h1>
 
-        <p
-          className="text-lg max-sm:text-base leading-relaxed max-w-lg mx-auto mb-12 entrance-fade-up"
-          style={{ color: "#888", animationDelay: "1.0s" }}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.9, duration: 0.8 }}
+          className="text-base text-white/35 font-light tracking-wide mb-10 max-w-md mx-auto"
         >
-          Paste any job description. Our AI cuts through the corporate fluff and tells you what the job is really about.
-        </p>
+          Cut through the noise.
+        </motion.p>
 
-        <div className="relative inline-flex items-center justify-center entrance-hero-btn">
-          <div
-            className="absolute inset-0 rounded-full animate-cta-glow"
-            style={{
-              background: "radial-gradient(circle at center, rgba(255,0,100,0.3), rgba(100,0,255,0.15), transparent 70%)",
-              filter: "blur(30px)",
-            }}
-          />
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2, duration: 0.6 }}
+        >
           <button
             onClick={onGetStarted}
-            className="ripple-btn px-10 py-3.5 rounded-full text-sm font-semibold tracking-wider uppercase relative overflow-hidden group cursor-pointer cta-pill"
+            className="px-8 py-2.5 rounded-full text-xs font-medium tracking-widest uppercase text-white/70 border border-white/15 hover:bg-white/5 hover:text-white hover:border-white/30 transition-all cursor-pointer"
             onMouseDown={addRipple}
           >
-            <span className="relative z-10 text-white">Get Started</span>
+            Get Started
           </button>
-        </div>
+        </motion.div>
       </motion.div>
 
       <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
-        style={{ opacity: chevronOpacity }}
+        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        style={{ opacity: useTransform(scrollY, [0, vh * 0.25], [1, 0]) }}
       >
-        <div className="flex flex-col items-center gap-2 animate-chevron">
-          <span className="text-xs uppercase tracking-[0.3em]" style={{ color: "#555", fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace' }}>
-            Scroll
-          </span>
-          <ChevronDown size={20} style={{ color: "#666" }} />
-        </div>
+        <motion.div
+          className="w-px h-10 bg-gradient-to-b from-white/20 to-transparent"
+          animate={{ opacity: [0.4, 0.1, 0.4] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        />
       </motion.div>
 
       <motion.div
-        className="absolute bottom-0 left-0 right-0 h-72 pointer-events-none z-20 gpu"
+        className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none"
         style={{
-          opacity: glowOpacity,
-          background: "linear-gradient(to top, rgba(255,0,100,0.3), rgba(100,0,255,0.2), rgba(0,150,255,0.08), transparent)",
-          filter: "blur(50px)",
+          opacity: useTransform(scrollY, [vh * 0.3, vh * 0.8], [0, 0.4]),
+          background: "linear-gradient(to top, rgba(255,0,100,0.15), transparent)",
+          filter: "blur(40px)",
         }}
       />
     </section>
@@ -1217,7 +1217,12 @@ Brief: ${jdBrief}`
       <MouseGlow />
       <Loader />
       {showContent && (
-        <div className="text-white animate-app-entrance scroll-container bg-unified">
+        <motion.div
+          className="text-white scroll-container bg-unified"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
           <Navbar showHistory={showHistory} onHistoryToggle={() => setShowHistory(!showHistory)} scrolled={scrolled} theme={theme} onThemeToggle={toggleTheme} showJdGenerator={showJdGenerator} onJdGeneratorToggle={() => setShowJdGenerator(!showJdGenerator)} />
           <ScrollDots />
           <ScrollProgress scrollY={scrollY} />
@@ -1579,8 +1584,8 @@ Brief: ${jdBrief}`
                             hidden: { opacity: 0, y: 60, scale: 0.75 },
                             visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 12, stiffness: 140, mass: 1 } },
                           }}
-                          className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-verdict"
                         >
+                          <TiltCard className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900/80 god-card card-float gpu result-card relative group card-type-verdict">
                           <div className="card-corner-accent" style={{ '--card-accent': '#ff0064' }} />
                           <div className="flex items-start justify-between gap-2">
                             <RevealHeading><h2 className="text-2xl font-display font-bold tracking-tight">Verdict</h2></RevealHeading>
@@ -1606,6 +1611,7 @@ Brief: ${jdBrief}`
                           >
                             Reset
                           </button>
+                        </TiltCard>
                         </motion.div>
                       </motion.div>
                     )}
@@ -1616,15 +1622,29 @@ Brief: ${jdBrief}`
                   <div className={`${!result && !loading && !error ? 'flex-1 flex flex-col items-center justify-center px-4' : 'px-4'} max-sm:px-2 pb-6 max-sm:pb-3`}>
                     <div className="max-w-2xl mx-auto w-full">
                       {!result && !loading && !error && (
-                        <div className="mb-6 text-center">
-                          <div className="w-16 h-16 rounded-2xl border border-zinc-800 bg-zinc-900/50 flex items-center justify-center mx-auto mb-4">
+                        <motion.div
+                          className="mb-6 text-center"
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.5, delay: 0.5 }}
+                        >
+                          <motion.div
+                            className="w-16 h-16 rounded-2xl border border-zinc-800 bg-zinc-900/50 flex items-center justify-center mx-auto mb-4"
+                            animate={{ scale: [1, 1.05, 1], opacity: [0.6, 1, 0.6] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                          >
                             <Braces size={28} className="text-zinc-600" />
-                          </div>
+                          </motion.div>
                           <p className="text-sm font-medium text-zinc-500">Awaiting analysis</p>
                           <p className="text-xs text-zinc-600 mt-1">Paste a JD above and hit send</p>
-                        </div>
+                        </motion.div>
                       )}
-                      <div className="rounded-2xl bg-black/40 backdrop-blur-xl shadow-2xl pointer-events-auto overflow-hidden border border-white/[0.08]">
+                      <motion.div
+                        className="rounded-2xl bg-black/40 backdrop-blur-xl shadow-2xl pointer-events-auto overflow-hidden border border-white/[0.08]"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ type: "spring", stiffness: 80, damping: 18, delay: 0.2 }}
+                      >
                         <div className="px-5 max-sm:px-3 pt-4 pb-3">
                           <form onSubmit={handleSubmit}>
                             <div className="flex items-end gap-2">
@@ -1699,14 +1719,14 @@ Brief: ${jdBrief}`
                             )}
                           </form>
                         </div>
-                      </div>
+                      </motion.div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </>
   )
