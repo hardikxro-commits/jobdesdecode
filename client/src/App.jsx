@@ -195,7 +195,7 @@ function DecodeRing({ score, label }) {
           fill="#fff"
           fontSize="22"
           fontWeight="700"
-          fontFamily="system-ui"
+          fontFamily='"Space Grotesk", system-ui'
           style={{ transform: "rotate(90deg)", transformOrigin: "50px 50px" }}
         >
           {score}
@@ -205,7 +205,7 @@ function DecodeRing({ score, label }) {
         {getLabel(score)}
       </span>
       {label && (
-        <span style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 9, letterSpacing: "0.15em", color: "#666", textTransform: "uppercase" }}>
+        <span style={{ fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace', fontSize: 9, letterSpacing: "0.15em", color: "#666", textTransform: "uppercase" }}>
           {label}
         </span>
       )}
@@ -483,14 +483,14 @@ function Loader() {
       <div className="relative z-10 flex flex-col items-center gap-8">
         <span
           className="text-xs tracking-[0.3em] opacity-40"
-          style={{ fontFamily: '"IBM Plex Mono", monospace', color: "#ff0064" }}
+          style={{ fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace', color: "#ff0064" }}
         >
           ようこそ
         </span>
         <div className="scan-reveal">
           <div
             className="text-[clamp(48px,12vw,96px)] font-black tracking-tight leading-none"
-            style={{ fontFamily: '"Segoe UI", system-ui, sans-serif', fontWeight: 900, color: "#fff" }}
+            style={{ fontFamily: '"Space Grotesk", system-ui, sans-serif', fontWeight: 900, color: "#fff" }}
           >
             JD-DECODER
           </div>
@@ -498,7 +498,7 @@ function Loader() {
 
         <div
           className="text-xs tracking-[0.2em] uppercase terminal-cursor"
-          style={{ fontFamily: '"IBM Plex Mono", monospace', color: "#555", minHeight: "1.2em" }}
+          style={{ fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace', color: "#555", minHeight: "1.2em" }}
         >
           {terminalText}
         </div>
@@ -658,12 +658,12 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
         <div className="flex items-center gap-2">
           <span
             className="text-lg max-sm:text-base font-bold tracking-tight"
-            style={{ fontFamily: '"Segoe UI", system-ui, sans-serif', fontWeight: 900, color: "#fff" }}
+            style={{ fontFamily: '"Space Grotesk", system-ui, sans-serif', fontWeight: 900, color: "#fff" }}
           >
             JD-DEC
           </span>
           <Sparkles size={12} className="text-zinc-600 icon-pulse" style={{ marginLeft: 2 }} />
-          <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: "#555", fontFamily: '"IBM Plex Mono", monospace' }}>
+          <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: "#555", fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace' }}>
             Decoder
           </span>
         </div>
@@ -674,7 +674,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
             style={{
               color: showJdGenerator ? "#fff" : "#888",
               background: showJdGenerator ? "rgba(255,255,255,0.08)" : "transparent",
-              fontFamily: '"IBM Plex Mono", monospace',
+              fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace',
             }}
           >
             GENERATE JD
@@ -685,7 +685,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
             style={{
               color: showHistory ? "#fff" : "#888",
               background: showHistory ? "rgba(255,255,255,0.08)" : "transparent",
-              fontFamily: '"IBM Plex Mono", monospace',
+              fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace',
             }}
           >
             HISTORY
@@ -695,7 +695,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
             className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
             style={{
               color: "#888",
-              fontFamily: '"IBM Plex Mono", monospace',
+              fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace',
             }}
             aria-label="Toggle theme"
           >
@@ -843,14 +843,14 @@ function HeroSection({ onGetStarted, scrollY }) {
       >
         <p
           className="text-xs uppercase tracking-[0.3em] mb-6 entrance-fade-up"
-          style={{ color: "#888", fontFamily: '"IBM Plex Mono", monospace', animationDelay: "0.5s" }}
+          style={{ color: "#888", fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace', animationDelay: "0.5s" }}
         >
           <span className="animate-text-pulse">AI-POWERED</span> JOB ANALYSIS
         </p>
 
         <h1
           className="text-[clamp(36px,8vw,96px)] font-black tracking-tight leading-[0.9] mb-6"
-          style={{ color: "#fff", fontFamily: '"Segoe UI", system-ui, sans-serif', fontWeight: 900 }}
+          style={{ color: "#fff", fontFamily: '"Space Grotesk", system-ui, sans-serif', fontWeight: 900 }}
         >
           DECODE YOUR<br />
           <span className="relative inline-block">
@@ -890,7 +890,7 @@ function HeroSection({ onGetStarted, scrollY }) {
         style={{ opacity: chevronOpacity }}
       >
         <div className="flex flex-col items-center gap-2 animate-chevron">
-          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "#555", fontFamily: '"IBM Plex Mono", monospace' }}>
+          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "#555", fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace' }}>
             Scroll
           </span>
           <ChevronDown size={20} style={{ color: "#666" }} />
@@ -1354,7 +1354,7 @@ Brief: ${jdBrief}`
                         <motion.div
                           variants={{
                             hidden: { opacity: 0, y: 20 },
-                            visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+                            visible: { opacity: 1, y: 0, transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
                           }}
                           className="flex gap-2 justify-end"
                         >
@@ -1376,7 +1376,7 @@ Brief: ${jdBrief}`
                         <motion.div
                           variants={{
                             hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
-                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1408,7 +1408,7 @@ Brief: ${jdBrief}`
                         <motion.div
                           variants={{
                             hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
-                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1443,7 +1443,7 @@ Brief: ${jdBrief}`
                         <motion.div
                           variants={{
                             hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
-                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1470,7 +1470,7 @@ Brief: ${jdBrief}`
                         <motion.div
                           variants={{
                             hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
-                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
@@ -1490,7 +1490,7 @@ Brief: ${jdBrief}`
                         <motion.div
                           variants={{
                             hidden: { opacity: 0, y: 24, scale: 0.95, filter: "blur(4px)" },
-                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+                            visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", damping: 22, stiffness: 280, mass: 0.7 } },
                           }}
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
