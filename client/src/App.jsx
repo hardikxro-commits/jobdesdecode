@@ -225,7 +225,7 @@ const Bar = memo(function Bar({ label, score }) {
   return (
     <div className="mb-3">
       <div className="flex justify-between items-center mb-1">
-        <span className="text-sm text-zinc-400">{label}</span>
+        <span className="text-base text-zinc-400">{label}</span>
         <span className={`text-sm font-bold ${textColor}`}>{score}</span>
       </div>
       <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
@@ -482,15 +482,15 @@ function Loader() {
     >
       <div className="relative z-10 flex flex-col items-center gap-8">
         <span
-          className="text-xs tracking-[0.3em] opacity-40"
+          className="text-sm tracking-[0.3em] opacity-40"
           style={{ fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace', color: "#ff0064" }}
         >
           ようこそ
         </span>
         <div className="scan-reveal">
           <div
-            className="text-[clamp(48px,12vw,96px)] font-black tracking-tight leading-none"
-            style={{ fontFamily: '"Space Grotesk", system-ui, sans-serif', fontWeight: 900, color: "#fff" }}
+            className="text-[clamp(56px,14vw,128px)] font-black tracking-tight leading-none"
+            style={{ fontFamily: '"Playfair Display", serif', fontWeight: 900, color: "#fff" }}
           >
             JD-DECODER
           </div>
@@ -657,20 +657,20 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
       <div className="relative z-10 flex items-center justify-between px-6 py-4 max-sm:px-4 max-sm:py-3">
         <div className="flex items-center gap-2">
           <span
-            className="text-lg max-sm:text-base font-bold tracking-tight"
-            style={{ fontFamily: '"Space Grotesk", system-ui, sans-serif', fontWeight: 900, color: "#fff" }}
+            className="text-xl max-sm:text-lg font-bold tracking-tight"
+            style={{ fontFamily: '"Playfair Display", serif', fontWeight: 900, color: "#fff" }}
           >
             JD-DEC
           </span>
           <Sparkles size={12} className="text-zinc-600 icon-pulse" style={{ marginLeft: 2 }} />
-          <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: "#555", fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace' }}>
+          <span className="text-xs tracking-[0.2em] uppercase" style={{ color: "#555", fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace' }}>
             Decoder
           </span>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={onJdGeneratorToggle}
-            className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
+            className="text-sm tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
             style={{
               color: showJdGenerator ? "#fff" : "#888",
               background: showJdGenerator ? "rgba(255,255,255,0.08)" : "transparent",
@@ -681,7 +681,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
           </button>
           <button
             onClick={onHistoryToggle}
-            className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
+            className="text-sm tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
             style={{
               color: showHistory ? "#fff" : "#888",
               background: showHistory ? "rgba(255,255,255,0.08)" : "transparent",
@@ -692,7 +692,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
           </button>
           <button
             onClick={onThemeToggle}
-            className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
+            className="text-sm tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
             style={{
               color: "#888",
               fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace',
@@ -842,15 +842,15 @@ function HeroSection({ onGetStarted, scrollY }) {
         style={{ opacity: contentOpacity, y: contentY, scale: contentScale }}
       >
         <p
-          className="text-xs uppercase tracking-[0.3em] mb-6 entrance-fade-up"
+          className="text-sm uppercase tracking-[0.3em] mb-6 entrance-fade-up"
           style={{ color: "#888", fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace', animationDelay: "0.5s" }}
         >
           <span className="animate-text-pulse">AI-POWERED</span> JOB ANALYSIS
         </p>
 
         <h1
-          className="text-[clamp(36px,8vw,96px)] font-black tracking-tight leading-[0.9] mb-6"
-          style={{ color: "#fff", fontFamily: '"Space Grotesk", system-ui, sans-serif', fontWeight: 900 }}
+            className="text-[clamp(48px,10vw,120px)] font-black tracking-tight leading-[0.85] mb-8"
+          style={{ color: "#fff", fontFamily: '"Playfair Display", serif', fontWeight: 900 }}
         >
           DECODE YOUR<br />
           <span className="relative inline-block">
@@ -861,7 +861,7 @@ function HeroSection({ onGetStarted, scrollY }) {
         </h1>
 
         <p
-          className="text-base max-sm:text-sm leading-relaxed max-w-md mx-auto mb-12 entrance-fade-up"
+          className="text-lg max-sm:text-base leading-relaxed max-w-lg mx-auto mb-12 entrance-fade-up"
           style={{ color: "#888", animationDelay: "1.0s" }}
         >
           Paste any job description. Our AI cuts through the corporate fluff and tells you what the job is really about.
@@ -890,7 +890,7 @@ function HeroSection({ onGetStarted, scrollY }) {
         style={{ opacity: chevronOpacity }}
       >
         <div className="flex flex-col items-center gap-2 animate-chevron">
-          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "#555", fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace' }}>
+          <span className="text-xs uppercase tracking-[0.3em]" style={{ color: "#555", fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace' }}>
             Scroll
           </span>
           <ChevronDown size={20} style={{ color: "#666" }} />
@@ -1250,7 +1250,7 @@ Brief: ${jdBrief}`
                       >
                         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
                         <div className="p-4 max-h-[55vh] overflow-y-auto relative z-10">
-                          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2 block">Generate Job Description</span>
+                            <span className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-2 block">Generate Job Description</span>
                           <textarea
                             value={jdBrief}
                             onChange={(e) => setJdBrief(e.target.value)}
@@ -1287,7 +1287,7 @@ Brief: ${jdBrief}`
                       >
                         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
                         <div className="p-4 max-h-[55vh] overflow-y-auto relative z-10">
-                          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2 block">Analysis History</span>
+                          <span className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-2 block">Analysis History</span>
                           {history.length === 0 ? (
                             <p className="text-zinc-600 text-xs text-center py-4">No saved analyses yet</p>
                           ) : (
@@ -1381,7 +1381,7 @@ Brief: ${jdBrief}`
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
                             <div className="flex items-start justify-between gap-2">
-                              <RevealHeading>Real requirements</RevealHeading>
+                              <RevealHeading><h2 className="text-xl font-display font-bold tracking-tight">Real requirements</h2></RevealHeading>
                               <CardCopyBtn label="Requirements" />
                             </div>
                             {result.real_requirements && result.real_requirements.length > 0 ? (
@@ -1394,7 +1394,7 @@ Brief: ${jdBrief}`
                                     <span
                                       key={i}
                                       title={req.note || ""}
-                                      className={`inline-block px-3 py-1.5 text-xs font-medium rounded-full cursor-default ${pillClass}`}
+                                      className={`inline-block px-3 py-1.5 text-sm font-medium rounded-full cursor-default ${pillClass}`}
                                     >
                                       {req.skill}
                                     </span>
@@ -1413,7 +1413,7 @@ Brief: ${jdBrief}`
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
                             <div className="flex items-start justify-between gap-2">
-                              <RevealHeading><TriangleAlert size={16} className="text-red-400 icon-pulse" /> Red Flags</RevealHeading>
+                              <RevealHeading><h2 className="flex items-center gap-2 text-xl font-display font-bold tracking-tight"><TriangleAlert size={16} className="text-red-400 icon-pulse" /> Red Flags</h2></RevealHeading>
                               <CardCopyBtn label="Red Flags" />
                             </div>
                             {result.red_flags && result.red_flags.length > 0 ? (
@@ -1448,7 +1448,7 @@ Brief: ${jdBrief}`
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
                             <div className="flex items-start justify-between gap-2">
-                              <RevealHeading><CheckCircle size={16} className="text-emerald-400 icon-pulse" /> Green Flags</RevealHeading>
+                              <RevealHeading><h2 className="flex items-center gap-2 text-xl font-display font-bold tracking-tight"><CheckCircle size={16} className="text-emerald-400 icon-pulse" /> Green Flags</h2></RevealHeading>
                               <CardCopyBtn label="Green Flags" />
                             </div>
                             {result.green_flags && result.green_flags.length > 0 ? (
@@ -1475,7 +1475,7 @@ Brief: ${jdBrief}`
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
                             <div className="flex items-start justify-between gap-2">
-                              <RevealHeading>Clarity Scores</RevealHeading>
+                              <RevealHeading><h2 className="text-xl font-display font-bold tracking-tight">Clarity Scores</h2></RevealHeading>
                               <CardCopyBtn label="Scores" />
                             </div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mt-4">
@@ -1495,7 +1495,7 @@ Brief: ${jdBrief}`
                           className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
                             <div className="flex items-start justify-between gap-2">
-                              <RevealHeading><MessageCircle size={16} className="text-zinc-400 icon-pulse" /> Questions to ask</RevealHeading>
+                              <RevealHeading><h2 className="flex items-center gap-2 text-xl font-display font-bold tracking-tight"><MessageCircle size={16} className="text-zinc-400 icon-pulse" /> Questions to ask</h2></RevealHeading>
                               <CardCopyBtn label="Questions" />
                             </div>
                             {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
@@ -1520,7 +1520,7 @@ Brief: ${jdBrief}`
                               className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card relative group"
                             >
                               <div className="flex items-start justify-between gap-2">
-                                <RevealHeading>Resume Match</RevealHeading>
+                                <RevealHeading><h2 className="text-xl font-display font-bold tracking-tight">Resume Match</h2></RevealHeading>
                                 <CardCopyBtn label="Resume Match" />
                               </div>
                               <div className="flex justify-center mb-6">
@@ -1572,22 +1572,22 @@ Brief: ${jdBrief}`
                           className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900 god-card card-float gpu result-card relative group"
                         >
                           <div className="flex items-start justify-between gap-2">
-                            <RevealHeading>Verdict</RevealHeading>
+                            <RevealHeading><h2 className="text-2xl font-display font-bold tracking-tight">Verdict</h2></RevealHeading>
                             <CardCopyBtn label="Verdict" />
                           </div>
-                          <p className="text-lg leading-relaxed text-zinc-100 mb-4">{result.verdict.summary}</p>
+                          <p className="text-xl leading-relaxed text-zinc-100 mb-4">{result.verdict.summary}</p>
                           <div className="mb-4">
                             {result.verdict.apply ? (
-                              <span className="inline-block px-4 py-1.5 text-sm font-bold rounded-full bg-emerald-900 text-emerald-300">
+                              <span className="inline-block px-5 py-2 text-base font-bold rounded-full bg-emerald-900 text-emerald-300">
                                 Apply
                               </span>
                             ) : (
-                              <span className="inline-block px-4 py-1.5 text-sm font-bold rounded-full bg-red-900 text-red-300">
+                              <span className="inline-block px-5 py-2 text-base font-bold rounded-full bg-red-900 text-red-300">
                                 Don't Apply
                               </span>
                             )}
                           </div>
-                          <p className="text-zinc-500 text-sm">{result.verdict.apply_reason}</p>
+                          <p className="text-zinc-500 text-base">{result.verdict.apply_reason}</p>
                           <button
                             onClick={reset}
                             className="ripple-btn mt-6 w-full bg-white text-black hover:bg-zinc-200 btn-scale font-semibold rounded-lg px-6 py-3 max-sm:py-2.5 transition-all"

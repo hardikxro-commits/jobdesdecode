@@ -458,7 +458,7 @@ html {
   --border-color: rgba(0,0,0,0.08);
 }
 body {
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   transition: background 0.4s ease, color 0.4s ease;
@@ -645,7 +645,7 @@ html {
   z-index: 30;
   pointer-events: none;
   font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: rgba(255,255,255,0.25);
