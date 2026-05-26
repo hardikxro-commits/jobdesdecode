@@ -157,6 +157,65 @@ const Bar = memo(function Bar({ label, score }) {
 
 const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || "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"
 
+function useTypewriter(text, speed = 40, delay = 0) {
+  const [displayed, setDisplayed] = useState("")
+  const [started, setStarted] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setStarted(true), delay * 1000)
+    return () => clearTimeout(timer)
+  }, [delay])
+
+  useEffect(() => {
+    if (!started) return
+    let i = 0
+    const interval = setInterval(() => {
+      i++
+      setDisplayed(text.slice(0, i))
+      if (i >= text.length) clearInterval(interval)
+    }, speed)
+    return () => clearInterval(interval)
+  }, [started, text, speed])
+
+  return displayed
+}
+
+function useScrollPosition() {
+  const [scrollY, setScrollY] = useState(0)
+  useEffect(() => {
+    let raf = null
+    const handler = () => {
+      if (!raf) raf = requestAnimationFrame(() => {
+        setScrollY(window.scrollY)
+        raf = null
+      })
+    }
+    window.addEventListener("scroll", handler, { passive: true })
+    return () => {
+      window.removeEventListener("scroll", handler)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [])
+  return scrollY
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="space-y-4 animate-app-entrance">
+      <div className="skeleton h-8 w-3/4" />
+      <div className="skeleton h-4 w-1/2" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+        <div className="skeleton h-32" />
+        <div className="skeleton h-32" />
+        <div className="skeleton h-32" />
+        <div className="skeleton h-32" />
+      </div>
+      <div className="skeleton h-24" />
+      <div className="skeleton h-40" />
+    </div>
+  )
+}
+
 const addRipple = (e) => {
   const btn = e.currentTarget
   const rect = btn.getBoundingClientRect()
@@ -569,11 +628,11 @@ const BgLayers = memo(function BgLayers({ blobOpacity, blobScale, gridOpacity })
   )
 })
 
-function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle }) {
+function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle, scrolled, theme, onThemeToggle }) {
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 entrance-fade-down"
-      style={{ animationDelay: "0.3s", willChange: "transform" }}
+      className={`fixed top-0 left-0 right-0 z-50 entrance-fade-down ${scrolled ? 'nav-scrolled' : ''}`}
+      style={{ animationDelay: "0.3s", willChange: "transform", transition: "box-shadow 0.3s ease, background 0.3s ease" }}
     >
       <div className="absolute inset-0 backdrop-blur-lg bg-black/30" />
       <div className="relative z-10 flex items-center justify-between px-6 py-4 max-sm:px-4 max-sm:py-3">
@@ -612,6 +671,17 @@ function Navbar({ showChat, onChatToggle, showHistory, onHistoryToggle }) {
           >
             HISTORY
           </button>
+          <button
+            onClick={onThemeToggle}
+            className="text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
+            style={{
+              color: "#888",
+              fontFamily: '"IBM Plex Mono", monospace',
+            }}
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? '☀' : '☾'}
+          </button>
         </div>
       </div>
     </nav>
@@ -628,13 +698,26 @@ function HeroSection({ onGetStarted, scrollY }) {
   const gridOpacity = useTransform(scrollY, [0, vh * 0.3], [0.03, 0])
   const chevronOpacity = useTransform(scrollY, [0, vh * 0.3], [1, 0])
   const glowOpacity = useTransform(scrollY, [vh * 0.3, vh * 0.9], [0, 1])
+  const bgY = useTransform(scrollY, [0, vh], [0, vh * 0.3])
+
+  const typedLine = useTypewriter("NEXT MOVE", 50, 2.2)
+  const [showCursor, setShowCursor] = useState(false)
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowCursor(true), 2200)
+    return () => clearTimeout(t)
+  }, [])
 
   return (
     <section
-      className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: "#000" }}
+      className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden hero-gradient"
     >
-      <BgLayers blobOpacity={blobOpacity} blobScale={blobScale} gridOpacity={gridOpacity} />
+      <motion.div
+        className="absolute inset-0 gpu"
+        style={{ y: bgY }}
+      >
+        <BgLayers blobOpacity={blobOpacity} blobScale={blobScale} gridOpacity={gridOpacity} />
+      </motion.div>
 
       <motion.div
         className="relative z-10 text-center px-6 max-w-4xl mx-auto"
@@ -642,33 +725,26 @@ function HeroSection({ onGetStarted, scrollY }) {
       >
         <p
           className="text-xs uppercase tracking-[0.3em] mb-6 entrance-fade-up"
-          style={{ color: "#666", fontFamily: '"IBM Plex Mono", monospace', animationDelay: "0.5s" }}
+          style={{ color: "#888", fontFamily: '"IBM Plex Mono", monospace', animationDelay: "0.5s" }}
         >
           <span className="animate-text-pulse">AI-POWERED</span> JOB ANALYSIS
         </p>
 
         <h1
-          className="text-[clamp(36px,8vw,96px)] font-black tracking-tight leading-[0.9] mb-6 entrance-scale-up glitch-text"
-          data-text="DECODE YOUR NEXT MOVE"
+          className="text-[clamp(36px,8vw,96px)] font-black tracking-tight leading-[0.9] mb-6"
           style={{ color: "#fff", fontFamily: '"Segoe UI", system-ui, sans-serif', fontWeight: 900 }}
         >
           DECODE YOUR<br />
-          <span
-            className="animate-gradient-slide"
-            style={{
-              background: "linear-gradient(135deg, #ff0064, #6400ff, #0096ff, #ff0064)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              display: "inline-block",
-            }}
-          >
-            NEXT MOVE
+          <span className="relative inline-block">
+            <span className={`${showCursor ? 'typewriter-cursor' : ''}`}>
+              {typedLine || (showCursor ? '' : 'NEXT MOVE')}
+            </span>
           </span>
         </h1>
 
         <p
           className="text-base max-sm:text-sm leading-relaxed max-w-md mx-auto mb-12 entrance-fade-up"
-          style={{ color: "#666", animationDelay: "1.0s" }}
+          style={{ color: "#888", animationDelay: "1.0s" }}
         >
           Paste any job description. Our AI cuts through the corporate fluff and tells you what the job is really about.
         </p>
@@ -683,28 +759,23 @@ function HeroSection({ onGetStarted, scrollY }) {
           />
           <button
             onClick={onGetStarted}
-            className="ripple-btn px-8 py-3 rounded-full text-sm font-semibold tracking-wider uppercase relative overflow-hidden group cursor-pointer btn-scale"
-            style={{ background: "#fff", color: "#000" }}
+            className="ripple-btn px-10 py-3.5 rounded-full text-sm font-semibold tracking-wider uppercase relative overflow-hidden group cursor-pointer cta-pill"
             onMouseDown={addRipple}
           >
-            <span className="relative z-10">Get Started</span>
-            <div
-              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{ background: "linear-gradient(135deg, #ff0064, #6400ff, #0096ff)" }}
-            />
+            <span className="relative z-10 text-white">Get Started</span>
           </button>
         </div>
-        </motion.div>
+      </motion.div>
 
       <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
         style={{ opacity: chevronOpacity }}
       >
         <div className="flex flex-col items-center gap-2 animate-chevron">
-          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "#444", fontFamily: '"IBM Plex Mono", monospace' }}>
+          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "#555", fontFamily: '"IBM Plex Mono", monospace' }}>
             Scroll
           </span>
-          <ChevronDown size={20} style={{ color: "#555" }} />
+          <ChevronDown size={20} style={{ color: "#666" }} />
         </div>
       </motion.div>
 
@@ -745,6 +816,19 @@ export default function App() {
     catch { return [] }
   })
   const [copied, setCopied] = useState(false)
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('jd-theme') || 'dark'
+    return 'dark'
+  })
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('light', theme === 'light')
+    localStorage.setItem('jd-theme', theme)
+  }, [theme])
+
+  const toggleTheme = useCallback(() => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark')
+  }, [])
 
   const { scrollY } = useScroll()
   const vh = typeof window !== "undefined" ? window.innerHeight : 720
@@ -1061,6 +1145,8 @@ Brief: ${jdBrief}`
     URL.revokeObjectURL(url)
   }
 
+  const scrolled = useScrollPosition() > 50
+
   const getStarted = useCallback(() => {
     mainAppRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [])
@@ -1072,7 +1158,7 @@ Brief: ${jdBrief}`
       <Loader />
       {showContent && (
         <div className="min-h-screen text-white animate-app-entrance" style={{ background: "#000" }}>
-          <Navbar showChat={showChat} onChatToggle={() => setShowChat(!showChat)} showHistory={showHistory} onHistoryToggle={() => setShowHistory(!showHistory)} />
+          <Navbar showChat={showChat} onChatToggle={() => setShowChat(!showChat)} showHistory={showHistory} onHistoryToggle={() => setShowHistory(!showHistory)} scrolled={scrolled} theme={theme} onThemeToggle={toggleTheme} />
           <HeroSection onGetStarted={getStarted} scrollY={scrollY} />
 
           <motion.div
@@ -1267,15 +1353,34 @@ Brief: ${jdBrief}`
                       </div>
                     )}
 
-                    {!result && !error && (
+                    {loading && <LoadingSkeleton />}
+
+                    {!result && !error && !loading && (
                       <div className="flex flex-col items-center justify-center py-16 text-zinc-400">
                         <p className="text-sm">Your decoded results will appear here</p>
                       </div>
                     )}
 
                     {result && (
-                      <div ref={resultsRef} className="space-y-4">
-                        <RevealSection className="flex gap-2 justify-end">
+                      <motion.div
+                        ref={resultsRef}
+                        className="space-y-4"
+                        initial="hidden"
+                        animate="visible"
+                        variants={{
+                          hidden: {},
+                          visible: {
+                            transition: { staggerChildren: 0.1, delayChildren: 0.15 },
+                          },
+                        }}
+                      >
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0, y: 20 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+                          }}
+                          className="flex gap-2 justify-end"
+                        >
                           <button
                             type="button"
                             onClick={copyAnalysis}
@@ -1290,8 +1395,14 @@ Brief: ${jdBrief}`
                           >
                             <Download size={12} /> Export JSON
                           </button>
-                        </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
+                        </motion.div>
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0, y: 24 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                          }}
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                        >
                             <h2 className="text-2xl max-sm:text-xl font-bold mb-2">{result.role_summary.title}</h2>
                             <div className="flex gap-2 mb-3">
                               <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 capitalize">
@@ -1302,8 +1413,14 @@ Brief: ${jdBrief}`
                               </span>
                             </div>
                             <p className="text-zinc-400">{result.role_summary.one_liner}</p>
-                          </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
+                          </motion.div>
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0, y: 24 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                          }}
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                        >
                             <RevealHeading>Real requirements</RevealHeading>
                             {result.real_requirements && result.real_requirements.length > 0 ? (
                               <div className="flex flex-wrap gap-2">
@@ -1325,8 +1442,14 @@ Brief: ${jdBrief}`
                             ) : (
                               <p className="text-zinc-500 text-sm italic">None found</p>
                             )}
-                          </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
+                          </motion.div>
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0, y: 24 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                          }}
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                        >
                             <RevealHeading><TriangleAlert size={16} className="text-red-400 icon-pulse" /> Red Flags</RevealHeading>
                             {result.red_flags && result.red_flags.length > 0 ? (
                               <div className="space-y-3">
@@ -1351,8 +1474,14 @@ Brief: ${jdBrief}`
                             ) : (
                               <p className="text-zinc-500 text-sm italic">None found</p>
                             )}
-                          </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
+                          </motion.div>
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0, y: 24 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                          }}
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                        >
                             <RevealHeading><CheckCircle size={16} className="text-emerald-400 icon-pulse" /> Green Flags</RevealHeading>
                             {result.green_flags && result.green_flags.length > 0 ? (
                               <div className="space-y-3">
@@ -1369,8 +1498,14 @@ Brief: ${jdBrief}`
                             ) : (
                               <p className="text-zinc-500 text-sm italic">None found</p>
                             )}
-                          </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
+                          </motion.div>
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0, y: 24 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                          }}
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                        >
                             <RevealHeading>Clarity Scores</RevealHeading>
                             <Bar label="Responsibilities" score={result.clarity_scores.responsibilities} />
                             <Bar label="Success metrics" score={result.clarity_scores.success_metrics} />
@@ -1378,8 +1513,14 @@ Brief: ${jdBrief}`
                             <Bar label="Growth path" score={result.clarity_scores.growth_path} />
                             <Bar label="Compensation" score={result.clarity_scores.compensation} />
                             <Bar label="Work-life balance" score={result.clarity_scores.work_life_balance} />
-                          </RevealSection>
-                          <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
+                          </motion.div>
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0, y: 24 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                          }}
+                          className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                        >
                             <RevealHeading><MessageCircle size={16} className="text-zinc-400 icon-pulse" /> Questions to ask</RevealHeading>
                             {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
                               <ol className="space-y-2">
@@ -1393,9 +1534,15 @@ Brief: ${jdBrief}`
                             ) : (
                               <p className="text-zinc-500 text-sm italic">None generated</p>
                             )}
-                          </RevealSection>
+                          </motion.div>
                           {result.resume_match && (
-                            <RevealSection className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu">
+                            <motion.div
+                              variants={{
+                                hidden: { opacity: 0, y: 24 },
+                                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                              }}
+                              className="rounded-xl p-6 max-sm:p-4 border border-zinc-800 bg-zinc-900 god-card card-float gpu result-card"
+                            >
                               <RevealHeading>Resume Match</RevealHeading>
                               <div className="text-center mb-6">
                                 <span className={`text-5xl font-bold ${
@@ -1443,9 +1590,15 @@ Brief: ${jdBrief}`
                                   )}
                                 </div>
                               </div>
-                            </RevealSection>
+                            </motion.div>
                           )}
-                          <RevealSection className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900 god-card card-float gpu">
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0, y: 24 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+                          }}
+                          className="rounded-xl p-6 border-2 border-zinc-700 bg-zinc-900 god-card card-float gpu result-card"
+                        >
                           <RevealHeading>Verdict</RevealHeading>
                           <p className="text-lg leading-relaxed text-zinc-100 mb-4">{result.verdict.summary}</p>
                           <div className="mb-4">
@@ -1467,8 +1620,8 @@ Brief: ${jdBrief}`
                           >
                             Reset
                           </button>
-                        </RevealSection>
-                      </div>
+                        </motion.div>
+                      </motion.div>
                     )}
                   </div>
                 </div>

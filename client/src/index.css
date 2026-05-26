@@ -439,8 +439,121 @@
 html {
   scroll-behavior: smooth;
   overscroll-behavior: none;
+  scroll-padding-top: 72px;
+}
+
+/* ── Theme transition ── */
+:root {
+  --bg-primary: #000;
+  --bg-secondary: #09090b;
+  --text-primary: #fff;
+  --text-secondary: #a1a1aa;
+  --border-color: rgba(255,255,255,0.06);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+.light {
+  --bg-primary: #fafafa;
+  --bg-secondary: #f4f4f5;
+  --text-primary: #18181b;
+  --text-secondary: #71717a;
+  --border-color: rgba(0,0,0,0.08);
+}
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background 0.4s ease, color 0.4s ease;
 }
 ::-webkit-scrollbar {
   width: 0;
   background: transparent;
+}
+
+/* ── Hero animated gradient background ── */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.hero-gradient {
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  background-size: 300% 300%;
+  animation: gradientShift 20s ease infinite;
+}
+
+/* ── Card hover micro-interactions ── */
+.result-card {
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.result-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(100, 0, 255, 0.08);
+}
+
+/* ── Button pill with gradient + glow ── */
+.cta-pill {
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff0064, #6400ff, #0096ff);
+  background-size: 200% 100%;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.cta-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(255, 0, 100, 0.3), 0 0 60px rgba(100, 0, 255, 0.15);
+  background-position: 100% 0;
+}
+
+/* ── Typewriter cursor ── */
+.typewriter-cursor::after {
+  content: '|';
+  animation: cursor-blink 1s step-end infinite;
+  color: #ff0064;
+  font-weight: 100;
+}
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ── Loading skeleton ── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.06) 37%, rgba(255,255,255,0.02) 63%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* ── Section contain for paint isolation ── */
+.section-contained {
+  contain: layout style;
+}
+
+/* ── Nav scroll shadow transition ── */
+.nav-scrolled {
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06);
+  transition: box-shadow 0.3s ease, background 0.3s ease;
+}
+
+/* ── Smooth scroll offset for fixed nav ── */
+html {
+  scroll-padding-top: 72px;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .mouse-glow { display: none; }
+  .scanline-overlay { display: none; }
 }
