@@ -75,7 +75,7 @@ const PROVIDERS = {
   nvidia: {
     label: "NVIDIA (NIM)",
     url: "https://integrate.api.nvidia.com/v1/chat/completions",
-    defaultModel: "meta/llama-3.1-8b-instruct",
+    defaultModel: "openai/gpt-oss-120b",
     headers: (key) => ({
       "Content-Type": "application/json",
       Authorization: `Bearer ${key}`,
@@ -252,7 +252,7 @@ const Bar = memo(function Bar({ label, score }) {
   )
 })
 
-const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || "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"
+const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || "REDACTED"
 
 
 
