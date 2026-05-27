@@ -180,7 +180,7 @@ function DecodeRing({ score, label }) {
 
   return (
     <div className="decode-ring-container">
-      <svg width="110" height="110" viewBox="0 0 100 100" className="decode-ring-svg gpu">
+      <svg width="110" height="110" viewBox="0 0 100 100" className="decode-ring-svg gpu max-sm:w-20 max-sm:h-20">
         <circle cx="50" cy="50" r={radius} className="decode-ring-bg" />
         <circle
           cx="50" cy="50" r={radius}
@@ -382,7 +382,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
       transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       <div
-        className="flex items-center justify-between px-4 py-2 rounded-full border border-app backdrop-blur-xl min-w-[640px] max-sm:min-w-0 max-sm:w-[calc(100%-32px)] max-sm:px-3"
+        className="flex items-center justify-between px-4 py-2 rounded-full border border-app backdrop-blur-xl md:min-w-[640px] max-sm:min-w-0 max-sm:w-[calc(100%-32px)] max-sm:px-3"
         style={{
           background: navScrolled ? "var(--bg-glass)" : "color-mix(in srgb, var(--bg-glass) 60%, transparent)",
           transition: "background 0.4s ease",
@@ -403,7 +403,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
         <div className="flex items-center gap-1">
           <button
             onClick={onJdGeneratorToggle}
-            className={`text-xs tracking-wider uppercase px-3 py-1.5 rounded-full transition-all cursor-pointer btn-scale-sm font-mono ${
+            className={`touch-target text-xs tracking-wider uppercase px-3 py-2 rounded-full transition-all cursor-pointer btn-scale-sm font-mono ${
               showJdGenerator ? 'text-app bg-[var(--text)]/10' : 'text-dim hover:text-app'
             }`}
             aria-label="Toggle JD Generator"
@@ -413,7 +413,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
           </button>
           <button
             onClick={onHistoryToggle}
-            className={`text-xs tracking-wider uppercase px-3 py-1.5 rounded-full transition-all cursor-pointer btn-scale-sm font-mono ${
+            className={`touch-target text-xs tracking-wider uppercase px-3 py-2 rounded-full transition-all cursor-pointer btn-scale-sm font-mono ${
               showHistory ? 'text-app bg-[var(--text)]/10' : 'text-dim hover:text-app'
             }`}
             aria-label="Toggle history"
@@ -425,7 +425,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
         <div className="flex items-center">
           <button
             onClick={onThemeToggle}
-            className="text-sm px-3 py-1.5 rounded-full transition-all cursor-pointer hover:text-app text-dim btn-scale-sm"
+            className="touch-target text-sm px-3 py-2 rounded-full transition-all cursor-pointer hover:text-app text-dim btn-scale-sm"
             aria-label="Toggle theme"
           >
             {theme === 'dark' ? (
@@ -718,7 +718,7 @@ function HeroSection({ onGetStarted, scrollY }) {
         </h1>
 
         <motion.p
-          className="text-base text-[var(--text)]/40 font-light tracking-wide mb-10 max-w-md mx-auto"
+          className="text-base max-sm:text-sm text-[var(--text)]/40 font-light tracking-wide mb-8 max-sm:mb-6 max-w-md mx-auto px-4"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -727,14 +727,14 @@ function HeroSection({ onGetStarted, scrollY }) {
         </motion.p>
 
         <motion.div
-          className="flex items-center justify-center gap-4"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.6, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
           <button
             onClick={onGetStarted}
-            className="group relative px-8 py-3 rounded-full text-xs font-medium tracking-widest uppercase text-app overflow-hidden"
+            className="group relative px-8 py-3 rounded-full text-xs font-medium tracking-widest uppercase text-app overflow-hidden touch-target w-full sm:w-auto"
             onMouseDown={addRipple}
             aria-label="Get started analyzing job descriptions"
             style={{ border: "1.5px solid transparent", backgroundClip: "padding-box" }}
@@ -1213,7 +1213,7 @@ Brief: ${jdBrief}`
                               type="button"
                               onClick={generateJD}
                               disabled={generating || !jdBrief.trim()}
-                              className="ripple-btn w-full py-1.5 rounded-md bg-inverse text-inverse text-xs font-semibold hover:brightness-90 btn-scale-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                              className="ripple-btn w-full py-3 rounded-md bg-inverse text-inverse text-xs font-semibold hover:brightness-90 btn-scale-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 touch-target"
                               onMouseDown={addRipple}
                               aria-label="Generate full job description"
                             >
@@ -1289,11 +1289,11 @@ Brief: ${jdBrief}`
 
 {result && (
                       <div ref={resultsRef} className="flex flex-col items-center w-full">
-                        <div className="flex gap-2 justify-end w-full mb-3" style={{ maxWidth: '500px' }}>
+                        <div className="flex gap-2 justify-end w-full mb-3 max-sm:flex-wrap" style={{ maxWidth: '500px' }}>
                           <button
                             type="button"
                             onClick={copyAnalysis}
-                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--bg)]/20 backdrop-blur-lg border border-app text-muted hover:text-app hover:bg-[var(--text)]/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                            className="touch-target px-3 py-2 max-sm:px-2.5 max-sm:py-1.5 rounded-lg text-xs font-medium bg-[var(--bg)]/20 backdrop-blur-lg border border-app text-muted hover:text-app hover:bg-[var(--text)]/10 btn-scale-sm transition-all flex items-center gap-1.5"
                             aria-label="Copy analysis to clipboard"
                           >
                             <Copy size={12} /> {copied ? "Copied!" : "Copy"}
@@ -1301,7 +1301,7 @@ Brief: ${jdBrief}`
                           <button
                             type="button"
                             onClick={exportPDF}
-                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--bg)]/20 backdrop-blur-lg border border-app text-muted hover:text-app hover:bg-[var(--text)]/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                            className="touch-target px-3 py-2 max-sm:px-2.5 max-sm:py-1.5 rounded-lg text-xs font-medium bg-[var(--bg)]/20 backdrop-blur-lg border border-app text-muted hover:text-app hover:bg-[var(--text)]/10 btn-scale-sm transition-all flex items-center gap-1.5"
                             aria-label="Export analysis as PDF"
                           >
                             <Download size={12} /> Export PDF
@@ -1309,14 +1309,14 @@ Brief: ${jdBrief}`
                           <button
                             type="button"
                             onClick={reset}
-                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--bg)]/20 backdrop-blur-lg border border-app text-muted hover:text-app hover:bg-[var(--text)]/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                            className="touch-target px-3 py-2 max-sm:px-2.5 max-sm:py-1.5 rounded-lg text-xs font-medium bg-[var(--bg)]/20 backdrop-blur-lg border border-app text-muted hover:text-app hover:bg-[var(--text)]/10 btn-scale-sm transition-all flex items-center gap-1.5"
                             aria-label="Reset analysis"
                           >
                             <ArrowUp size={12} /> Reset
                           </button>
                           </div>
 
-                        <div className="relative w-full" style={{ maxWidth: '500px', height: '420px', margin: '0 auto' }}>
+                        <div className="relative w-full max-sm:px-2" style={{ maxWidth: '500px', height: '420px', margin: '0 auto' }}>
                         <CardSwap
                           width="100%"
                           height={380}
@@ -1407,7 +1407,7 @@ Brief: ${jdBrief}`
                             </div>
                             <div className="flex-1 overflow-y-auto px-5 py-4">
                               {result.clarity_scores ? (
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-3 max-sm:grid-cols-2 gap-3">
                                   <DecodeRing score={result.clarity_scores.responsibilities || 0} label="Responsibilities" />
                                   <DecodeRing score={result.clarity_scores.success_metrics || 0} label="Success Metrics" />
                                   <DecodeRing score={result.clarity_scores.team_structure || 0} label="Team Structure" />
@@ -1568,7 +1568,7 @@ Brief: ${jdBrief}`
                               <button
                                 type="submit"
                                 disabled={loading || !jdText.trim()}
-                                className="shrink-0 mb-[1px] rounded-xl bg-inverse text-inverse hover:brightness-90 btn-scale p-2.5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                className="shrink-0 mb-[1px] rounded-xl bg-inverse text-inverse hover:brightness-90 btn-scale p-2.5 max-sm:p-3 transition-all disabled:opacity-30 disabled:cursor-not-allowed touch-target"
                                 onMouseDown={addRipple}
                                 aria-label="Submit job description for analysis"
                               >
@@ -1579,12 +1579,12 @@ Brief: ${jdBrief}`
                               </button>
                             </div>
                             <div className="flex items-center justify-between mt-3 pt-3 border-t border-app max-sm:flex-col max-sm:gap-2">
-                              <div className="flex items-center gap-2 max-sm:w-full">
+                              <div className="flex items-center gap-2 max-sm:w-full max-sm:flex-wrap">
                                 {!showResume ? (
                                   <button
                                     type="button"
                                     onClick={() => setShowResume(true)}
-                                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-[var(--text)]/5 hover:bg-[var(--text)]/10 text-muted hover:text-app transition-all"
+                                    className="touch-target px-3 py-2 rounded-lg text-xs font-medium bg-[var(--text)]/5 hover:bg-[var(--text)]/10 text-muted hover:text-app transition-all"
                                     aria-label="Add resume"
                                   >
                                     + resume
@@ -1593,7 +1593,7 @@ Brief: ${jdBrief}`
                                   <button
                                     type="button"
                                     onClick={() => { setShowResume(false); setResumeText("") }}
-                                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-[var(--text)]/5 hover:bg-[var(--text)]/10 text-muted hover:text-app transition-all flex items-center gap-1"
+                                    className="touch-target px-3 py-2 rounded-lg text-xs font-medium bg-[var(--text)]/5 hover:bg-[var(--text)]/10 text-muted hover:text-app transition-all flex items-center gap-1"
                                     aria-label="Remove resume"
                                   >
                                     <X size={12} /> resume
@@ -1602,7 +1602,7 @@ Brief: ${jdBrief}`
                                 <button
                                   type="button"
                                   onClick={loadSample}
-                                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-[var(--text)]/5 hover:bg-[var(--text)]/10 text-muted hover:text-app transition-all"
+                                  className="touch-target px-3 py-2 rounded-lg text-xs font-medium bg-[var(--text)]/5 hover:bg-[var(--text)]/10 text-muted hover:text-app transition-all"
                                   aria-label="Load sample job description"
                                 >
                                   sample
