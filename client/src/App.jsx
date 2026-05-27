@@ -377,44 +377,45 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
   const navScrolled = scrolled || showHistory || showJdGenerator
   return (
     <motion.nav
-      className="fixed top-4 left-1/2 -translate-x-1/2 z-50"
+      className="fixed top-4 left-0 right-0 z-50 flex justify-center px-3 max-sm:px-2"
       initial={{ y: -30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       <div
-        className="flex items-center justify-between px-4 py-2 rounded-full border border-app backdrop-blur-xl md:min-w-[640px] max-sm:min-w-0 max-sm:w-[calc(100%-32px)] max-sm:px-3"
+        className="flex items-center justify-center md:justify-between gap-1.5 md:gap-0 px-2.5 py-1.5 md:px-4 md:py-2 rounded-full border border-app backdrop-blur-xl md:min-w-[640px] max-sm:w-[calc(100%-24px)]"
         style={{
           background: navScrolled ? "var(--bg-glass)" : "color-mix(in srgb, var(--bg-glass) 60%, transparent)",
           transition: "background 0.4s ease",
         }}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2 shrink-0">
           <span
-            className="text-xl max-sm:text-lg font-bold tracking-tight"
+            className="text-base md:text-xl font-bold tracking-tight"
             style={{ fontFamily: '"Instrument Serif", serif', fontWeight: 700 }}
           >
             JD
           </span>
-          <Sparkles size={12} className="text-dim icon-pulse" />
-          <span className="text-[11px] tracking-[0.2em] uppercase text-dim font-mono">
+          <Sparkles size={10} className="text-dim icon-pulse md:hidden" />
+          <Sparkles size={12} className="text-dim icon-pulse hidden md:block" />
+          <span className="text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-dim font-mono">
             Decoder
           </span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <button
             onClick={onJdGeneratorToggle}
-            className={`touch-target text-xs tracking-wider uppercase px-3 py-2 rounded-full transition-all cursor-pointer btn-scale-sm font-mono ${
+            className={`touch-target text-[10px] md:text-xs tracking-wider uppercase px-1.5 md:px-3 py-1.5 md:py-2 rounded-full transition-all cursor-pointer btn-scale-sm font-mono whitespace-nowrap ${
               showJdGenerator ? 'text-app bg-[var(--text)]/10' : 'text-dim hover:text-app'
             }`}
             aria-label="Toggle JD Generator"
             aria-expanded={showJdGenerator}
           >
-            GENERATE JD
+            <span className="hidden md:inline">GENERATE </span>JD
           </button>
           <button
             onClick={onHistoryToggle}
-            className={`touch-target text-xs tracking-wider uppercase px-3 py-2 rounded-full transition-all cursor-pointer btn-scale-sm font-mono ${
+            className={`touch-target text-[10px] md:text-xs tracking-wider uppercase px-1.5 md:px-3 py-1.5 md:py-2 rounded-full transition-all cursor-pointer btn-scale-sm font-mono whitespace-nowrap ${
               showHistory ? 'text-app bg-[var(--text)]/10' : 'text-dim hover:text-app'
             }`}
             aria-label="Toggle history"
@@ -423,16 +424,16 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
             HISTORY
           </button>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center shrink-0">
           <button
             onClick={onThemeToggle}
-            className="touch-target text-sm px-3 py-2 rounded-full transition-all cursor-pointer hover:text-app text-dim btn-scale-sm"
+            className="touch-target text-xs md:text-sm px-1.5 md:px-3 py-1.5 md:py-2 rounded-full transition-all cursor-pointer hover:text-app text-dim btn-scale-sm"
             aria-label="Toggle theme"
           >
             {theme === 'dark' ? (
-              <Sun size={14} />
+              <Sun size={13} />
             ) : (
-              <Moon size={14} />
+              <Moon size={13} />
             )}
           </button>
         </div>
