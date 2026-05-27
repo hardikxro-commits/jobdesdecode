@@ -252,6 +252,23 @@ export default function ForceFieldBackground({
     };
   }, [imageUrl]);
 
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          p5InstanceRef.current?.loop();
+        } else {
+          p5InstanceRef.current?.noLoop();
+        }
+      },
+      { threshold: 0.01 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   return (
     <div
       className={`absolute inset-0 overflow-hidden bg-black ${className}`}

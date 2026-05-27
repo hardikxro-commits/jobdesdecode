@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo, useCallback } from "react"
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Sparkles, Braces, ArrowUp } from "lucide-react"
 import ForceFieldBackground from './ForceFieldBackground'
 import Preloader from './Preloader'
@@ -379,8 +379,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       style={{
-        backdropFilter: scrolled ? "blur(16px)" : "blur(0px)",
-        background: scrolled ? "rgba(10, 10, 15, 0.8)" : "transparent",
+        ...(scrolled ? { backdropFilter: "blur(16px)", background: "rgba(10, 10, 15, 0.8)" } : { background: "transparent" }),
         transition: "background 0.4s ease, backdrop-filter 0.4s ease",
       }}
     >
@@ -546,22 +545,39 @@ function HeroSection({ onGetStarted, scrollY }) {
   const contentY = useTransform(scrollY, [0, vh * 0.7], [0, -80])
   const fadeOut = useTransform(scrollY, [0, vh * 0.8], [1, 0])
 
-  const mouseRef = useRef({ x: 0.5, y: 0.5 })
-  const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 })
+  const mouseX = useMotionValue(0.5)
+  const mouseY = useMotionValue(0.5)
+  const smoothX = useSpring(mouseX, { stiffness: 60, damping: 35 })
+  const smoothY = useSpring(mouseY, { stiffness: 60, damping: 35 })
   useEffect(() => {
     const onMove = (e) => {
-      const mx = e.clientX / window.innerWidth
-      const my = e.clientY / window.innerHeight
-      mouseRef.current = { x: mx, y: my }
-      setMouse({ x: mx, y: my })
+      mouseX.set(e.clientX / window.innerWidth)
+      mouseY.set(e.clientY / window.innerHeight)
     }
-    window.addEventListener("mousemove", onMove)
+    window.addEventListener("mousemove", onMove, { passive: true })
     return () => window.removeEventListener("mousemove", onMove)
   }, [])
+  const sphere1Left = useTransform(smoothX, [0, 1], [20, 30])
+  const sphere1Top = useTransform(smoothY, [0, 1], [20, 30])
+  const sphere1X = useTransform(smoothX, v => (v - 0.5) * -20)
+  const sphere1Y = useTransform(smoothY, v => (v - 0.5) * -20)
+  const sphere2Right = useTransform(smoothX, [0, 1], [25, 15])
+  const sphere2Bottom = useTransform(smoothY, [0, 1], [30, 20])
+  const sphere2X = useTransform(smoothX, v => (v - 0.5) * 15)
+  const sphere2Y = useTransform(smoothY, v => (v - 0.5) * 15)
+  const sphere3Left = useTransform(smoothX, [0, 1], [47.5, 52.5])
+  const sphere3Top = useTransform(smoothY, [0, 1], [57.5, 62.5])
+  const decor1X = useTransform(smoothX, v => (v - 0.5) * -30)
+  const decor1Y = useTransform(smoothY, v => (v - 0.5) * -30)
+  const decor2X = useTransform(smoothX, v => (v - 0.5) * 25)
+  const decor2Y = useTransform(smoothY, v => (v - 0.5) * 25)
+  const decor3X = useTransform(smoothX, v => (v - 0.5) * -20)
+  const decor3Y = useTransform(smoothY, v => (v - 0.5) * -20)
+  const decor4X = useTransform(smoothX, v => (v - 0.5) * 35)
+  const decor4Y = useTransform(smoothY, v => (v - 0.5) * 35)
 
   const decChars = "DEC".split("")
   const deChars = "DE".split("")
-  const taglineChars = "Cut through the noise.".split("")
 
   return (
     <section className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden bg-black">
@@ -577,10 +593,10 @@ function HeroSection({ onGetStarted, scrollY }) {
           className="absolute w-[500px] h-[500px] rounded-full blur-[100px] opacity-15"
           style={{
             background: "radial-gradient(circle, #ff0064, transparent 70%)",
-            left: `${20 + mouse.x * 10}%`,
-            top: `${20 + mouse.y * 10}%`,
-            x: (mouse.x - 0.5) * -20,
-            y: (mouse.y - 0.5) * -20,
+            left: sphere1Left,
+            top: sphere1Top,
+            x: sphere1X,
+            y: sphere1Y,
           }}
           transition={{ type: "spring", stiffness: 50, damping: 30 }}
         />
@@ -588,10 +604,10 @@ function HeroSection({ onGetStarted, scrollY }) {
           className="absolute w-[400px] h-[400px] rounded-full blur-[100px] opacity-10"
           style={{
             background: "radial-gradient(circle, #6400ff, transparent 70%)",
-            right: `${15 + (1 - mouse.x) * 10}%`,
-            bottom: `${20 + (1 - mouse.y) * 10}%`,
-            x: (mouse.x - 0.5) * 15,
-            y: (mouse.y - 0.5) * 15,
+            right: sphere2Right,
+            bottom: sphere2Bottom,
+            x: sphere2X,
+            y: sphere2Y,
           }}
           transition={{ type: "spring", stiffness: 40, damping: 25 }}
         />
@@ -599,8 +615,8 @@ function HeroSection({ onGetStarted, scrollY }) {
           className="absolute w-[350px] h-[350px] rounded-full blur-[90px] opacity-8"
           style={{
             background: "radial-gradient(circle, #0096ff, transparent 70%)",
-            left: `${50 + (mouse.x - 0.5) * 5}%`,
-            top: `${60 + (mouse.y - 0.5) * 5}%`,
+            left: sphere3Left,
+            top: sphere3Top,
           }}
           transition={{ type: "spring", stiffness: 60, damping: 35 }}
         />
@@ -613,7 +629,7 @@ function HeroSection({ onGetStarted, scrollY }) {
             opacity: [0.2, 0.4, 0.2],
           }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          style={{ x: (mouse.x - 0.5) * -30, y: (mouse.y - 0.5) * -30 }}
+          style={{ x: decor1X, y: decor1Y }}
         />
         <motion.div
           className="absolute bottom-[25%] right-[15%] w-4 h-4 rounded-full border border-white/15"
@@ -623,13 +639,13 @@ function HeroSection({ onGetStarted, scrollY }) {
             opacity: [0.15, 0.35, 0.15],
           }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          style={{ x: (mouse.x - 0.5) * 25, y: (mouse.y - 0.5) * 25 }}
+          style={{ x: decor2X, y: decor2Y }}
         />
         <motion.div
           className="absolute top-[40%] right-[20%] w-[2px] h-8 bg-white/10"
           animate={{ height: [32, 48, 32], opacity: [0.1, 0.3, 0.1] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          style={{ x: (mouse.x - 0.5) * -20, y: (mouse.y - 0.5) * -20 }}
+          style={{ x: decor3X, y: decor3Y }}
         />
         <motion.div
           className="absolute bottom-[30%] left-[20%] w-5 h-5 border border-white/10 rounded-full"
@@ -638,7 +654,7 @@ function HeroSection({ onGetStarted, scrollY }) {
             opacity: [0.1, 0.25, 0.1],
           }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-          style={{ x: (mouse.x - 0.5) * 35, y: (mouse.y - 0.5) * 35 }}
+          style={{ x: decor4X, y: decor4Y }}
         />
       </motion.div>
 
@@ -715,17 +731,14 @@ function HeroSection({ onGetStarted, scrollY }) {
           animate={{ opacity: 1 }}
           transition={{ delay: 1.3, duration: 0.3 }}
         >
-          {taglineChars.map((ch, i) => (
-            <motion.span
-              key={i}
-              className="inline-block"
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1.3 + i * 0.025, duration: 0.3, ease: "easeOut" }}
-            >
-              {ch === " " ? "\u00A0" : ch}
-            </motion.span>
-          ))}
+          <motion.span
+            className="inline-block"
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1.3, duration: 0.5, ease: "easeOut" }}
+          >
+            Cut through the noise.
+          </motion.span>
         </motion.p>
 
         <motion.div
