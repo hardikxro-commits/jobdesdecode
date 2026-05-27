@@ -308,7 +308,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
       transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       <div
-        className="flex items-center justify-center md:justify-between gap-1.5 md:gap-0 px-2.5 py-1.5 md:px-4 md:py-2 rounded-full border border-app backdrop-blur-xl md:min-w-[640px] max-sm:w-[calc(100%-24px)]"
+        className="flex items-center justify-center md:justify-between gap-1 md:gap-0 px-2 py-1.5 md:px-4 md:py-2 rounded-full border border-app backdrop-blur-xl md:min-w-[640px] max-sm:w-[calc(100%-16px)]"
         style={{
           background: navScrolled ? "var(--bg-glass)" : "color-mix(in srgb, var(--bg-glass) 60%, transparent)",
           transition: "background 0.4s ease",
@@ -316,21 +316,21 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
       >
         <div className="flex items-center gap-1 md:gap-2 shrink-0">
           <span
-            className="text-base md:text-xl font-bold tracking-tight"
+            className="text-sm md:text-xl font-bold tracking-tight"
             style={{ fontFamily: '"Instrument Serif", serif', fontWeight: 700 }}
           >
             JD
           </span>
-          <Sparkles size={10} className="text-dim icon-pulse md:hidden" />
+          <Sparkles size={8} className="text-dim icon-pulse md:hidden" />
           <Sparkles size={12} className="text-dim icon-pulse hidden md:block" />
-          <span className="text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-dim font-mono">
+          <span className="text-[9px] md:text-[11px] tracking-[0.2em] uppercase text-dim font-mono">
             Decoder
           </span>
         </div>
         <div className="flex items-center gap-0.5">
           <button
             onClick={onJdGeneratorToggle}
-            className={`touch-target text-[10px] md:text-xs tracking-wider uppercase px-1.5 md:px-3 py-1.5 md:py-2 rounded-full transition-all cursor-pointer btn-scale-sm font-mono whitespace-nowrap ${
+            className={`touch-target text-[9px] md:text-xs tracking-wider uppercase px-2 md:px-3 py-1.5 md:py-2 rounded-full transition-all cursor-pointer btn-scale-sm font-mono whitespace-nowrap ${
               showJdGenerator ? 'text-app bg-[var(--text)]/10' : 'text-dim hover:text-app'
             }`}
             aria-label="Toggle JD Generator"
@@ -340,7 +340,7 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
           </button>
           <button
             onClick={onHistoryToggle}
-            className={`touch-target text-[10px] md:text-xs tracking-wider uppercase px-1.5 md:px-3 py-1.5 md:py-2 rounded-full transition-all cursor-pointer btn-scale-sm font-mono whitespace-nowrap ${
+            className={`touch-target text-[9px] md:text-xs tracking-wider uppercase px-2 md:px-3 py-1.5 md:py-2 rounded-full transition-all cursor-pointer btn-scale-sm font-mono whitespace-nowrap ${
               showHistory ? 'text-app bg-[var(--text)]/10' : 'text-dim hover:text-app'
             }`}
             aria-label="Toggle history"
@@ -348,17 +348,15 @@ function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, 
           >
             HISTORY
           </button>
-        </div>
-        <div className="flex items-center shrink-0">
           <button
             onClick={onThemeToggle}
-            className="touch-target text-xs md:text-sm px-1.5 md:px-3 py-1.5 md:py-2 rounded-full transition-all cursor-pointer hover:text-app text-dim btn-scale-sm"
+            className="touch-target text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2 rounded-full transition-all cursor-pointer hover:text-app text-dim btn-scale-sm"
             aria-label="Toggle theme"
           >
             {theme === 'dark' ? (
-              <Sun size={13} />
+              <Sun size={12} />
             ) : (
-              <Moon size={13} />
+              <Moon size={12} />
             )}
           </button>
         </div>
@@ -894,7 +892,12 @@ Brief: ${jdBrief}`
       setJdText(cleaned)
       setJdBrief("")
     } catch (err) {
-      setError(err.message || "Failed to generate job description")
+      const msg = err.message || ""
+      if (msg.includes("API key not configured")) {
+        setError("AI API key not set. Run: npx wrangler pages secret put NVIDIA_API_KEY")
+      } else {
+        setError(msg || "Failed to generate job description")
+      }
     } finally {
       setGenerating(false)
     }
@@ -1285,7 +1288,7 @@ Brief: ${jdBrief}`
                               gradient: 'from-purple-500 to-purple-400',
                               header: <h3 className="text-sm font-display font-bold tracking-tight">Clarity Scores</h3>,
                               body: result.clarity_scores
-                                ? <div className="grid grid-cols-3 max-sm:grid-cols-2 gap-3"><DecodeRing score={result.clarity_scores.responsibilities || 0} label="Responsibilities" /><DecodeRing score={result.clarity_scores.success_metrics || 0} label="Success Metrics" /><DecodeRing score={result.clarity_scores.team_structure || 0} label="Team Structure" /><DecodeRing score={result.clarity_scores.growth_path || 0} label="Growth Path" /><DecodeRing score={result.clarity_scores.compensation || 0} label="Compensation" /><DecodeRing score={result.clarity_scores.work_life_balance || 0} label="WLB" /></div>
+                                ? <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-sm:gap-1.5"><DecodeRing score={result.clarity_scores.responsibilities || 0} label="Responsibilities" /><DecodeRing score={result.clarity_scores.success_metrics || 0} label="Success Metrics" /><DecodeRing score={result.clarity_scores.team_structure || 0} label="Team Structure" /><DecodeRing score={result.clarity_scores.growth_path || 0} label="Growth Path" /><DecodeRing score={result.clarity_scores.compensation || 0} label="Compensation" /><DecodeRing score={result.clarity_scores.work_life_balance || 0} label="WLB" /></div>
                                 : <p className="text-faint text-xs italic">No clarity scores available</p>,
                             },
                             {
@@ -1300,7 +1303,7 @@ Brief: ${jdBrief}`
                               key: 'resume',
                               gradient: 'from-cyan-500 to-cyan-400',
                               header: <h3 className="text-sm font-display font-bold tracking-tight">Resume Match</h3>,
-                              body: <><div className="flex justify-center mb-4"><DecodeRing score={result.resume_match.score} label="Match Score" /></div><div className="grid grid-cols-2 gap-4"><div><h4 className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1"><Check size={12} /> Strengths</h4>{result.resume_match.strengths && result.resume_match.strengths.length > 0 ? <ul className="space-y-1">{result.resume_match.strengths.map((s, i) => <li key={i} className="text-xs text-subtle flex items-start gap-1"><Check size={10} className="shrink-0 mt-0.5 text-emerald-400" />{s}</li>)}</ul> : <p className="text-faint text-[10px] italic">None identified</p>}</div><div><h4 className="text-[10px] font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-1"><X size={12} /> Gaps</h4>{result.resume_match.gaps && result.resume_match.gaps.length > 0 ? <ul className="space-y-1">{result.resume_match.gaps.map((g, i) => <li key={i} className="text-xs text-subtle flex items-start gap-1"><X size={10} className="shrink-0 mt-0.5 text-red-400" />{g}</li>)}</ul> : <p className="text-faint text-[10px] italic">None identified</p>}</div></div></>,
+                              body: <><div className="flex justify-center mb-4"><DecodeRing score={result.resume_match.score} label="Match Score" /></div><div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-sm:gap-2"><div><h4 className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1"><Check size={12} /> Strengths</h4>{result.resume_match.strengths && result.resume_match.strengths.length > 0 ? <ul className="space-y-1">{result.resume_match.strengths.map((s, i) => <li key={i} className="text-xs text-subtle flex items-start gap-1"><Check size={10} className="shrink-0 mt-0.5 text-emerald-400" />{s}</li>)}</ul> : <p className="text-faint text-[10px] italic">None identified</p>}</div><div><h4 className="text-[10px] font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-1"><X size={12} /> Gaps</h4>{result.resume_match.gaps && result.resume_match.gaps.length > 0 ? <ul className="space-y-1">{result.resume_match.gaps.map((g, i) => <li key={i} className="text-xs text-subtle flex items-start gap-1"><X size={10} className="shrink-0 mt-0.5 text-red-400" />{g}</li>)}</ul> : <p className="text-faint text-[10px] italic">None identified</p>}</div></div></>,
                             }] : []),
                             {
                               key: 'verdict',
@@ -1318,8 +1321,8 @@ Brief: ${jdBrief}`
                               }}
                             >
                               <div className={`h-[2px] bg-gradient-to-r ${section.gradient}`} />
-                              <div className="px-5 py-4">
-                                <div className="flex items-center gap-2 mb-3">
+                              <div className="px-4 max-sm:px-3 py-3 max-sm:py-2.5">
+                                <div className="flex items-center gap-2 mb-2.5">
                                   {section.header}
                                 </div>
                                 {section.body}

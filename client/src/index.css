@@ -306,6 +306,10 @@ html {
   box-shadow: 0 0 8px rgba(255,0,100,0.5);
   transform: scale(1.2);
 }
+@media (max-width: 640px) {
+  .section-dots { right: 8px; gap: 14px; }
+  .section-dot { width: 10px; height: 10px; }
+}
 
 /* ── Scroll progress line ── */
 .scroll-progress {
@@ -488,6 +492,10 @@ html {
 /* ── Mobile/tablet responsive overrides ── */
 @media (max-width: 640px) {
   html { font-size: 15px; }
+  .decode-ring-container { gap: 8px; }
+  .decode-ring-label { font-size: 9px; }
+  .scroll-progress { right: 3px; }
+  .section-indicator { display: none; }
 }
 @media (min-width: 641px) and (max-width: 1024px) {
   html { font-size: 16px; }
@@ -506,5 +514,30 @@ input:focus, textarea:focus, select:focus {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+}
+
+/* ── Safe area insets for modern phones ── */
+body {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* ── Prevent pull-to-refresh interference ── */
+.scroll-container {
+  overscroll-behavior: contain;
+}
+
+/* ── Better scrolling momentum on iOS ── */
+@media (max-width: 640px) {
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+  }
+  textarea {
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0;
   }
 }
