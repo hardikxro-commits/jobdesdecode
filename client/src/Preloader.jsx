@@ -7,7 +7,7 @@ export default function Preloader({ onComplete }) {
 
   useEffect(() => {
     const pTimer = setTimeout(() => setProgress(100), 80);
-    const exitTimer = setTimeout(() => setExiting(true), 2000);
+    const exitTimer = setTimeout(() => setExiting(true), 1500);
     return () => {
       clearTimeout(pTimer);
       clearTimeout(exitTimer);

@@ -249,7 +249,7 @@ body {
   #decoder .space-y-4 {
     display: block !important;
   }
-  .god-card {
+  .result-card {
     break-inside: avoid;
     border: 1px solid #333 !important;
     page-break-inside: avoid;
@@ -407,8 +407,14 @@ html {
 
 
 /* ── Unified gradient background ── */
+:root {
+  --bg-gradient: linear-gradient(180deg, #0f0c29 0%, #302b63 25%, #1a1a2e 50%, #0a0a0f 75%, #000 100%);
+}
+.light {
+  --bg-gradient: linear-gradient(180deg, #fafafa 0%, #f3eeff 25%, #eef6ff 50%, #fafafa 75%, #fff 100%);
+}
 .bg-unified {
-  background: linear-gradient(180deg, #0f0c29 0%, #302b63 25%, #1a1a2e 50%, #0a0a0f 75%, #000 100%);
+  background: var(--bg-gradient);
 }
 
 

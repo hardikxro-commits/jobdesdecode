@@ -1193,7 +1193,7 @@ Brief: ${jdBrief}`
               <div className="ambient-orb" style={{ width: '300px', height: '300px', top: '10%', left: '-5%', background: '#ff0064', animation: 'orbFloat1 20s ease-in-out infinite' }} />
 
               <div className="relative z-10 flex flex-col min-h-screen">
-                <div className="max-sm:left-2 max-sm:right-2 max-sm:top-2 absolute top-4 right-4 z-10 flex flex-col items-end gap-2" style={{ top: "4rem" }}>
+                <div className="max-sm:left-2 max-sm:right-2 max-sm:top-14 absolute top-16 right-4 z-10 flex flex-col items-end gap-2">
 
                   <AnimatePresence>
                     {showJdGenerator && (
@@ -1284,16 +1284,22 @@ Brief: ${jdBrief}`
                     <div className="flex-1 overflow-y-auto px-4 max-sm:px-2 pb-4 mt-16">
                       <div className="max-w-2xl mx-auto">
                         {error && (
-                          <div className="rounded-xl p-4 max-sm:p-3 mb-4 border border-red-900 bg-red-950 text-red-300 text-sm max-sm:text-xs flex items-start gap-2">
-                            <TriangleAlert size={18} className="shrink-0 mt-0.5" />
-                            {error}
+                          <div className="rounded-xl p-4 max-sm:p-3 mb-4 border border-red-900/50 bg-red-950/30 backdrop-blur-xl text-red-300 text-sm max-sm:text-xs flex items-start gap-3">
+                            <TriangleAlert size={18} className="shrink-0 mt-0.5 text-red-400" />
+                            <span>{error}</span>
                           </div>
                         )}
 
-                        {loading && <LoadingSkeleton />}
+                        <AnimatePresence mode="wait">
+                          {loading && (
+                            <motion.div key="loading" exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
+                              <LoadingSkeleton />
+                            </motion.div>
+                          )}
 
-{result && (
-                      <motion.div
+                          {result && (
+                            <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+                              <motion.div
                         ref={resultsRef}
                         className="flex flex-col items-center w-full"
                         initial={{ opacity: 0, y: 30, scale: 0.97 }}
@@ -1413,7 +1419,7 @@ Brief: ${jdBrief}`
                           ].map((section) => (
                             <motion.div
                               key={section.key}
-                              className="rounded-xl border border-app bg-[var(--bg)]/40 backdrop-blur-xl overflow-hidden"
+                              className="result-card rounded-xl border border-app bg-[var(--bg)]/40 backdrop-blur-xl overflow-hidden"
                               variants={{
                                 hidden: { opacity: 0, y: 20 },
                                 visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
@@ -1430,7 +1436,9 @@ Brief: ${jdBrief}`
                           ))}
                         </motion.div>
                       </motion.div>
-                    )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     </div>
                   )}
@@ -1439,20 +1447,26 @@ Brief: ${jdBrief}`
                     <div className="max-w-2xl mx-auto w-full">
                       {!result && !loading && !error && (
                         <motion.div
-                          className="mb-6 text-center"
+                          className="mb-8 text-center"
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ duration: 0.5, delay: 0.5 }}
                         >
                           <motion.div
-                            className="w-16 h-16 rounded-2xl border border-app bg-card flex items-center justify-center mx-auto mb-4"
-                            animate={{ scale: [1, 1.05, 1], opacity: [0.6, 1, 0.6] }}
+                            className="w-20 h-20 rounded-2xl border border-app/50 bg-[var(--bg)]/30 backdrop-blur-sm flex items-center justify-center mx-auto mb-5"
+                            animate={{ scale: [1, 1.04, 1], opacity: [0.4, 0.7, 0.4] }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                          >
+                            <Braces size={32} className="text-dim" />
+                          </motion.div>
+                          <motion.p
+                            className="text-sm font-medium text-faint"
+                            animate={{ opacity: [0.4, 0.7, 0.4] }}
                             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                           >
-                            <Braces size={28} className="text-dim" />
-                          </motion.div>
-                          <p className="text-sm font-medium text-faint">Awaiting analysis</p>
-                          <p className="text-xs text-dim mt-1">Paste a JD above and hit send</p>
+                            Awaiting analysis
+                          </motion.p>
+                          <p className="text-xs text-dim mt-1.5">Paste a job description above and hit send to decode</p>
                         </motion.div>
                       )}
                       <motion.div
