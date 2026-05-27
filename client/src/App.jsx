@@ -1289,35 +1289,63 @@ Brief: ${jdBrief}`
                         {loading && <LoadingSkeleton />}
 
 {result && (
-                      <div ref={resultsRef} className="flex flex-col items-center w-full">
-                        <div className="flex gap-2 justify-end w-full mb-3 max-sm:flex-wrap" style={{ maxWidth: '500px' }}>
-                          <button
-                            type="button"
-                            onClick={copyAnalysis}
-                            className="touch-target px-3 py-2 max-sm:px-2.5 max-sm:py-1.5 rounded-lg text-xs font-medium bg-[var(--bg)]/20 backdrop-blur-lg border border-app text-muted hover:text-app hover:bg-[var(--text)]/10 btn-scale-sm transition-all flex items-center gap-1.5"
-                            aria-label="Copy analysis to clipboard"
+                      <motion.div
+                        ref={resultsRef}
+                        className="flex flex-col items-center w-full"
+                        initial={{ opacity: 0, y: 30, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        <motion.div
+                          className="flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full border border-app bg-[var(--bg)]/40 backdrop-blur-sm"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.5, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                        >
+                          <motion.span
+                            className="w-4 h-4 rounded-full flex items-center justify-center"
+                            style={{ background: 'linear-gradient(135deg, #a78bfa, #22d3ee)' }}
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: "spring", stiffness: 200, damping: 12, delay: 0.25 }}
                           >
-                            <Copy size={12} /> {copied ? "Copied!" : "Copy"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={exportPDF}
-                            className="touch-target px-3 py-2 max-sm:px-2.5 max-sm:py-1.5 rounded-lg text-xs font-medium bg-[var(--bg)]/20 backdrop-blur-lg border border-app text-muted hover:text-app hover:bg-[var(--text)]/10 btn-scale-sm transition-all flex items-center gap-1.5"
-                            aria-label="Export analysis as PDF"
-                          >
-                            <Download size={12} /> Export PDF
-                          </button>
-                          <button
-                            type="button"
-                            onClick={reset}
-                            className="touch-target px-3 py-2 max-sm:px-2.5 max-sm:py-1.5 rounded-lg text-xs font-medium bg-[var(--bg)]/20 backdrop-blur-lg border border-app text-muted hover:text-app hover:bg-[var(--text)]/10 btn-scale-sm transition-all flex items-center gap-1.5"
-                            aria-label="Reset analysis"
-                          >
-                            <ArrowUp size={12} /> Reset
-                          </button>
-                          </div>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#030303" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                          </motion.span>
+                          <span className="text-[11px] font-mono tracking-wider uppercase text-subtle">Analysis Decoded</span>
+                        </motion.div>
 
-                        <div className="relative w-full max-sm:px-2" style={{ maxWidth: '500px', height: '420px', margin: '0 auto' }}>
+                        <motion.div
+                          className="flex gap-2 justify-end w-full mb-3 max-sm:flex-wrap"
+                          style={{ maxWidth: '500px' }}
+                          initial="hidden"
+                          animate="visible"
+                          variants={{
+                            visible: { transition: { staggerChildren: 0.08, delayChildren: 0.3 } },
+                          }}
+                        >
+                          {[
+                            { label: copied ? "Copied!" : "Copy", icon: <Copy size={12} />, onClick: copyAnalysis, aria: "Copy analysis to clipboard" },
+                            { label: "Export PDF", icon: <Download size={12} />, onClick: exportPDF, aria: "Export analysis as PDF" },
+                            { label: "Reset", icon: <ArrowUp size={12} />, onClick: reset, aria: "Reset analysis" },
+                          ].map((btn) => (
+                            <motion.button
+                              key={btn.label}
+                              type="button"
+                              onClick={btn.onClick}
+                              className="touch-target px-3 py-2 max-sm:px-2.5 max-sm:py-1.5 rounded-lg text-xs font-medium bg-[var(--bg)]/20 backdrop-blur-lg border border-app text-muted hover:text-app hover:bg-[var(--text)]/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                              aria-label={btn.aria}
+                              variants={{
+                                hidden: { opacity: 0, y: -8 },
+                                visible: { opacity: 1, y: 0 },
+                              }}
+                              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                            >
+                              {btn.icon} {btn.label}
+                            </motion.button>
+                          ))}
+                        </motion.div>
+
+                        <div className="relative w-full max-sm:px-2 results-boot" style={{ maxWidth: '500px', height: '420px', margin: '0 auto' }}>
                         <CardSwap
                           width="100%"
                           height={380}
@@ -1513,7 +1541,7 @@ Brief: ${jdBrief}`
                           </Card>
                         </CardSwap>
                         </div>
-                      </div>
+                      </motion.div>
                     )}
                       </div>
                     </div>

@@ -482,6 +482,16 @@ html {
   100% { transform: translate(-50%, -50%) rotate(-360deg); }
 }
 
+/* ── Result entrance boot glow ── */
+@keyframes results-boot-glow {
+  0% { box-shadow: 0 0 0px 0px rgba(167, 139, 250, 0), 0 0 0px 0px rgba(34, 211, 238, 0); }
+  30% { box-shadow: 0 0 30px 4px rgba(167, 139, 250, 0.15), 0 0 60px 8px rgba(34, 211, 238, 0.08); }
+  100% { box-shadow: 0 0 0px 0px rgba(167, 139, 250, 0), 0 0 0px 0px rgba(34, 211, 238, 0); }
+}
+.results-boot {
+  animation: results-boot-glow 1.2s ease-out 0.4s forwards;
+}
+
 /* ── Scroll-triggered card corner accent ── */
 .card-corner-accent {
   position: absolute;
