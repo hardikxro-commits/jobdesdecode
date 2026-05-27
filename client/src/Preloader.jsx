@@ -104,7 +104,7 @@ export default function Preloader({ onComplete }) {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8, duration: 0.6 }}
             >
-              loading
+              ramen break
             </motion.p>
           </div>
         </motion.div>
