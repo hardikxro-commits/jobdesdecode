@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef, memo, useCallback, lazy, Suspense } from "react"
+import { useState, useEffect, useRef, memo, useCallback } from "react"
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, Copy, Download, Sparkles, Braces, ArrowUp, Sun, Moon } from "lucide-react"
 import Preloader from './Preloader'
 import CardSwap, { Card } from './CardSwap'
 
-const ForceFieldBackground = lazy(() => import('./ForceFieldBackground'))
+import TubesBackground from './TubesBackground'
+import PastelGradientBackground from './PastelGradientBackground'
 
 const PROVIDERS = {
   anthropic: {
@@ -1184,7 +1185,7 @@ Brief: ${jdBrief}`
 
           <div id="decoder" ref={mainAppRef}>
             <div className="min-h-screen text-app flex flex-col relative content-vis-auto">
-              <Suspense fallback={null}><ForceFieldBackground /></Suspense>
+              {theme === 'dark' ? <TubesBackground /> : <PastelGradientBackground />}
               <div className="ambient-orb" style={{ width: '300px', height: '300px', top: '10%', left: '-5%', background: '#ff0064', animation: 'orbFloat1 20s ease-in-out infinite' }} />
 
               <div className="relative z-10 flex flex-col min-h-screen">

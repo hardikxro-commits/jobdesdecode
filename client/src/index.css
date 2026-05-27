@@ -472,6 +472,16 @@ html {
   z-index: 0;
 }
 
+/* ── Pastel gradient background rotations ── */
+@keyframes pastel-rotate {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes pastel-rotate-reverse {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+
 /* ── Scroll-triggered card corner accent ── */
 .card-corner-accent {
   position: absolute;
