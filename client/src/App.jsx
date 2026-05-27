@@ -182,7 +182,7 @@ function DecodeRing({ score, label }) {
 
   return (
     <div className="decode-ring-container">
-      <svg width="110" height="110" viewBox="0 0 100 100" className="decode-ring-svg gpu max-sm:w-20 max-sm:h-20">
+      <svg width="110" height="110" viewBox="0 0 100 100" className="decode-ring-svg max-sm:w-20 max-sm:h-20">
         <circle cx="50" cy="50" r={radius} className="decode-ring-bg" />
         <circle
           cx="50" cy="50" r={radius}
