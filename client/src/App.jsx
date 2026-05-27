@@ -12,89 +12,7 @@ import Preloader from './Preloader'
 import TubesBackground from './TubesBackground'
 import PastelGradientBackground from './PastelGradientBackground'
 
-const PROVIDERS = {
-  anthropic: {
-    label: "Anthropic (Claude)",
-    url: "https://api.anthropic.com/v1/messages",
-    defaultModel: "claude-sonnet-4-20250514",
-    headers: (key) => ({
-      "Content-Type": "application/json",
-      "x-api-key": key,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-    }),
-    bodyPrefix: (model, prompt) => ({
-      model,
-      max_tokens: 1500,
-      messages: [{ role: "user", content: prompt }],
-    }),
-    extract: (data) => data.content[0].text,
-  },
-  openai: {
-    label: "OpenAI (GPT)",
-    url: "https://api.openai.com/v1/chat/completions",
-    defaultModel: "gpt-4o",
-    headers: (key) => ({
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    }),
-    bodyPrefix: (model, prompt) => ({
-      model,
-      max_tokens: 1500,
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
-    }),
-    extract: (data) => data.choices[0].message.content,
-  },
-  gemini: {
-    label: "Google (Gemini)",
-    url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-    defaultModel: "gemini-2.0-flash",
-    headers: (key) => ({
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    }),
-    bodyPrefix: (model, prompt) => ({
-      model,
-      max_tokens: 1500,
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
-    }),
-    extract: (data) => data.choices[0].message.content,
-  },
-  deepseek: {
-    label: "DeepSeek",
-    url: "https://api.deepseek.com/chat/completions",
-    defaultModel: "deepseek-chat",
-    headers: (key) => ({
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    }),
-    bodyPrefix: (model, prompt) => ({
-      model,
-      max_tokens: 1500,
-      messages: [{ role: "user", content: prompt }],
-    }),
-    extract: (data) => data.choices[0].message.content,
-  },
-  nvidia: {
-    label: "NVIDIA (NIM)",
-    url: "https://integrate.api.nvidia.com/v1/chat/completions",
-    defaultModel: "openai/gpt-oss-120b",
-    headers: (key) => ({
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    }),
-    bodyPrefix: (model, prompt) => ({
-      model,
-      max_tokens: 4096,
-      messages: [{ role: "user", content: prompt }],
-      top_p: 1,
-      temperature: 1,
-    }),
-    extract: (data) => data.choices[0].message.content,
-  },
-}
+const AI_MODEL = "openai/gpt-oss-120b"
 
 const SAMPLE_JD = `Senior Product Engineer at NexGen Solutions (Series B)
 
@@ -259,7 +177,7 @@ const Bar = memo(function Bar({ label, score }) {
   )
 })
 
-const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || "REDACTED"
+
 
 
 
@@ -783,9 +701,8 @@ function HeroSection({ onGetStarted, scrollY }) {
 export default function App() {
   const [showContent, setShowContent] = useState(false)
   const mainAppRef = useRef(null)
-  const [apiKey, setApiKey] = useState(DEFAULT_KEY)
-  const [provider, setProvider] = useState("nvidia")
-  const [model, setModel] = useState(PROVIDERS.nvidia.defaultModel)
+  const [provider] = useState("nvidia")
+  const [model] = useState(AI_MODEL)
   const [jdText, setJdText] = useState("")
   const [resumeText, setResumeText] = useState("")
   const [result, setResult] = useState(null)
@@ -916,17 +833,11 @@ Rules:
 Job Description:
 ${jdText}${resumeSection}`
 
-    const cfg = PROVIDERS[provider]
-
     try {
       const response = await fetch("/api/proxy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: cfg.url,
-          headers: cfg.headers(apiKey),
-          body: cfg.bodyPrefix(model, userPrompt),
-        }),
+        body: JSON.stringify({ prompt: userPrompt }),
       })
 
       const data = await response.json()
@@ -935,7 +846,7 @@ ${jdText}${resumeSection}`
         throw new Error(data.error?.message || data.error || `API error: ${response.status}`)
       }
 
-      const raw = cfg.extract(data)
+      const raw = data.choices?.[0]?.message?.content || ""
       const cleaned = raw.replace(/```json|```/g, "").trim()
       const firstBrace = cleaned.indexOf("{")
       const lastBrace = cleaned.lastIndexOf("}")
@@ -965,22 +876,11 @@ ${jdText}${resumeSection}`
 
 Brief: ${jdBrief}`
 
-    const cfg = PROVIDERS[provider]
-    const body = {
-      model,
-      max_tokens: 1500,
-      messages: [{ role: "user", content: prompt }],
-    }
-
     try {
       const response = await fetch("/api/proxy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: cfg.url,
-          headers: cfg.headers(apiKey),
-          body,
-        }),
+        body: JSON.stringify({ prompt }),
       })
 
       const data = await response.json()
@@ -989,7 +889,7 @@ Brief: ${jdBrief}`
         throw new Error(data.error?.message || data.error || `API error: ${response.status}`)
       }
 
-      const raw = cfg.extract(data)
+      const raw = data.choices?.[0]?.message?.content || ""
       const cleaned = raw.replace(/```json|```|```text/g, "").trim()
       setJdText(cleaned)
       setJdBrief("")
@@ -1066,12 +966,6 @@ Brief: ${jdBrief}`
     e.preventDefault()
     if (!jdText.trim()) {
       setError("Please paste a job description")
-      return
-    }
-    if (!apiKey.trim()) {
-      const mockResult = mockAnalyse(jdText)
-      setResult(mockResult)
-      saveToHistory(jdText, mockResult)
       return
     }
     analyseJD()

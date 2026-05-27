@@ -1,5 +1,8 @@
 /*
  * Copyright (c) 2026 Hardik Nishad (@hardikxro-commits)
+ *
+ * Local dev proxy for AI API calls.
+ * Set NVIDIA_API_KEY in your .env file or environment variables.
  */
 
 import express from "express";
@@ -11,26 +14,32 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-const ALLOWED_PROXY_HOSTS = [
-  "api.anthropic.com",
-  "api.openai.com",
-  "generativelanguage.googleapis.com",
-  "api.deepseek.com",
-  "integrate.api.nvidia.com",
-]
-
 app.post("/api/proxy", async (req, res) => {
   try {
-    const { url, headers, body } = req.body;
+    const { prompt } = req.body;
 
-    if (!ALLOWED_PROXY_HOSTS.some(h => url.includes(h))) {
-      return res.status(403).json({ error: "Proxy target not allowed" })
+    if (!prompt) {
+      return res.status(400).json({ error: "Prompt is required" });
     }
 
-    const response = await fetch(url, {
+    const apiKey = process.env.NVIDIA_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "NVIDIA_API_KEY not configured. Set it in .env or environment variables." });
+    }
+
+    const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
       method: "POST",
-      headers,
-      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-oss-120b",
+        max_tokens: 4096,
+        messages: [{ role: "user", content: prompt }],
+        top_p: 1,
+        temperature: 1,
+      }),
     });
 
     const contentType = response.headers.get("content-type") || "";

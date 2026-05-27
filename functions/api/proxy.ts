@@ -1,17 +1,14 @@
 /*
  * Copyright (c) 2026 Hardik Nishad (@hardikxro-commits)
+ *
+ * Server-side proxy for AI API calls.
+ * API keys are read from Cloudflare secrets (env), never exposed to the client.
+ *
+ * Set secrets with: npx wrangler pages secret put NVIDIA_API_KEY
  */
 
-const ALLOWED_PROXY_HOSTS = [
-  "api.anthropic.com",
-  "api.openai.com",
-  "generativelanguage.googleapis.com",
-  "api.deepseek.com",
-  "integrate.api.nvidia.com",
-]
-
 export async function onRequest(context) {
-  const { request } = context
+  const { request, env } = context
 
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
@@ -21,19 +18,36 @@ export async function onRequest(context) {
   }
 
   try {
-    const { url, headers, body } = await request.json()
+    const { prompt } = await request.json()
 
-    if (!ALLOWED_PROXY_HOSTS.some(h => url.includes(h))) {
-      return new Response(JSON.stringify({ error: "Proxy target not allowed" }), {
-        status: 403,
+    if (!prompt) {
+      return new Response(JSON.stringify({ error: "Prompt is required" }), {
+        status: 400,
         headers: { "Content-Type": "application/json" },
       })
     }
 
-    const response = await fetch(url, {
+    const apiKey = env.NVIDIA_API_KEY
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: "API key not configured on server" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+
+    const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
       method: "POST",
-      headers,
-      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-oss-120b",
+        max_tokens: 4096,
+        messages: [{ role: "user", content: prompt }],
+        top_p: 1,
+        temperature: 1,
+      }),
     })
 
     const contentType = response.headers.get("content-type") || ""
