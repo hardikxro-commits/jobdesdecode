@@ -194,20 +194,22 @@ function DecodeRing({ score, label }) {
             filter: `drop-shadow(0 0 6px ${ringColor}40)`,
           }}
         />
-        <motion.text
-          x="50" y="50"
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fill="var(--text)"
-          fontSize="22"
-          fontWeight="700"
-            fontFamily='"Inter", system-ui'
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", stiffness: 100, damping: 12, delay: 0.3 }}
-        >
-          <AnimatedScore value={score} />
-        </motion.text>
+        <g transform="rotate(90 50 50)">
+          <motion.text
+            x="50" y="50"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="var(--text)"
+            fontSize="22"
+            fontWeight="700"
+              fontFamily='"Inter", system-ui'
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 100, damping: 12, delay: 0.3 }}
+          >
+            <AnimatedScore value={score} />
+          </motion.text>
+        </g>
       </svg>
       <span className="decode-ring-label" style={{ color: ringColor }}>
         {getLabel(score)}
