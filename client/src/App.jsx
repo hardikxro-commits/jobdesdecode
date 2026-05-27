@@ -259,7 +259,7 @@ const Bar = memo(function Bar({ label, score }) {
   )
 })
 
-const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || ""
+const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || "REDACTED"
 
 
 
