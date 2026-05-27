@@ -46,34 +46,9 @@ html {
 
 /* ── Scroll reveal (IntersectionObserver-based fade) ── */
 
-/* ── God card: top-edge accent glow ── */
-.god-card {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.06);
-}
-.god-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 20%;
-  right: 20%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
-  pointer-events: none;
-}
-.god-card::after {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: 30%;
-  right: 30%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255,0,100,0.15), rgba(100,0,255,0.15), transparent);
-  filter: blur(3px);
-  pointer-events: none;
-}
+
+
+
 
 
 
@@ -434,14 +409,9 @@ html {
   background: linear-gradient(180deg, #0f0c29 0%, #302b63 25%, #1a1a2e 50%, #0a0a0f 75%, #000 100%);
 }
 
-/* ── Card header type colors ── */
-.card-type-requirements { --card-accent: #3b82f6; }
-.card-type-redflags { --card-accent: #ef4444; }
-.card-type-greenflags { --card-accent: #22c55e; }
-.card-type-scores { --card-accent: #a855f7; }
-.card-type-questions { --card-accent: #eab308; }
-.card-type-resume { --card-accent: #06b6d4; }
-.card-type-verdict { --card-accent: #ff0064; }
+
+
+
 
 
 
@@ -482,37 +452,9 @@ html {
   100% { transform: translate(-50%, -50%) rotate(-360deg); }
 }
 
-/* ── Result entrance boot glow ── */
-@keyframes results-boot-glow {
-  0% { box-shadow: 0 0 0px 0px rgba(167, 139, 250, 0), 0 0 0px 0px rgba(34, 211, 238, 0); }
-  30% { box-shadow: 0 0 30px 4px rgba(167, 139, 250, 0.15), 0 0 60px 8px rgba(34, 211, 238, 0.08); }
-  100% { box-shadow: 0 0 0px 0px rgba(167, 139, 250, 0), 0 0 0px 0px rgba(34, 211, 238, 0); }
-}
-.results-boot {
-  animation: results-boot-glow 1.2s ease-out 0.4s forwards;
-}
 
-/* ── Scroll-triggered card corner accent ── */
-.card-corner-accent {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 60px;
-  height: 60px;
-  overflow: hidden;
-  pointer-events: none;
-}
-.card-corner-accent::before {
-  content: '';
-  position: absolute;
-  top: -30px;
-  right: -30px;
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, transparent 40%, var(--card-accent, #fff) 100%);
-  opacity: 0.08;
-  transform: rotate(45deg);
-}
+
+
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {

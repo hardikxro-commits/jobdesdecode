@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, memo, useCallback } from "react"
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, Copy, Download, Sparkles, Braces, ArrowUp, Sun, Moon } from "lucide-react"
 import Preloader from './Preloader'
-import CardSwap, { Card } from './CardSwap'
+
+
 
 import TubesBackground from './TubesBackground'
 import PastelGradientBackground from './PastelGradientBackground'
@@ -1346,202 +1347,86 @@ Brief: ${jdBrief}`
                           ))}
                         </motion.div>
 
-                        <div className="relative w-full max-sm:px-2 results-boot" style={{ maxWidth: '500px', height: '420px', margin: '0 auto' }}>
-                        <CardSwap
-                          width="100%"
-                          height={380}
-                          cardDistance={28}
-                          verticalDistance={35}
-                          delay={6000}
-                          pauseOnHover={true}
-                          skewAmount={4}
-                          easing="elastic"
+                        <motion.div
+                          className="w-full space-y-3 max-sm:px-2"
+                          style={{ maxWidth: '500px', margin: '0 auto' }}
+                          variants={{
+                            hidden: {},
+                            visible: { transition: { staggerChildren: 0.08, delayChildren: 0.35 } },
+                          }}
+                          initial="hidden"
+                          animate="visible"
                         >
-                          <Card key="summary" className="flex flex-col overflow-hidden god-card card-type-requirements">
-                            <div className="card-corner-accent" style={{ '--card-accent': '#3b82f6' }} />
-                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
-                              <Sparkles size={14} className="text-blue-400" />
-                              <h3 className="text-sm font-display font-bold tracking-tight">Role Summary</h3>
-                            </div>
-                            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-                              <div>
-                                <p className="text-lg font-semibold text-app">{result.role_summary.title}</p>
-                                <div className="flex gap-2 mt-2">
-                                  <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-900/60 text-blue-300 border border-blue-800/40 uppercase tracking-wider">{result.role_summary.level}</span>
-                                  <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-purple-900/60 text-purple-300 border border-purple-800/40 uppercase tracking-wider">{result.role_summary.type === "IC" ? "Individual Contributor" : result.role_summary.type}</span>
+                          {[
+                            {
+                              key: 'summary',
+                              gradient: 'from-blue-500 to-blue-400',
+                              header: <><Sparkles size={14} className="text-blue-400" /><h3 className="text-sm font-display font-bold tracking-tight">Role Summary</h3></>,
+                              body: <><div><p className="text-lg font-semibold text-app">{result.role_summary.title}</p><div className="flex gap-2 mt-2"><span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-900/60 text-blue-300 border border-blue-800/40 uppercase tracking-wider">{result.role_summary.level}</span><span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-purple-900/60 text-purple-300 border border-purple-800/40 uppercase tracking-wider">{result.role_summary.type === "IC" ? "Individual Contributor" : result.role_summary.type}</span></div></div><p className="text-muted text-sm leading-relaxed mt-3">{result.role_summary.one_liner}</p></>,
+                            },
+                            {
+                              key: 'redflags',
+                              gradient: 'from-red-500 to-red-400',
+                              header: <><TriangleAlert size={14} className="text-red-400" /><h3 className="text-sm font-display font-bold tracking-tight">Red Flags <span className="text-xs text-faint font-mono">({result.red_flags?.length || 0})</span></h3></>,
+                              body: result.red_flags && result.red_flags.length > 0
+                                ? <div className="space-y-2">{result.red_flags.map((flag, i) => { let sc = "bg-yellow-900/60 text-yellow-300 border-yellow-800/40"; if (flag.severity === "moderate") sc = "bg-orange-900/60 text-orange-300 border-orange-800/40"; if (flag.severity === "serious") sc = "bg-red-900/60 text-red-300 border-red-800/40"; return <div key={i} className="flex items-start gap-2 pb-2 border-b border-app last:border-0 last:pb-0"><TriangleAlert size={12} className="shrink-0 mt-1 text-red-400" /><div className="flex-1 min-w-0"><p className="text-faint italic text-xs mb-0.5">&ldquo;{flag.phrase}&rdquo;</p><p className="text-subtle text-xs">{flag.meaning}</p></div><span className={`shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded-full ${sc}`}>{flag.severity}</span></div> })}</div>
+                                : <p className="text-faint text-xs italic">None found</p>,
+                            },
+                            {
+                              key: 'greenflags',
+                              gradient: 'from-emerald-500 to-emerald-400',
+                              header: <><CheckCircle size={14} className="text-emerald-400" /><h3 className="text-sm font-display font-bold tracking-tight">Green Flags <span className="text-xs text-faint font-mono">({result.green_flags?.length || 0})</span></h3></>,
+                              body: result.green_flags && result.green_flags.length > 0
+                                ? <div className="space-y-2">{result.green_flags.map((flag, i) => <div key={i} className="flex items-start gap-2 pb-2 border-b border-app last:border-0 last:pb-0"><CheckCircle size={12} className="shrink-0 mt-1 text-emerald-400" /><div className="flex-1 min-w-0"><p className="text-faint italic text-xs mb-0.5">&ldquo;{flag.phrase}&rdquo;</p><p className="text-subtle text-xs">{flag.meaning}</p></div></div>)}</div>
+                                : <p className="text-faint text-xs italic">None found</p>,
+                            },
+                            {
+                              key: 'scores',
+                              gradient: 'from-purple-500 to-purple-400',
+                              header: <h3 className="text-sm font-display font-bold tracking-tight">Clarity Scores</h3>,
+                              body: result.clarity_scores
+                                ? <div className="grid grid-cols-3 max-sm:grid-cols-2 gap-3"><DecodeRing score={result.clarity_scores.responsibilities || 0} label="Responsibilities" /><DecodeRing score={result.clarity_scores.success_metrics || 0} label="Success Metrics" /><DecodeRing score={result.clarity_scores.team_structure || 0} label="Team Structure" /><DecodeRing score={result.clarity_scores.growth_path || 0} label="Growth Path" /><DecodeRing score={result.clarity_scores.compensation || 0} label="Compensation" /><DecodeRing score={result.clarity_scores.work_life_balance || 0} label="WLB" /></div>
+                                : <p className="text-faint text-xs italic">No clarity scores available</p>,
+                            },
+                            {
+                              key: 'questions',
+                              gradient: 'from-yellow-500 to-yellow-400',
+                              header: <><MessageCircle size={14} className="text-yellow-500" /><h3 className="text-sm font-display font-bold tracking-tight">Questions to Ask <span className="text-xs text-faint font-mono">({result.questions_to_ask?.length || 0})</span></h3></>,
+                              body: result.questions_to_ask && result.questions_to_ask.length > 0
+                                ? <ol className="space-y-2">{result.questions_to_ask.map((q, i) => <li key={i} className="flex gap-2 pb-2 border-b border-app last:border-0 last:pb-0"><span className="text-faint text-xs font-mono w-5 shrink-0">{i + 1}.</span><span className="text-subtle text-xs">{q}</span></li>)}</ol>
+                                : <p className="text-faint text-xs italic">None generated</p>,
+                            },
+                            ...(result.resume_match ? [{
+                              key: 'resume',
+                              gradient: 'from-cyan-500 to-cyan-400',
+                              header: <h3 className="text-sm font-display font-bold tracking-tight">Resume Match</h3>,
+                              body: <><div className="flex justify-center mb-4"><DecodeRing score={result.resume_match.score} label="Match Score" /></div><div className="grid grid-cols-2 gap-4"><div><h4 className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1"><Check size={12} /> Strengths</h4>{result.resume_match.strengths && result.resume_match.strengths.length > 0 ? <ul className="space-y-1">{result.resume_match.strengths.map((s, i) => <li key={i} className="text-xs text-subtle flex items-start gap-1"><Check size={10} className="shrink-0 mt-0.5 text-emerald-400" />{s}</li>)}</ul> : <p className="text-faint text-[10px] italic">None identified</p>}</div><div><h4 className="text-[10px] font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-1"><X size={12} /> Gaps</h4>{result.resume_match.gaps && result.resume_match.gaps.length > 0 ? <ul className="space-y-1">{result.resume_match.gaps.map((g, i) => <li key={i} className="text-xs text-subtle flex items-start gap-1"><X size={10} className="shrink-0 mt-0.5 text-red-400" />{g}</li>)}</ul> : <p className="text-faint text-[10px] italic">None identified</p>}</div></div></>,
+                            }] : []),
+                            {
+                              key: 'verdict',
+                              gradient: 'from-pink-500 to-pink-400',
+                              header: <><h3 className="text-sm font-display font-bold tracking-tight">Verdict</h3></>,
+                              body: <><p className="text-sm leading-relaxed text-subtle">{result.verdict.summary}</p><div className="mt-3">{result.verdict.apply ? <span className="px-3 py-1 text-xs font-bold rounded-full bg-emerald-900 text-emerald-300">Apply</span> : <span className="px-3 py-1 text-xs font-bold rounded-full bg-red-900 text-red-300">Don't Apply</span>}</div><p className="text-faint text-xs mt-2">{result.verdict.apply_reason}</p></>,
+                            },
+                          ].map((section) => (
+                            <motion.div
+                              key={section.key}
+                              className="rounded-xl border border-app bg-[var(--bg)]/40 backdrop-blur-xl overflow-hidden"
+                              variants={{
+                                hidden: { opacity: 0, y: 20 },
+                                visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+                              }}
+                            >
+                              <div className={`h-[2px] bg-gradient-to-r ${section.gradient}`} />
+                              <div className="px-5 py-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                  {section.header}
                                 </div>
+                                {section.body}
                               </div>
-                              <p className="text-muted text-sm leading-relaxed">{result.role_summary.one_liner}</p>
-                            </div>
-                          </Card>
-                          <Card key="redflags" className="flex flex-col overflow-hidden god-card card-type-redflags">
-                            <div className="card-corner-accent" style={{ '--card-accent': '#ef4444' }} />
-                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
-                              <TriangleAlert size={14} className="text-red-400" />
-                              <h3 className="text-sm font-display font-bold tracking-tight">Red Flags <span className="text-xs text-faint font-mono">({result.red_flags?.length || 0})</span></h3>
-                            </div>
-                            <div className="flex-1 overflow-y-auto px-5 py-3 space-y-2">
-                              {result.red_flags && result.red_flags.length > 0 ? (
-                                result.red_flags.map((flag, i) => {
-                                  let severityClass = "bg-yellow-900/60 text-yellow-300 border border-yellow-800/40"
-                                  if (flag.severity === "moderate") severityClass = "bg-orange-900/60 text-orange-300 border border-orange-800/40"
-                                  if (flag.severity === "serious") severityClass = "bg-red-900/60 text-red-300 border border-red-800/40"
-                                  return (
-                                    <div key={i} className="pb-2 border-b border-app last:border-0 last:pb-0">
-                                      <div className="flex items-start gap-2">
-                                        <TriangleAlert size={12} className="shrink-0 mt-1 text-red-400" />
-                                        <div className="flex-1 min-w-0">
-                                          <p className="text-faint italic text-xs mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
-                                          <p className="text-subtle text-xs">{flag.meaning}</p>
-                                        </div>
-                                        <span className={`shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded-full ${severityClass}`}>{flag.severity}</span>
-                                      </div>
-                                    </div>
-                                  )
-                                })
-                              ) : (
-                                <p className="text-faint text-xs italic">None found</p>
-                              )}
-                            </div>
-                          </Card>
-
-                          <Card key="greenflags" className="flex flex-col overflow-hidden god-card card-type-greenflags">
-                            <div className="card-corner-accent" style={{ '--card-accent': '#22c55e' }} />
-                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
-                              <CheckCircle size={14} className="text-emerald-400" />
-                              <h3 className="text-sm font-display font-bold tracking-tight">Green Flags <span className="text-xs text-faint font-mono">({result.green_flags?.length || 0})</span></h3>
-                            </div>
-                            <div className="flex-1 overflow-y-auto px-5 py-3 space-y-2">
-                              {result.green_flags && result.green_flags.length > 0 ? (
-                                result.green_flags.map((flag, i) => (
-                                  <div key={i} className="pb-2 border-b border-app last:border-0 last:pb-0">
-                                    <div className="flex items-start gap-2">
-                                      <CheckCircle size={12} className="shrink-0 mt-1 text-emerald-400" />
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-faint italic text-xs mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
-                                        <p className="text-subtle text-xs">{flag.meaning}</p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-faint text-xs italic">None found</p>
-                              )}
-                            </div>
-                          </Card>
-
-                          <Card key="scores" className="flex flex-col overflow-hidden god-card card-type-scores">
-                            <div className="card-corner-accent" style={{ '--card-accent': '#a855f7' }} />
-                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
-                              <h3 className="text-sm font-display font-bold tracking-tight">Clarity Scores</h3>
-                            </div>
-                            <div className="flex-1 overflow-y-auto px-5 py-4">
-                              {result.clarity_scores ? (
-                                <div className="grid grid-cols-3 max-sm:grid-cols-2 gap-3">
-                                  <DecodeRing score={result.clarity_scores.responsibilities || 0} label="Responsibilities" />
-                                  <DecodeRing score={result.clarity_scores.success_metrics || 0} label="Success Metrics" />
-                                  <DecodeRing score={result.clarity_scores.team_structure || 0} label="Team Structure" />
-                                  <DecodeRing score={result.clarity_scores.growth_path || 0} label="Growth Path" />
-                                  <DecodeRing score={result.clarity_scores.compensation || 0} label="Compensation" />
-                                  <DecodeRing score={result.clarity_scores.work_life_balance || 0} label="WLB" />
-                                </div>
-                              ) : (
-                                <p className="text-faint text-xs italic">No clarity scores available</p>
-                              )}
-                            </div>
-                          </Card>
-
-                          <Card key="questions" className="flex flex-col overflow-hidden god-card card-type-questions">
-                            <div className="card-corner-accent" style={{ '--card-accent': '#eab308' }} />
-                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
-                              <MessageCircle size={14} className="text-muted" />
-                              <h3 className="text-sm font-display font-bold tracking-tight">Questions to Ask <span className="text-xs text-faint font-mono">({result.questions_to_ask?.length || 0})</span></h3>
-                            </div>
-                            <div className="flex-1 overflow-y-auto px-5 py-3">
-                              {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
-                                <ol className="space-y-2">
-                                  {result.questions_to_ask.map((q, i) => (
-                                    <li key={i} className="flex gap-2 pb-2 border-b border-app last:border-0 last:pb-0">
-                                      <span className="text-faint text-xs font-mono w-5 shrink-0">{i + 1}.</span>
-                                      <span className="text-subtle text-xs">{q}</span>
-                                    </li>
-                                  ))}
-                                </ol>
-                              ) : (
-                                <p className="text-faint text-xs italic">None generated</p>
-                              )}
-                            </div>
-                          </Card>
-
-                          {result.resume_match && (
-                            <Card key="resume" className="flex flex-col overflow-hidden god-card card-type-resume">
-                              <div className="card-corner-accent" style={{ '--card-accent': '#06b6d4' }} />
-                              <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
-                                <h3 className="text-sm font-display font-bold tracking-tight">Resume Match</h3>
-                              </div>
-                              <div className="flex-1 overflow-y-auto px-5 py-4">
-                                <div className="flex justify-center mb-4">
-                                  <DecodeRing score={result.resume_match.score} label="Match Score" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <h4 className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1">
-                                      <Check size={12} /> Strengths
-                                    </h4>
-                                    {result.resume_match.strengths && result.resume_match.strengths.length > 0 ? (
-                                      <ul className="space-y-1">
-                                        {result.resume_match.strengths.map((s, i) => (
-                                          <li key={i} className="text-xs text-subtle flex items-start gap-1">
-                                            <Check size={10} className="shrink-0 mt-0.5 text-emerald-400" />
-                                            {s}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    ) : (
-                                      <p className="text-faint text-[10px] italic">None identified</p>
-                                    )}
-                                  </div>
-                                  <div>
-                                    <h4 className="text-[10px] font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-1">
-                                      <X size={12} /> Gaps
-                                    </h4>
-                                    {result.resume_match.gaps && result.resume_match.gaps.length > 0 ? (
-                                      <ul className="space-y-1">
-                                        {result.resume_match.gaps.map((g, i) => (
-                                          <li key={i} className="text-xs text-subtle flex items-start gap-1">
-                                            <X size={10} className="shrink-0 mt-0.5 text-red-400" />
-                                            {g}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    ) : (
-                                      <p className="text-faint text-[10px] italic">None identified</p>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </Card>
-                          )}
-
-                          <Card key="verdict" className="flex flex-col overflow-hidden god-card card-type-verdict">
-                            <div className="card-corner-accent" style={{ '--card-accent': '#ff0064' }} />
-                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
-                              <h3 className="text-sm font-display font-bold tracking-tight">Verdict</h3>
-                            </div>
-                            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-                              <p className="text-sm leading-relaxed text-subtle">{result.verdict.summary}</p>
-                              <div>
-                                {result.verdict.apply ? (
-                                  <span className="inline-block px-3 py-1 text-xs font-bold rounded-full bg-emerald-900 text-emerald-300">Apply</span>
-                                ) : (
-                                  <span className="inline-block px-3 py-1 text-xs font-bold rounded-full bg-red-900 text-red-300">Don't Apply</span>
-                                )}
-                              </div>
-                              <p className="text-faint text-xs">{result.verdict.apply_reason}</p>
-                            </div>
-                          </Card>
-                        </CardSwap>
-                        </div>
+                            </motion.div>
+                          ))}
+                        </motion.div>
                       </motion.div>
                     )}
                       </div>
