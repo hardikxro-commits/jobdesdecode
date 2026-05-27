@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Hardik Nishad (@hardikxro-commits)
+ */
+
 import express from "express";
 import cors from "cors";
 

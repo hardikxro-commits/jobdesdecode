@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Hardik Nishad (@hardikxro-commits)
+ */
+
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 

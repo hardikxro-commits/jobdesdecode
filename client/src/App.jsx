@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Hardik Nishad (@hardikxro-commits)
+ */
+
 import { useState, useEffect, useRef, memo, useCallback } from "react"
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
 import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, Copy, Download, Sparkles, Braces, ArrowUp, Sun, Moon } from "lucide-react"
@@ -757,13 +761,7 @@ function HeroSection({ onGetStarted, scrollY }) {
             <span className="absolute inset-0 rounded-full bg-app" style={{ margin: "1px" }} />
             <span className="relative z-10">Get Started</span>
           </button>
-          <a
-            href="#decoder"
-            onClick={(e) => { e.preventDefault(); onGetStarted() }}
-            className="text-xs tracking-widest uppercase text-[var(--text)]/40 hover:text-app transition-colors font-mono"
-          >
-            Try it free
-          </a>
+
         </motion.div>
       </motion.div>
 
@@ -1560,6 +1558,20 @@ Brief: ${jdBrief}`
               </div>
             </div>
           </div>
+
+          <footer className="relative z-10 text-center py-8 px-4">
+            <p className="text-xs text-dim font-mono">
+              &copy; {new Date().getFullYear()} Hardik Nishad —{" "}
+              <a
+                href="https://github.com/hardikxro-commits"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted hover:text-app transition-colors underline underline-offset-2"
+              >
+                @hardikxro-commits
+              </a>
+            </p>
+          </footer>
         </motion.div>
       )}
     </>

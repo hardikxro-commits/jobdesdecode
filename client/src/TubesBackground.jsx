@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Hardik Nishad (@hardikxro-commits)
+ */
+
 import { useEffect, useRef, useState } from 'react'
 
 const randomColors = (count) =>

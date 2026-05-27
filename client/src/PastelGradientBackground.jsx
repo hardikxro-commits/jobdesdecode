@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Hardik Nishad (@hardikxro-commits)
+ */
+
 export default function PastelGradientBackground({ className = "" }) {
   return (
     <div className={`absolute inset-0 overflow-hidden ${className}`}
