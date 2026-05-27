@@ -1,3 +1,11 @@
+const ALLOWED_PROXY_HOSTS = [
+  "api.anthropic.com",
+  "api.openai.com",
+  "generativelanguage.googleapis.com",
+  "api.deepseek.com",
+  "integrate.api.nvidia.com",
+]
+
 export async function onRequest(context) {
   const { request } = context
 
@@ -10,6 +18,13 @@ export async function onRequest(context) {
 
   try {
     const { url, headers, body } = await request.json()
+
+    if (!ALLOWED_PROXY_HOSTS.some(h => url.includes(h))) {
+      return new Response(JSON.stringify({ error: "Proxy target not allowed" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
 
     const response = await fetch(url, {
       method: "POST",

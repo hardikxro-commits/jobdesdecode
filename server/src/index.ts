@@ -7,9 +7,21 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+const ALLOWED_PROXY_HOSTS = [
+  "api.anthropic.com",
+  "api.openai.com",
+  "generativelanguage.googleapis.com",
+  "api.deepseek.com",
+  "integrate.api.nvidia.com",
+]
+
 app.post("/api/proxy", async (req, res) => {
   try {
     const { url, headers, body } = req.body;
+
+    if (!ALLOWED_PROXY_HOSTS.some(h => url.includes(h))) {
+      return res.status(403).json({ error: "Proxy target not allowed" })
+    }
 
     const response = await fetch(url, {
       method: "POST",

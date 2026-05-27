@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef, memo, useCallback } from "react"
+import { useState, useEffect, useRef, memo, useCallback, lazy, Suspense } from "react"
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
-import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, ChevronDown, Copy, Download, Sparkles, Braces, ArrowUp } from "lucide-react"
-import ForceFieldBackground from './ForceFieldBackground'
+import { TriangleAlert, CheckCircle, MessageCircle, Loader2, X, Check, Copy, Download, Sparkles, Braces, ArrowUp, Sun, Moon } from "lucide-react"
 import Preloader from './Preloader'
 import CardSwap, { Card } from './CardSwap'
+
+const ForceFieldBackground = lazy(() => import('./ForceFieldBackground'))
 
 const PROVIDERS = {
   anthropic: {
@@ -195,7 +196,7 @@ function DecodeRing({ score, label }) {
           x="50" y="50"
           textAnchor="middle"
           dominantBaseline="middle"
-          fill="#fff"
+          fill="var(--text)"
           fontSize="22"
           fontWeight="700"
             fontFamily='"Inter", system-ui'
@@ -210,7 +211,7 @@ function DecodeRing({ score, label }) {
         {getLabel(score)}
       </span>
       {label && (
-        <span style={{ fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace', fontSize: 9, letterSpacing: "0.15em", color: "#666", textTransform: "uppercase" }}>
+        <span style={{ fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace', fontSize: 9, letterSpacing: "0.15em", color: "var(--text-muted)", textTransform: "uppercase" }}>
           {label}
         </span>
       )}
@@ -235,10 +236,10 @@ const Bar = memo(function Bar({ label, score }) {
       transition={{ type: "spring", stiffness: 100, damping: 18 }}
     >
       <div className="flex justify-between items-center mb-1">
-        <span className="text-base text-zinc-400">{label}</span>
+        <span className="text-base text-muted">{label}</span>
         <span className={`text-sm font-bold ${textColor}`}>{score}</span>
       </div>
-      <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-elevated rounded-full overflow-hidden">
         <motion.div
           className={`h-full rounded-full ${barColor}`}
           initial={{ width: 0 }}
@@ -250,7 +251,7 @@ const Bar = memo(function Bar({ label, score }) {
   )
 })
 
-const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || "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"
+const DEFAULT_KEY = import.meta.env.VITE_NVIDIA_API_KEY || ""
 
 
 
@@ -372,64 +373,66 @@ function RevealSection({ children, className = "", delay = 0 }) {
 
 
 function Navbar({ showHistory, onHistoryToggle, scrolled, theme, onThemeToggle, showJdGenerator, onJdGeneratorToggle }) {
+  const navScrolled = scrolled || showHistory || showJdGenerator
   return (
     <motion.nav
-      className="fixed top-0 left-0 right-0 z-50"
-      initial={{ y: -20, opacity: 0 }}
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-50"
+      initial={{ y: -30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        ...(scrolled ? { backdropFilter: "blur(16px)", background: "rgba(10, 10, 15, 0.8)" } : { background: "transparent" }),
-        transition: "background 0.4s ease, backdrop-filter 0.4s ease",
-      }}
     >
-      <div className="absolute inset-0" />
-      <div className="relative z-10 flex items-center justify-between px-6 py-4 max-sm:px-4 max-sm:py-3">
+      <div
+        className="flex items-center justify-between px-4 py-2 rounded-full border border-app backdrop-blur-xl min-w-[640px] max-sm:min-w-0 max-sm:w-[calc(100%-32px)] max-sm:px-3"
+        style={{
+          background: navScrolled ? "var(--bg-glass)" : "color-mix(in srgb, var(--bg-glass) 60%, transparent)",
+          transition: "background 0.4s ease",
+        }}
+      >
         <div className="flex items-center gap-2">
           <span
-            className="text-xl max-sm:text-lg font-bold tracking-tight nav-brand-glow"
-            style={{ fontFamily: '"Playfair Display", serif', fontWeight: 900 }}
+            className="text-xl max-sm:text-lg font-bold tracking-tight"
+            style={{ fontFamily: '"Instrument Serif", serif', fontWeight: 700 }}
           >
-            JD-DEC
+            JD
           </span>
-          <Sparkles size={12} className="text-zinc-600 icon-pulse" style={{ marginLeft: 2 }} />
-          <span className="text-xs tracking-[0.2em] uppercase" style={{ color: "#555", fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace' }}>
+          <Sparkles size={12} className="text-dim icon-pulse" />
+          <span className="text-[11px] tracking-[0.2em] uppercase text-dim font-mono">
             Decoder
           </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
           <button
             onClick={onJdGeneratorToggle}
-            className={`nav-underline ${showJdGenerator ? 'active' : ''} text-sm tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer btn-scale-sm`}
-            style={{
-              color: showJdGenerator ? "#fff" : "#888",
-              background: showJdGenerator ? "rgba(255,255,255,0.08)" : "transparent",
-              fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace',
-            }}
+            className={`text-xs tracking-wider uppercase px-3 py-1.5 rounded-full transition-all cursor-pointer btn-scale-sm font-mono ${
+              showJdGenerator ? 'text-app bg-[var(--text)]/10' : 'text-dim hover:text-app'
+            }`}
+            aria-label="Toggle JD Generator"
+            aria-expanded={showJdGenerator}
           >
             GENERATE JD
           </button>
           <button
             onClick={onHistoryToggle}
-            className={`nav-underline ${showHistory ? 'active' : ''} text-sm tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer btn-scale-sm`}
-            style={{
-              color: showHistory ? "#fff" : "#888",
-              background: showHistory ? "rgba(255,255,255,0.08)" : "transparent",
-              fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace',
-            }}
+            className={`text-xs tracking-wider uppercase px-3 py-1.5 rounded-full transition-all cursor-pointer btn-scale-sm font-mono ${
+              showHistory ? 'text-app bg-[var(--text)]/10' : 'text-dim hover:text-app'
+            }`}
+            aria-label="Toggle history"
+            aria-expanded={showHistory}
           >
             HISTORY
           </button>
+        </div>
+        <div className="flex items-center">
           <button
             onClick={onThemeToggle}
-            className="text-sm tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all cursor-pointer hover:text-white btn-scale-sm"
-            style={{
-              color: "#888",
-              fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace',
-            }}
+            className="text-sm px-3 py-1.5 rounded-full transition-all cursor-pointer hover:text-app text-dim btn-scale-sm"
             aria-label="Toggle theme"
           >
-            {theme === 'dark' ? '☀' : '☾'}
+            {theme === 'dark' ? (
+              <Sun size={14} />
+            ) : (
+              <Moon size={14} />
+            )}
           </button>
         </div>
       </div>
@@ -576,11 +579,8 @@ function HeroSection({ onGetStarted, scrollY }) {
   const decor4X = useTransform(smoothX, v => (v - 0.5) * 35)
   const decor4Y = useTransform(smoothY, v => (v - 0.5) * 35)
 
-  const decChars = "DEC".split("")
-  const deChars = "DE".split("")
-
   return (
-    <section className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden bg-black">
+    <section id="hero" className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden bg-app">
       <motion.div
         className="absolute inset-0"
         style={{ opacity: fadeOut }}
@@ -609,20 +609,19 @@ function HeroSection({ onGetStarted, scrollY }) {
             x: sphere2X,
             y: sphere2Y,
           }}
-          transition={{ type: "spring", stiffness: 40, damping: 25 }}
+          transition={{ type: "spring", stiffness: 50, damping: 30 }}
         />
         <motion.div
-          className="absolute w-[350px] h-[350px] rounded-full blur-[90px] opacity-8"
+          className="absolute w-[300px] h-[300px] rounded-full blur-[80px] opacity-8"
           style={{
             background: "radial-gradient(circle, #0096ff, transparent 70%)",
             left: sphere3Left,
             top: sphere3Top,
           }}
-          transition={{ type: "spring", stiffness: 60, damping: 35 }}
+          transition={{ type: "spring", stiffness: 50, damping: 30 }}
         />
-
         <motion.div
-          className="absolute top-[15%] left-[12%] w-3 h-3 border border-white/20 rotate-45"
+          className="absolute top-[15%] left-[12%] w-3 h-3 border border-subtle rotate-45"
           animate={{
             y: [0, -15, 0],
             rotate: [45, 90, 45],
@@ -632,7 +631,7 @@ function HeroSection({ onGetStarted, scrollY }) {
           style={{ x: decor1X, y: decor1Y }}
         />
         <motion.div
-          className="absolute bottom-[25%] right-[15%] w-4 h-4 rounded-full border border-white/15"
+          className="absolute bottom-[25%] right-[15%] w-4 h-4 rounded-full border border-light"
           animate={{
             y: [0, -20, 0],
             scale: [1, 1.3, 1],
@@ -642,13 +641,13 @@ function HeroSection({ onGetStarted, scrollY }) {
           style={{ x: decor2X, y: decor2Y }}
         />
         <motion.div
-          className="absolute top-[40%] right-[20%] w-[2px] h-8 bg-white/10"
+          className="absolute top-[40%] right-[20%] w-[2px] h-8 bg-[var(--text)]/10"
           animate={{ height: [32, 48, 32], opacity: [0.1, 0.3, 0.1] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
           style={{ x: decor3X, y: decor3Y }}
         />
         <motion.div
-          className="absolute bottom-[30%] left-[20%] w-5 h-5 border border-white/10 rounded-full"
+          className="absolute bottom-[30%] left-[20%] w-5 h-5 border border-light rounded-full"
           animate={{
             scale: [1, 1.5, 1],
             opacity: [0.1, 0.25, 0.1],
@@ -663,102 +662,103 @@ function HeroSection({ onGetStarted, scrollY }) {
         style={{ opacity: contentOpacity, y: contentY }}
       >
         <motion.div
-          className="flex items-center justify-center gap-1 mb-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.3 }}
+          className="flex items-center justify-center gap-2 mb-6"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <motion.div
+          <motion.span
             className="w-1 h-1 rounded-full bg-[#ff0064]"
             animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 2, repeat: Infinity }}
           />
-          <span className="text-xs uppercase tracking-[0.3em] text-white/25 font-mono mx-2">
+          <span className="text-[11px] uppercase tracking-[0.25em] text-[var(--text)]/30 font-mono">
             AI-Powered Job Analysis
           </span>
-          <motion.div
+          <motion.span
             className="w-1 h-1 rounded-full bg-[#0096ff]"
             animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 2, repeat: Infinity, delay: 1 }}
           />
         </motion.div>
 
-        <h1 className="text-[clamp(44px,10vw,120px)] font-black tracking-tight leading-[0.85] mb-6 flex items-center justify-center flex-wrap">
-          {decChars.map((ch, i) => (
+        <h1
+          className="text-[clamp(40px,9vw,100px)] leading-[0.9] mb-6"
+          style={{ fontFamily: '"Instrument Serif", serif', fontWeight: 400, fontStyle: "italic" }}
+        >
+          {("Decode Any").split("").map((ch, i) => (
             <motion.span
-              key={`dec-${i}`}
-              className="text-white inline-block"
+              key={`head-a-${i}`}
+              className="inline-block text-app"
               initial={{ opacity: 0, y: 60, rotateX: -90 }}
               animate={{ opacity: 1, y: 0, rotateX: 0 }}
-              transition={{ delay: 0.5 + i * 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ delay: 0.5 + i * 0.06, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             >
-              {ch}
+              {ch === " " ? "\u00A0" : ch}
             </motion.span>
           ))}
-          <motion.span
-            className="relative inline-block w-[0.5em] h-[0.5em] align-middle mx-2"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.9, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          >
+          <br />
+          {("Job Description").split("").map((ch, i) => (
             <motion.span
-              className="absolute inset-0 border-[1.5px] border-white/70 rounded-full"
-              animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0.15, 0.6] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.span
-              className="absolute inset-[25%] bg-white/80 rounded-full"
-              animate={{ scale: [1, 0.6, 1] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-          </motion.span>
-          {deChars.map((ch, i) => (
-            <motion.span
-              key={`de-${i}`}
-              className="text-white inline-block"
+              key={`head-b-${i}`}
+              className="inline-block"
               initial={{ opacity: 0, y: 60, rotateX: -90 }}
               animate={{ opacity: 1, y: 0, rotateX: 0 }}
-              transition={{ delay: 0.9 + i * 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ delay: 0.9 + i * 0.06, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                background: "linear-gradient(135deg, var(--text), var(--text) 40%, #a78bfa 60%, #22d3ee)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
             >
-              {ch}
+              {ch === " " ? "\u00A0" : ch}
             </motion.span>
           ))}
         </h1>
 
         <motion.p
-          className="text-base text-white/35 font-light tracking-wide mb-10 max-w-md mx-auto h-6 overflow-hidden"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.3, duration: 0.3 }}
+          className="text-base text-[var(--text)]/40 font-light tracking-wide mb-10 max-w-md mx-auto"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <motion.span
-            className="inline-block"
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1.3, duration: 0.5, ease: "easeOut" }}
-          >
-            Cut through the noise.
-          </motion.span>
+          Paste any job description. Get the real story — requirements, red flags, and an honest verdict.
         </motion.p>
 
         <motion.div
+          className="flex items-center justify-center gap-4"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.8, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ delay: 1.6, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
           <button
             onClick={onGetStarted}
-            className="group relative px-8 py-3 rounded-full text-xs font-medium tracking-widest uppercase text-white/80 border border-white/20 hover:text-white transition-all cursor-pointer overflow-hidden"
+            className="group relative px-8 py-3 rounded-full text-xs font-medium tracking-widest uppercase text-app overflow-hidden"
             onMouseDown={addRipple}
+            aria-label="Get started analyzing job descriptions"
+            style={{ border: "1.5px solid transparent", backgroundClip: "padding-box" }}
           >
-            <motion.span
-              className="absolute inset-0 bg-gradient-to-r from-[#ff0064]/20 via-[#6400ff]/20 to-[#0096ff]/20 opacity-0 group-hover:opacity-100"
-              animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-              style={{ backgroundSize: "200% 100%" }}
+            <span
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: "linear-gradient(135deg, #ff0064, #6400ff, #0096ff, #6400ff, #ff0064)",
+                backgroundSize: "300% 300%",
+                margin: "-1.5px",
+                zIndex: -1,
+                animation: "rgb-shift 3s linear infinite",
+              }}
             />
+            <span className="absolute inset-0 rounded-full bg-app" style={{ margin: "1px" }} />
             <span className="relative z-10">Get Started</span>
           </button>
+          <a
+            href="#decoder"
+            onClick={(e) => { e.preventDefault(); onGetStarted() }}
+            className="text-xs tracking-widest uppercase text-[var(--text)]/40 hover:text-app transition-colors font-mono"
+          >
+            Try it free
+          </a>
         </motion.div>
       </motion.div>
 
@@ -766,9 +766,9 @@ function HeroSection({ onGetStarted, scrollY }) {
         className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         style={{ opacity: useTransform(scrollY, [0, vh * 0.2], [1, 0]) }}
       >
-        <span className="text-[10px] text-white/15 tracking-[0.2em] uppercase font-mono">Scroll</span>
+        <span className="text-[10px] text-[var(--text)]/15 tracking-[0.2em] uppercase font-mono">Scroll</span>
         <motion.div
-          className="w-px h-8 bg-gradient-to-b from-white/20 to-transparent"
+          className="w-px h-8 bg-gradient-to-b from-[var(--text)]/20 to-transparent"
           animate={{ opacity: [0.4, 0.1, 0.4], scaleY: [1, 1.5, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -820,11 +820,6 @@ export default function App() {
   const resultsRef = useRef(null)
   const jdTextareaRef = useRef(null)
 
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowContent(true), 2000)
-    return () => clearTimeout(timer)
-  }, [])
 
   const autoResize = (el) => {
     el.style.height = "auto"
@@ -1170,10 +1165,10 @@ Brief: ${jdBrief}`
     <>
       <div className="scanline-overlay" />
       <MouseGlow />
-      <Preloader />
+      <Preloader onComplete={() => setShowContent(true)} />
       {showContent && (
         <motion.div
-          className="text-white scroll-container bg-unified"
+          className="text-app scroll-container bg-unified"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -1188,8 +1183,8 @@ Brief: ${jdBrief}`
           </div>
 
           <div id="decoder" ref={mainAppRef}>
-            <div className="min-h-screen text-white flex flex-col relative content-vis-auto">
-              <ForceFieldBackground />
+            <div className="min-h-screen text-app flex flex-col relative content-vis-auto">
+              <Suspense fallback={null}><ForceFieldBackground /></Suspense>
               <div className="ambient-orb" style={{ width: '300px', height: '300px', top: '10%', left: '-5%', background: '#ff0064', animation: 'orbFloat1 20s ease-in-out infinite' }} />
 
               <div className="relative z-10 flex flex-col min-h-screen">
@@ -1202,24 +1197,25 @@ Brief: ${jdBrief}`
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -8, scale: 0.97 }}
                         transition={{ duration: 0.2 }}
-                        className="rounded-xl bg-black/20 backdrop-blur-lg w-72 max-sm:w-full max-sm:max-w-full shadow-2xl overflow-hidden border border-white/[0.06] relative"
+                        className="rounded-xl bg-[var(--bg)]/20 backdrop-blur-lg w-72 max-sm:w-full max-sm:max-w-full shadow-2xl overflow-hidden border border-app relative"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--text)]/[0.08] to-transparent pointer-events-none" />
                         <div className="p-4 max-h-[55vh] overflow-y-auto relative z-10">
-                            <span className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-2 block">Generate Job Description</span>
+                            <span className="text-sm font-semibold uppercase tracking-wider text-faint mb-2 block">Generate Job Description</span>
                           <textarea
                             value={jdBrief}
                             onChange={(e) => setJdBrief(e.target.value)}
                             placeholder="e.g. Senior React dev for fintech startup, 5+ yrs exp, TypeScript, remote..."
                             rows={3}
-                            className="w-full px-2.5 py-1.5 rounded-md bg-zinc-800 border border-zinc-700 text-white text-xs placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-500 resize-none mb-2"
+                            className="w-full px-2.5 py-1.5 rounded-md bg-elevated border border-app text-app text-xs placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--text-tertiary)] resize-none mb-2"
                           />
                             <button
                               type="button"
                               onClick={generateJD}
                               disabled={generating || !jdBrief.trim()}
-                              className="ripple-btn w-full py-1.5 rounded-md bg-white text-black text-xs font-semibold hover:bg-zinc-200 btn-scale-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                              className="ripple-btn w-full py-1.5 rounded-md bg-inverse text-inverse text-xs font-semibold hover:brightness-90 btn-scale-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                               onMouseDown={addRipple}
+                              aria-label="Generate full job description"
                             >
                             {generating ? <><Loader2 size={12} className="animate-spin" /> Generating...</> : "Generate Full Job Description"}
                           </button>
@@ -1239,29 +1235,30 @@ Brief: ${jdBrief}`
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -8, scale: 0.97 }}
                         transition={{ duration: 0.2 }}
-                        className="rounded-xl bg-black/20 backdrop-blur-lg w-72 max-sm:w-full max-sm:max-w-full shadow-2xl overflow-hidden border border-white/[0.06] relative"
+                        className="rounded-xl bg-[var(--bg)]/20 backdrop-blur-lg w-72 max-sm:w-full max-sm:max-w-full shadow-2xl overflow-hidden border border-app relative"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--text)]/[0.08] to-transparent pointer-events-none" />
                         <div className="p-4 max-h-[55vh] overflow-y-auto relative z-10">
-                          <span className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-2 block">Analysis History</span>
+                          <span className="text-sm font-semibold uppercase tracking-wider text-faint mb-2 block">Analysis History</span>
                           {history.length === 0 ? (
-                            <p className="text-zinc-600 text-xs text-center py-4">No saved analyses yet</p>
+                            <p className="text-dim text-xs text-center py-4">No saved analyses yet</p>
                           ) : (
                             <div className="space-y-1.5">
                               {history.map(entry => (
-                                <div key={entry.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/20 transition-colors group cursor-pointer"
+                                <div key={entry.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--bg)]/20 transition-colors group cursor-pointer"
                                   onClick={() => loadFromHistory(entry)}
                                 >
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-xs text-white/80 truncate">{entry.result?.role_summary?.title || "Unknown"}</p>
-                                    <p className="text-[10px] text-zinc-500">{entry.date}</p>
+                                    <p className="text-xs text-[var(--text)]/80 truncate">{entry.result?.role_summary?.title || "Unknown"}</p>
+                                    <p className="text-[10px] text-faint">{entry.date}</p>
                                   </div>
                                   <button
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); deleteHistoryItem(entry.id) }}
-                                    className="shrink-0 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all"
+                                    className="shrink-0 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-[var(--text)]/10 transition-all"
+                                    aria-label={`Delete analysis for ${entry.result?.role_summary?.title || "unknown"}`}
                                   >
-                                    <X size={12} className="text-zinc-500" />
+                                    <X size={12} className="text-faint" />
                                   </button>
                                 </div>
                               ))}
@@ -1296,21 +1293,24 @@ Brief: ${jdBrief}`
                           <button
                             type="button"
                             onClick={copyAnalysis}
-                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--bg)]/20 backdrop-blur-lg border border-app text-muted hover:text-app hover:bg-[var(--text)]/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                            aria-label="Copy analysis to clipboard"
                           >
                             <Copy size={12} /> {copied ? "Copied!" : "Copy"}
                           </button>
                           <button
                             type="button"
                             onClick={exportPDF}
-                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--bg)]/20 backdrop-blur-lg border border-app text-muted hover:text-app hover:bg-[var(--text)]/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                            aria-label="Export analysis as PDF"
                           >
                             <Download size={12} /> Export PDF
                           </button>
                           <button
                             type="button"
                             onClick={reset}
-                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/20 backdrop-blur-lg border border-white/[0.06] text-zinc-400 hover:text-white hover:bg-white/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--bg)]/20 backdrop-blur-lg border border-app text-muted hover:text-app hover:bg-[var(--text)]/10 btn-scale-sm transition-all flex items-center gap-1.5"
+                            aria-label="Reset analysis"
                           >
                             <ArrowUp size={12} /> Reset
                           </button>
@@ -1329,26 +1329,26 @@ Brief: ${jdBrief}`
                         >
                           <Card key="summary" className="flex flex-col overflow-hidden god-card card-type-requirements">
                             <div className="card-corner-accent" style={{ '--card-accent': '#3b82f6' }} />
-                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
+                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
                               <Sparkles size={14} className="text-blue-400" />
                               <h3 className="text-sm font-display font-bold tracking-tight">Role Summary</h3>
                             </div>
                             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
                               <div>
-                                <p className="text-lg font-semibold text-white">{result.role_summary.title}</p>
+                                <p className="text-lg font-semibold text-app">{result.role_summary.title}</p>
                                 <div className="flex gap-2 mt-2">
                                   <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-900/60 text-blue-300 border border-blue-800/40 uppercase tracking-wider">{result.role_summary.level}</span>
                                   <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-purple-900/60 text-purple-300 border border-purple-800/40 uppercase tracking-wider">{result.role_summary.type === "IC" ? "Individual Contributor" : result.role_summary.type}</span>
                                 </div>
                               </div>
-                              <p className="text-zinc-400 text-sm leading-relaxed">{result.role_summary.one_liner}</p>
+                              <p className="text-muted text-sm leading-relaxed">{result.role_summary.one_liner}</p>
                             </div>
                           </Card>
                           <Card key="redflags" className="flex flex-col overflow-hidden god-card card-type-redflags">
                             <div className="card-corner-accent" style={{ '--card-accent': '#ef4444' }} />
-                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
+                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
                               <TriangleAlert size={14} className="text-red-400" />
-                              <h3 className="text-sm font-display font-bold tracking-tight">Red Flags <span className="text-xs text-zinc-500 font-mono">({result.red_flags?.length || 0})</span></h3>
+                              <h3 className="text-sm font-display font-bold tracking-tight">Red Flags <span className="text-xs text-faint font-mono">({result.red_flags?.length || 0})</span></h3>
                             </div>
                             <div className="flex-1 overflow-y-auto px-5 py-3 space-y-2">
                               {result.red_flags && result.red_flags.length > 0 ? (
@@ -1357,12 +1357,12 @@ Brief: ${jdBrief}`
                                   if (flag.severity === "moderate") severityClass = "bg-orange-900/60 text-orange-300 border border-orange-800/40"
                                   if (flag.severity === "serious") severityClass = "bg-red-900/60 text-red-300 border border-red-800/40"
                                   return (
-                                    <div key={i} className="pb-2 border-b border-zinc-800/50 last:border-0 last:pb-0">
+                                    <div key={i} className="pb-2 border-b border-app last:border-0 last:pb-0">
                                       <div className="flex items-start gap-2">
                                         <TriangleAlert size={12} className="shrink-0 mt-1 text-red-400" />
                                         <div className="flex-1 min-w-0">
-                                          <p className="text-zinc-500 italic text-xs mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
-                                          <p className="text-zinc-300 text-xs">{flag.meaning}</p>
+                                          <p className="text-faint italic text-xs mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
+                                          <p className="text-subtle text-xs">{flag.meaning}</p>
                                         </div>
                                         <span className={`shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded-full ${severityClass}`}>{flag.severity}</span>
                                       </div>
@@ -1370,39 +1370,39 @@ Brief: ${jdBrief}`
                                   )
                                 })
                               ) : (
-                                <p className="text-zinc-500 text-xs italic">None found</p>
+                                <p className="text-faint text-xs italic">None found</p>
                               )}
                             </div>
                           </Card>
 
                           <Card key="greenflags" className="flex flex-col overflow-hidden god-card card-type-greenflags">
                             <div className="card-corner-accent" style={{ '--card-accent': '#22c55e' }} />
-                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
+                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
                               <CheckCircle size={14} className="text-emerald-400" />
-                              <h3 className="text-sm font-display font-bold tracking-tight">Green Flags <span className="text-xs text-zinc-500 font-mono">({result.green_flags?.length || 0})</span></h3>
+                              <h3 className="text-sm font-display font-bold tracking-tight">Green Flags <span className="text-xs text-faint font-mono">({result.green_flags?.length || 0})</span></h3>
                             </div>
                             <div className="flex-1 overflow-y-auto px-5 py-3 space-y-2">
                               {result.green_flags && result.green_flags.length > 0 ? (
                                 result.green_flags.map((flag, i) => (
-                                  <div key={i} className="pb-2 border-b border-zinc-800/50 last:border-0 last:pb-0">
+                                  <div key={i} className="pb-2 border-b border-app last:border-0 last:pb-0">
                                     <div className="flex items-start gap-2">
                                       <CheckCircle size={12} className="shrink-0 mt-1 text-emerald-400" />
                                       <div className="flex-1 min-w-0">
-                                        <p className="text-zinc-500 italic text-xs mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
-                                        <p className="text-zinc-300 text-xs">{flag.meaning}</p>
+                                        <p className="text-faint italic text-xs mb-0.5">&ldquo;{flag.phrase}&rdquo;</p>
+                                        <p className="text-subtle text-xs">{flag.meaning}</p>
                                       </div>
                                     </div>
                                   </div>
                                 ))
                               ) : (
-                                <p className="text-zinc-500 text-xs italic">None found</p>
+                                <p className="text-faint text-xs italic">None found</p>
                               )}
                             </div>
                           </Card>
 
                           <Card key="scores" className="flex flex-col overflow-hidden god-card card-type-scores">
                             <div className="card-corner-accent" style={{ '--card-accent': '#a855f7' }} />
-                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
+                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
                               <h3 className="text-sm font-display font-bold tracking-tight">Clarity Scores</h3>
                             </div>
                             <div className="flex-1 overflow-y-auto px-5 py-4">
@@ -1416,29 +1416,29 @@ Brief: ${jdBrief}`
                                   <DecodeRing score={result.clarity_scores.work_life_balance || 0} label="WLB" />
                                 </div>
                               ) : (
-                                <p className="text-zinc-500 text-xs italic">No clarity scores available</p>
+                                <p className="text-faint text-xs italic">No clarity scores available</p>
                               )}
                             </div>
                           </Card>
 
                           <Card key="questions" className="flex flex-col overflow-hidden god-card card-type-questions">
                             <div className="card-corner-accent" style={{ '--card-accent': '#eab308' }} />
-                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
-                              <MessageCircle size={14} className="text-zinc-400" />
-                              <h3 className="text-sm font-display font-bold tracking-tight">Questions to Ask <span className="text-xs text-zinc-500 font-mono">({result.questions_to_ask?.length || 0})</span></h3>
+                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
+                              <MessageCircle size={14} className="text-muted" />
+                              <h3 className="text-sm font-display font-bold tracking-tight">Questions to Ask <span className="text-xs text-faint font-mono">({result.questions_to_ask?.length || 0})</span></h3>
                             </div>
                             <div className="flex-1 overflow-y-auto px-5 py-3">
                               {result.questions_to_ask && result.questions_to_ask.length > 0 ? (
                                 <ol className="space-y-2">
                                   {result.questions_to_ask.map((q, i) => (
-                                    <li key={i} className="flex gap-2 pb-2 border-b border-zinc-800/50 last:border-0 last:pb-0">
-                                      <span className="text-zinc-500 text-xs font-mono w-5 shrink-0">{i + 1}.</span>
-                                      <span className="text-zinc-300 text-xs">{q}</span>
+                                    <li key={i} className="flex gap-2 pb-2 border-b border-app last:border-0 last:pb-0">
+                                      <span className="text-faint text-xs font-mono w-5 shrink-0">{i + 1}.</span>
+                                      <span className="text-subtle text-xs">{q}</span>
                                     </li>
                                   ))}
                                 </ol>
                               ) : (
-                                <p className="text-zinc-500 text-xs italic">None generated</p>
+                                <p className="text-faint text-xs italic">None generated</p>
                               )}
                             </div>
                           </Card>
@@ -1446,7 +1446,7 @@ Brief: ${jdBrief}`
                           {result.resume_match && (
                             <Card key="resume" className="flex flex-col overflow-hidden god-card card-type-resume">
                               <div className="card-corner-accent" style={{ '--card-accent': '#06b6d4' }} />
-                              <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
+                              <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
                                 <h3 className="text-sm font-display font-bold tracking-tight">Resume Match</h3>
                               </div>
                               <div className="flex-1 overflow-y-auto px-5 py-4">
@@ -1461,14 +1461,14 @@ Brief: ${jdBrief}`
                                     {result.resume_match.strengths && result.resume_match.strengths.length > 0 ? (
                                       <ul className="space-y-1">
                                         {result.resume_match.strengths.map((s, i) => (
-                                          <li key={i} className="text-xs text-zinc-300 flex items-start gap-1">
+                                          <li key={i} className="text-xs text-subtle flex items-start gap-1">
                                             <Check size={10} className="shrink-0 mt-0.5 text-emerald-400" />
                                             {s}
                                           </li>
                                         ))}
                                       </ul>
                                     ) : (
-                                      <p className="text-zinc-500 text-[10px] italic">None identified</p>
+                                      <p className="text-faint text-[10px] italic">None identified</p>
                                     )}
                                   </div>
                                   <div>
@@ -1478,14 +1478,14 @@ Brief: ${jdBrief}`
                                     {result.resume_match.gaps && result.resume_match.gaps.length > 0 ? (
                                       <ul className="space-y-1">
                                         {result.resume_match.gaps.map((g, i) => (
-                                          <li key={i} className="text-xs text-zinc-300 flex items-start gap-1">
+                                          <li key={i} className="text-xs text-subtle flex items-start gap-1">
                                             <X size={10} className="shrink-0 mt-0.5 text-red-400" />
                                             {g}
                                           </li>
                                         ))}
                                       </ul>
                                     ) : (
-                                      <p className="text-zinc-500 text-[10px] italic">None identified</p>
+                                      <p className="text-faint text-[10px] italic">None identified</p>
                                     )}
                                   </div>
                                 </div>
@@ -1495,11 +1495,11 @@ Brief: ${jdBrief}`
 
                           <Card key="verdict" className="flex flex-col overflow-hidden god-card card-type-verdict">
                             <div className="card-corner-accent" style={{ '--card-accent': '#ff0064' }} />
-                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-zinc-800/50 flex items-center gap-2">
+                            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-app flex items-center gap-2">
                               <h3 className="text-sm font-display font-bold tracking-tight">Verdict</h3>
                             </div>
                             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-                              <p className="text-sm leading-relaxed text-zinc-100">{result.verdict.summary}</p>
+                              <p className="text-sm leading-relaxed text-subtle">{result.verdict.summary}</p>
                               <div>
                                 {result.verdict.apply ? (
                                   <span className="inline-block px-3 py-1 text-xs font-bold rounded-full bg-emerald-900 text-emerald-300">Apply</span>
@@ -1507,7 +1507,7 @@ Brief: ${jdBrief}`
                                   <span className="inline-block px-3 py-1 text-xs font-bold rounded-full bg-red-900 text-red-300">Don't Apply</span>
                                 )}
                               </div>
-                              <p className="text-zinc-500 text-xs">{result.verdict.apply_reason}</p>
+                              <p className="text-faint text-xs">{result.verdict.apply_reason}</p>
                             </div>
                           </Card>
                         </CardSwap>
@@ -1528,18 +1528,18 @@ Brief: ${jdBrief}`
                           transition={{ duration: 0.5, delay: 0.5 }}
                         >
                           <motion.div
-                            className="w-16 h-16 rounded-2xl border border-zinc-800 bg-zinc-900/50 flex items-center justify-center mx-auto mb-4"
+                            className="w-16 h-16 rounded-2xl border border-app bg-card flex items-center justify-center mx-auto mb-4"
                             animate={{ scale: [1, 1.05, 1], opacity: [0.6, 1, 0.6] }}
                             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                           >
-                            <Braces size={28} className="text-zinc-600" />
+                            <Braces size={28} className="text-dim" />
                           </motion.div>
-                          <p className="text-sm font-medium text-zinc-500">Awaiting analysis</p>
-                          <p className="text-xs text-zinc-600 mt-1">Paste a JD above and hit send</p>
+                          <p className="text-sm font-medium text-faint">Awaiting analysis</p>
+                          <p className="text-xs text-dim mt-1">Paste a JD above and hit send</p>
                         </motion.div>
                       )}
                       <motion.div
-                        className="rounded-2xl bg-black/40 backdrop-blur-xl shadow-2xl pointer-events-auto overflow-hidden border border-white/[0.08]"
+                        className="rounded-2xl bg-[var(--bg)]/40 backdrop-blur-xl shadow-2xl pointer-events-auto overflow-hidden border border-app"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ type: "spring", stiffness: 80, damping: 18, delay: 0.2 }}
@@ -1562,14 +1562,15 @@ Brief: ${jdBrief}`
                                 }}
                                 placeholder="Paste a job description or type one in..."
                                 rows={1}
-                                className="flex-1 px-0 py-0 bg-transparent border-0 text-white placeholder-zinc-500 focus:outline-none focus:ring-0 resize-none text-base max-sm:text-sm leading-relaxed"
+                                className="flex-1 px-0 py-0 bg-transparent border-0 text-app placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-0 resize-none text-base max-sm:text-sm leading-relaxed"
                                 style={{ minHeight: "1.5em", maxHeight: "50vh" }}
                               />
                               <button
                                 type="submit"
                                 disabled={loading || !jdText.trim()}
-                                className="shrink-0 mb-[1px] rounded-xl bg-white text-black hover:bg-zinc-200 btn-scale p-2.5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                className="shrink-0 mb-[1px] rounded-xl bg-inverse text-inverse hover:brightness-90 btn-scale p-2.5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                                 onMouseDown={addRipple}
+                                aria-label="Submit job description for analysis"
                               >
                                 {loading
                                   ? <Loader2 size={16} className="animate-spin" />
@@ -1577,13 +1578,14 @@ Brief: ${jdBrief}`
                                 }
                               </button>
                             </div>
-                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-800/40 max-sm:flex-col max-sm:gap-2">
+                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-app max-sm:flex-col max-sm:gap-2">
                               <div className="flex items-center gap-2 max-sm:w-full">
                                 {!showResume ? (
                                   <button
                                     type="button"
                                     onClick={() => setShowResume(true)}
-                                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 transition-all"
+                                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-[var(--text)]/5 hover:bg-[var(--text)]/10 text-muted hover:text-app transition-all"
+                                    aria-label="Add resume"
                                   >
                                     + resume
                                   </button>
@@ -1591,7 +1593,8 @@ Brief: ${jdBrief}`
                                   <button
                                     type="button"
                                     onClick={() => { setShowResume(false); setResumeText("") }}
-                                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 transition-all flex items-center gap-1"
+                                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-[var(--text)]/5 hover:bg-[var(--text)]/10 text-muted hover:text-app transition-all flex items-center gap-1"
+                                    aria-label="Remove resume"
                                   >
                                     <X size={12} /> resume
                                   </button>
@@ -1599,20 +1602,21 @@ Brief: ${jdBrief}`
                                 <button
                                   type="button"
                                   onClick={loadSample}
-                                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 transition-all"
+                                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-[var(--text)]/5 hover:bg-[var(--text)]/10 text-muted hover:text-app transition-all"
+                                  aria-label="Load sample job description"
                                 >
                                   sample
                                 </button>
                               </div>
                             </div>
                             {showResume && (
-                              <div className="mt-3 pt-3 border-t border-zinc-800/40">
+                              <div className="mt-3 pt-3 border-t border-app">
                                 <textarea
                                   value={resumeText}
                                   onChange={(e) => setResumeText(e.target.value)}
                                   placeholder="Paste your resume here..."
                                   rows={3}
-                                  className="w-full px-0 py-0 bg-transparent border-0 text-white text-xs placeholder-zinc-600 focus:outline-none focus:ring-0 resize-none"
+                                  className="w-full px-0 py-0 bg-transparent border-0 text-app text-xs placeholder-[var(--text-muted)] focus:outline-none focus:ring-0 resize-none"
                                 />
                               </div>
                             )}
